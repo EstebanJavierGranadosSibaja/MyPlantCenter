@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "nombre_proyecto",
-    "slug": "nombre_proyecto",
+    "name": "MyPlantCenter",
+    "slug": "myplantcenter",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "nombreproyecto",
+    "scheme": "myplantcenter",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
