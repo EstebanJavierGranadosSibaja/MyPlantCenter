@@ -12,6 +12,10 @@ export const spacing = {
   8:  32,   // separación entre secciones grandes
   10: 40,
   12: 48,
+  14: 56,
+  16: 64,
+  20: 80,
+  24: 96,
 } as const;
 
 // ── layout ────────────────────────────────────────────────────────────────────
@@ -43,6 +47,12 @@ export const layout = {
 
   // Ancho máximo
   maxWidth: 420,
+
+  tabItemRadius: 11,   // radio interno de cada tab — un poco menos que el contenedor
+
+  chartHeight: 80,   // altura del área de barras del gráfico
+  chartBarRadius: 5, // radio de las barras del gráfico
+  chartBarMin: 8,    // altura mínima de cualquier barra
 } as const;
 
 // ── border radius ─────────────────────────────────────────────────────────────

@@ -12,7 +12,8 @@ const palette = {
   bodyText:    '#3A5A4A',   // texto de cuerpo
   error:       '#E07A5F',   // rojo suave — errores
   warning:     '#F4A261',   // naranja — advertencias
-};
+  mintLight:   '#3B8A6E',
+}as const;
 
 // ── colors ────────────────────────────────────────────────────────────────────
 
@@ -61,4 +62,22 @@ export const colors = {
   toggleInactive:      palette.borderLight,
   toggleThumbActive:   palette.dewGold,
   toggleThumbInactive: palette.stone,
+
+  // Inputs sobre fondo hero
+  heroInputBg:       'rgba(255,255,255,0.10)',
+  heroInputBgSubtle: 'rgba(255,255,255,0.08)',
+  heroInputBorder:   palette.dewGold + '44',
+  heroInputBorderSubtle: palette.dewGold + '25',
+  heroTextSubtle:    palette.dewGold + '99',
+  heroAccentMuted:   palette.dewGold + '50',// no funciona así, ver abajo
+
+  logroActiveBg:     palette.sage    + '18',  // fondo verde suave para logros ganados
+  logroActiveBorder: palette.dewGold,         // borde dorado para logros ganados
+  favPlantIconBg:    palette.dewGold + '20',  // fondo del ícono de planta favorita
+
+  // Acciones de cuenta
+  actionExport:   palette.moss,        // exportar datos
+  actionPassword: palette.mintLight,   // cambiar contraseña  
+  actionLogout:   palette.stone,       // cerrar sesión
+  actionDelete:   palette.error,       // eliminar cuenta
 };

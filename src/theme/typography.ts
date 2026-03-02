@@ -101,4 +101,29 @@ export const textStyles = {
     fontFamily: fontFamily.bodySemiBold,
     fontSize:   fontSize.sm,            // 11
   },
+
+  // Agrega dentro de textStyles:
+  heroName: {
+    fontFamily: fontFamily.displayBold,
+    fontSize:   fontSize['5xl'],    // 22
+    lineHeight: 28,
+    fontWeight: '600' as const,
+  },
+  inputName: {
+    fontFamily: fontFamily.displayBold,
+    fontSize:   fontSize['2xl'],    // 16
+    lineHeight: 22,
+  },
+
+  birthdayLabel: {
+  fontFamily: fontFamily.bodyMedium,
+  fontSize:   fontSize.base,   // 12
+  lineHeight: 16,
+  fontWeight: '500' as const,
+  },
+  birthdayValue: {
+    fontFamily: fontFamily.displayBold,
+    fontSize:   fontSize.xl,     // 15
+    lineHeight: 20,
+  },
 } as const;
