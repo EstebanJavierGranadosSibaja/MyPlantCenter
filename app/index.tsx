@@ -1,6 +1,5 @@
-import UserProfile from "@/src/screens/USerProfile";
-import { Text, View } from "react-native";
+import UserProfile from "@screens/UserProfile/UserProfile";
 
 export default function Index() {
-  return (UserProfile());
+  return <UserProfile />;
 }
