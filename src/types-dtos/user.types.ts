@@ -1,125 +1,101 @@
-// ── Tipos simples ─────────────────────────────────────────────────────────────
+import type { Feather } from '@expo/vector-icons';
+import type { ComponentProps } from 'react';
 
-// PrivacyLevel solo puede ser uno de estos dos valores exactos.
-export type PrivacyLevel = 'publico' | 'privado';
+export type FeatherIconName = ComponentProps<typeof Feather>['name'];
 
-// ── Categoría de planta ───────────────────────────────────────────────────────
-
+// Data interfaces
 export interface PlantCategory {
-  id:       string;   // identificador único, ej: "cat-001"
-  nombre:   string;   // ej: "Tropicales"
-  emoji:    string;   // ej: "🌴"
-  color:    string;   // ej: "#2D6A4F" — el color de su barra en el perfil
-  cantidad: number;   // cuántas plantas tiene el usuario en esta categoría
+  id: string;
+  name: string;
+  iconName: FeatherIconName;
+  color: string;
+  amount: number;
 }
-
-// ── Planta favorita ───────────────────────────────────────────────────────────
 
 export interface FavoritePlant {
-  id:        string;
-  nombre:    string;   // ej: "Monstera Deliciosa"
-  emoji:     string;   // ej: "🌿"
-  categoria: string;   // ej: "Tropical"
+  id: string;
+  name: string;
+  iconName: FeatherIconName;
+  category: string;
 }
-
-// ── Logro (achievement) ───────────────────────────────────────────────────────
 
 export interface Achievement {
-  id:             string;
-  titulo:         string;    // ej: "Primera planta"
-  descripcion:    string;    // ej: "Identificaste tu primera especie"
-  emoji:          string;    // ej: "🌱"
-  ganado:         boolean;   // true = desbloqueado, false = bloqueado
-  fechaObtenido?: string;    // el ? significa que es OPCIONAL
+  id: string;
+  title: string;
+  description: string;
+  iconName: FeatherIconName;
+  unlocked: boolean;
+  unlockedAt?: string;
 }
-
-// ── Configuración de privacidad ───────────────────────────────────────────────
 
 export interface PrivacySettings {
-  perfilPublico:       boolean;   // perfil visible para todos
-  mostrarRacha:        boolean;   // mostrar días consecutivos
-  mostrarCumpleanos:   boolean;   // mostrar fecha de nacimiento
-  permitirSolicitudes: boolean;   // permitir que otros te agreguen
+  publicProfile: boolean;
+  showStreak: boolean;
+  showBirthday: boolean;
+  allowRequests: boolean;
 }
-
-// ── Configuración de notificaciones ──────────────────────────────────────────
 
 export interface NotificationSettings {
-  recordatoriosRiego:   boolean;
-  alertasSalud:         boolean;
-  nuevosAmigos:         boolean;
-  logrosDesbloqueados:  boolean;
+  wateringReminders: boolean;
+  healthAlerts: boolean;
+  newFriends: boolean;
+  achievementsUnlocked: boolean;
 }
-
-// ── Estadísticas del usuario ──────────────────────────────────────────────────
 
 export interface UserStats {
-  cantidadPlantas: number;   // total de plantas registradas
-  cantidadAmigos:  number;
-  racha:           number;   // días consecutivos activos
-  rachaMejor:      number;   // mejor racha histórica
-  riegosHoy:       number;
-  diasActivo:      number;   // días totales usando la app
+  plantsCount: number;
+  friendsCount: number;
+  streak: number;
+  bestStreak: number;
+  wateredToday: number;
+  activeDays: number;
 }
-
-// ── Nivel y experiencia ───────────────────────────────────────────────────────
 
 export interface UserLevel {
-  nivel:  number;   // número de nivel, ej: 12
-  titulo: string;   // ej: "Jardinera Experta"
-  xp:     number;   // experiencia actual, ej: 840
-  xpMax:  number;   // experiencia necesaria para subir, ej: 1000
+  level: number;
+  title: string;
+  xp: number;
+  xpMax: number;
 }
-
-// ── Perfil completo del usuario ───────────────────────────────────────────────
 
 export interface UserProfile {
-  id:            string;
-  nombre:        string;
-  apodo:         string;         // el @handle, ej: "@mariaverde"
-  descripcion:   string;
-  avatarUrl?:    string;         // ? = opcional, puede no tener foto
-  cumpleanos?:   string;         // ej: "14 de Marzo"
-  ubicacion?:    string;
-  fechaRegistro: string;         // fecha en que creó la cuenta (ISO: "2021-06-01")
+  id: string;
+  name: string;
+  nickname: string;
+  description: string;
+  avatarUrl?: string;
+  birthday?: string;
+  location?: string;
+  registeredAt: string;
 
-  // Aquí se usan las interfaces que definimos arriba
-  nivel:          UserLevel;
-  stats:          UserStats;
-  plantaFavorita?: FavoritePlant;     // puede no tener favorita aún
-  categorias:     PlantCategory[];    
-  logros:         Achievement[];
-
-  privacidad:     PrivacySettings;
-  notificaciones: NotificationSettings;
+  level: UserLevel;
+  stats: UserStats;
+  favoritePlant?: FavoritePlant;
+  categories: PlantCategory[];
+  achievements: Achievement[];
+  privacy: PrivacySettings;
+  notifications: NotificationSettings;
 }
 
-// ── DTOs ──────────────────────────────────────────────────────────────────────
-
-// Para editar datos básicos del perfil
+// DTOs
 export interface EditProfileDTO {
-  nombre:       string;
-  apodo:        string;
-  descripcion:  string;
-  cumpleanos?:  string;    // opcional — puede no querer poner su cumpleaños
-  ubicacion?:   string;
+  name: string;
+  nickname: string;
+  description: string;
+  birthday?: string;
+  location?: string;
 }
 
-// Para actualizar privacidad
-// Así se puede mandar solo { perfilPublico: false } sin mandar los demás campos.
 export interface UpdatePrivacyDTO {
-  privacidad: Partial<PrivacySettings>;
+  privacy: Partial<PrivacySettings>;
 }
 
-// Para actualizar notificaciones
 export interface UpdateNotificationsDTO {
-  notificaciones: Partial<NotificationSettings>;
+  notifications: Partial<NotificationSettings>;
 }
-
-// ── Wrapper de respuesta del servidor ────────────────────────────────────────
 
 export interface ApiResponse<T> {
-  data:      T;
-  success:   boolean;
-  message?:  string;   // mensaje de error si success es false
+  data: T;
+  success: boolean;
+  message?: string;
 }

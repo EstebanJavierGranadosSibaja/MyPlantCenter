@@ -1,92 +1,50 @@
+import { Feather } from '@expo/vector-icons';
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { colors }          from '../../../theme/colors';
-import { textStyles }      from '../../../theme/typography';
-import { radius, shadows, spacing } from '../../../theme/spacing';
+import { Text, View } from 'react-native';
+import { useStatRowTheme } from './StatRow.styles';
 
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-// Un StatItem describe UNA estadística individual
+// Types
 export interface StatItem {
-  emoji: string;          // ícono visual, ej: "🌿"
-  value: string | number; // valor, ej: 47 o "34d"
-  label: string;          // etiqueta, ej: "Plantas"
+  iconName: React.ComponentProps<typeof Feather>['name'];
+  value: string | number;
+  label: string;
 }
 
 interface StatRowProps {
-  items:  StatItem[];   // array de estadísticas a mostrar
-  style?: object;       // estilos opcionales desde el padre
+  items: StatItem[];
+  style?: object;
 }
 
-// ── Componente principal ──────────────────────────────────────────────────────
+// Componente principal
+export const StatRow: React.FC<StatRowProps> = ({ items, style }) => {
+  const { styles } = useStatRowTheme();
 
-export const StatRow: React.FC<StatRowProps> = ({ items, style }) => (
-  <View style={[styles.row, style]}>
-    {items.map((item, index) => (
-      // map recorre el array y por cada item devuelve JSX
-      <React.Fragment key={item.label}>
+  return (
+    <View style={[styles.row, style]}>
+      {items.map((item, index) => (
+        <React.Fragment key={item.label}>
 
-        <StatPill {...item} />
+          <StatPill item={item} />
 
-        {index < items.length - 1 && (
-          <View style={styles.divider} />
-        )}
-      </React.Fragment>
-    ))}
-  </View>
-);
+          {index < items.length - 1 && (
+            <View style={styles.divider} />
+          )}
 
-// ── Sub-componente interno ────────────────────────────────────────────────────
-// StatPill es un componente que solo usa StatRow, por eso vive en este mismo archivo. No lo exportamos porque nadie más necesita usarlo directamente.
+        </React.Fragment>
+      ))}
+    </View>
+  );
+};
 
-const StatPill: React.FC<StatItem> = ({ emoji, value, label }) => (
-  <View style={styles.pill}>
+// Subcomponente interno 
+const StatPill: React.FC<{ item: StatItem }> = ({ item }) => {
+  const { styles } = useStatRowTheme();
 
-    {/* Emoji grande arriba */}
-    <Text style={styles.emoji}>{emoji}</Text>
-
-    {/* Número en Playfair Display */}
-    <Text style={styles.value}>{value}</Text>
-
-    {/* Etiqueta pequeña en mayúsculas */}
-    <Text style={styles.label}>{label}</Text>
-
-  </View>
-);
-
-// ── Estilos ───────────────────────────────────────────────────────────────────
-
-const styles = StyleSheet.create({
-  row: {
-    flexDirection:     'row',
-    backgroundColor:   colors.surface,
-    borderRadius:      radius.lg,       // 18 — esquinas bien redondeadas
-    paddingVertical:   spacing[4],      // 16
-    paddingHorizontal: spacing[2],      // 8
-    borderWidth:       1.5,
-    borderColor:       colors.border,
-    ...shadows.md,
-  },
-  pill: {
-    flex:       1,
-    alignItems: 'center',
-    gap:        4,
-  },
-  divider: {
-    width:           1,
-    backgroundColor: colors.border,
-    marginVertical:  spacing[2], 
-  },
-  emoji: {
-    fontSize:   18,
-    lineHeight: 24,
-  },
-  value: {
-    ...textStyles.statValue,
-    color: colors.textPrimary,
-  },
-  label: {
-    ...textStyles.caption,
-    color: colors.textMuted,
-  },
-});
+  return (
+    <View style={styles.pill}>
+      <Feather name={item.iconName} size={styles.icon.fontSize} color={styles.icon.color} />
+      <Text style={styles.value}>{item.value}</Text>
+      <Text style={styles.label}>{item.label}</Text>
+    </View>
+  );
+};
