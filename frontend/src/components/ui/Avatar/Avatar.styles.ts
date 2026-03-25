@@ -1,7 +1,12 @@
 import { StyleSheet } from 'react-native';
 import { useAppThemeContext } from 'src/context/ThemeContext';
+import { AppTheme } from 'src/theme/designSystem';
 
-export const createAvatarStyles = (theme: ReturnType<typeof useAppThemeContext>) => StyleSheet.create({
+export const createAvatarStyles = (theme: AppTheme) => StyleSheet.create({
+
+  wrapper: {
+    position: 'relative',
+  },
 
   container: {
     backgroundColor: theme.colors.accent,
@@ -29,10 +34,10 @@ export const createAvatarStyles = (theme: ReturnType<typeof useAppThemeContext>)
   },
 
   levelText: {
-    fontSize: theme.typography.size.xs - 1,
-    fontWeight: '700' as const,
+    fontFamily: theme.typography.family.bodyBold,
+    fontSize: theme.typography.size.xs,
     color: theme.colors.accentSoft,
-    letterSpacing: theme.spacing['3xs']
+    letterSpacing: 0.4,
   },
 
 });

@@ -26,16 +26,17 @@ export const Avatar: React.FC<AvatarProps> = ({
   const { theme, styles } = useAvatarTheme();
 
   const avatarSize = size ?? theme.layout.avatarLg;
-
-  const borderRad = avatarSize * 0.3;
-  const IconSize = avatarSize * 0.45;
-  const dotSize = avatarSize * 0.18;
-  const dotRadius = avatarSize * 0.09;
+  const iconSize = avatarSize <= theme.layout.avatarSm
+    ? theme.typography.size['2xl']
+    : avatarSize <= theme.layout.avatarMd
+      ? theme.typography.size['3xl']
+      : theme.typography.size['4xl'];
+  const dotSize = avatarSize <= theme.layout.avatarSm ? theme.spacing.sm : theme.spacing.md;
   const dotOffset = theme.layout.avatarOnlineDotOffset;
-  const dotBorder = avatarSize * 0.025;
+  const dotBorder = theme.borders.base;
 
   return (
-    <View style={{ position: 'relative', width: avatarSize, height: avatarSize }}>
+    <View style={[styles.wrapper, { width: avatarSize, height: avatarSize }]}> 
 
       <View
         style={[
@@ -43,7 +44,7 @@ export const Avatar: React.FC<AvatarProps> = ({
           {
             width: avatarSize,
             height: avatarSize,
-            borderRadius: borderRad,
+            borderRadius: theme.radius.full,
           },
         ]}
       >
@@ -53,12 +54,12 @@ export const Avatar: React.FC<AvatarProps> = ({
             style={{
               width: '100%',
               height: '100%',
-              borderRadius: borderRad,
+              borderRadius: theme.radius.full,
             }}
             resizeMode="cover"
           />
         ) : (
-          <Feather name={iconName} size={IconSize} color={theme.colors.accentSoft} />
+          <Feather name={iconName} size={iconSize} color={theme.colors.accentSoft} />
         )}
       </View>
 
@@ -69,7 +70,7 @@ export const Avatar: React.FC<AvatarProps> = ({
             {
               width: dotSize,
               height: dotSize,
-              borderRadius: dotRadius,
+              borderRadius: theme.radius.full,
               bottom: dotOffset,
               right: dotOffset,
               borderWidth: dotBorder,
