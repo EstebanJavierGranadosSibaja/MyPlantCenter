@@ -52,7 +52,11 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           accessibilityLabel="Volver atrás"
           accessibilityRole="button"
         >
-          <Feather name="arrow-left" color={theme.colors.heroText} size={24} />
+          <Feather
+            name="arrow-left"
+            color={theme.colors.heroText}
+            size={theme.typography.size['2xl']}
+          />
         </TouchableOpacity>
       )}
 
