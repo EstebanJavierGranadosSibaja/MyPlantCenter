@@ -1,7 +1,8 @@
 import { StyleSheet } from 'react-native';
 import { useAppThemeContext } from 'src/context/ThemeContext';
+import { AppTheme } from 'src/theme/designSystem';
 
-export const createBadgeStyles = (theme: ReturnType<typeof useAppThemeContext>) => StyleSheet.create({
+export const createBadgeStyles = (theme: AppTheme) => StyleSheet.create({
 
   container: {
     flexDirection: 'row',
@@ -13,7 +14,7 @@ export const createBadgeStyles = (theme: ReturnType<typeof useAppThemeContext>) 
 
   label: {
     fontFamily: theme.typography.family.bodySemiBold,
-    letterSpacing: theme.spacing['4xs'],
+    letterSpacing: 0.4,
   },
 
 });

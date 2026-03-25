@@ -41,8 +41,8 @@ export const Badge: React.FC<BadgeProps> = ({
       style={[
         styles.container,
         {
-          backgroundColor: badgeColor + '18',
-          borderColor: badgeColor + '44',
+          backgroundColor: theme.colors.backgroundAlt,
+          borderColor: theme.colors.border,
           paddingHorizontal: paddingH,
           paddingVertical: paddingV,
           gap: theme.spacing.xs,
