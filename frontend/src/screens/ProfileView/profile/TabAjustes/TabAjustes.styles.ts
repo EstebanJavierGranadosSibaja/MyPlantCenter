@@ -1,7 +1,8 @@
 import { StyleSheet } from 'react-native';
 import { useAppThemeContext } from 'src/context/ThemeContext';
+import { AppTheme } from 'src/theme/designSystem';
 
-export const createTabAjustesStyles = (theme: ReturnType<typeof useAppThemeContext>) => StyleSheet.create({
+export const createTabAjustesStyles = (theme: AppTheme) => StyleSheet.create({
 
   container: {
     paddingHorizontal: theme.layout.screenPaddingH,
@@ -13,7 +14,7 @@ export const createTabAjustesStyles = (theme: ReturnType<typeof useAppThemeConte
     fontFamily: theme.typography.family.bodySemiBold,
     fontSize: theme.typography.size.xs,
     color: theme.colors.textMuted,
-    letterSpacing: theme.spacing['3xs'],
+    letterSpacing: 1.4,
     textTransform: 'uppercase' as const,
     marginBottom: theme.spacing.sm,
   },
@@ -66,7 +67,7 @@ export const createTabAjustesStyles = (theme: ReturnType<typeof useAppThemeConte
 
   themeOptionActive: {
     borderColor: theme.colors.accent,
-    backgroundColor: theme.colors.accent + '1F',
+    backgroundColor: theme.colors.favPlantIconBg,
     shadowColor: theme.shadows.sm.color,
     shadowOffset: theme.shadows.sm.offset,
     shadowOpacity: theme.shadows.sm.opacity,
