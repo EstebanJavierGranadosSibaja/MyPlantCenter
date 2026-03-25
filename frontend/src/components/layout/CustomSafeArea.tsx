@@ -1,8 +1,7 @@
 import React from 'react';
 import { ScrollView } from 'react-native';
 import { Edge, SafeAreaView } from 'react-native-safe-area-context';
-import { useAppThemeContext } from 'src/context/ThemeContext';
-import { createSafeAreaStyles } from './CustomSafeArea.styles';
+import { useCustomSafeAreaTheme } from './CustomSafeArea.styles';
 
 interface CustomSafeAreaProps {
   children: React.ReactNode;
@@ -15,8 +14,7 @@ export const CustomSafeArea: React.FC<CustomSafeAreaProps> = ({
   scroll = false,
   edges = ['top', 'bottom', 'left', 'right'],
 }) => {
-  const theme = useAppThemeContext();
-  const styles = createSafeAreaStyles(theme);
+  const { styles } = useCustomSafeAreaTheme();
 
   if (scroll) {
     return (
