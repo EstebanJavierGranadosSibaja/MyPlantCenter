@@ -37,6 +37,97 @@ export const createProfileViewStyles = (theme: AppTheme) => StyleSheet.create({
     marginTop: theme.spacing.md,
   },
 
+  loadingContainer: {
+    flex: 1,
+    paddingHorizontal: theme.layout.screenPaddingH,
+    paddingTop: theme.spacing.lg,
+    gap: theme.spacing.lg,
+  },
+
+  loadingAvatar: {
+    width: theme.layout.avatarLg,
+    height: theme.layout.avatarLg,
+    borderRadius: theme.radius.full,
+    backgroundColor: theme.colors.backgroundAlt,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  loadingSkeletonName: {
+    height: theme.typography.lineHeight.relaxed,
+    width: '60%' as const,
+    borderRadius: theme.radius.sm,
+    backgroundColor: theme.colors.backgroundAlt,
+  },
+
+  loadingSkeletonNickname: {
+    height: theme.typography.lineHeight.snug,
+    width: '40%' as const,
+    borderRadius: theme.radius.sm,
+    backgroundColor: theme.colors.backgroundAlt,
+  },
+
+  loadingSkeletonDescription: {
+    height: theme.typography.lineHeight.snug,
+    width: '80%' as const,
+    borderRadius: theme.radius.sm,
+    backgroundColor: theme.colors.backgroundAlt,
+  },
+
+  loadingStatsRow: {
+    flexDirection: 'row',
+    gap: theme.spacing.sm,
+  },
+
+  loadingStatCard: {
+    flex: 1,
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+    backgroundColor: theme.colors.cardBg,
+    borderRadius: theme.radius.md,
+    borderWidth: theme.borders.thick,
+    borderColor: theme.colors.border,
+    paddingVertical: theme.spacing.md,
+  },
+
+  loadingStatValue: {
+    fontFamily: theme.typography.family.displayBold,
+    fontSize: theme.typography.size['4xl'],
+    color: theme.colors.textPrimary,
+  },
+
+  loadingStatLabel: {
+    fontFamily: theme.typography.family.bodySemiBold,
+    fontSize: theme.typography.size.xs,
+    color: theme.colors.textMuted,
+    letterSpacing: 1.4,
+    textTransform: 'uppercase' as const,
+  },
+
+  xpSection: {
+    gap: theme.spacing.sm,
+  },
+
+  xpRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+
+  xpLabel: {
+    fontFamily: theme.typography.family.bodySemiBold,
+    fontSize: theme.typography.size.xs,
+    color: theme.colors.textMuted,
+    letterSpacing: 1.4,
+    textTransform: 'uppercase' as const,
+  },
+
+  xpValue: {
+    fontFamily: theme.typography.family.bodySemiBold,
+    fontSize: theme.typography.size.base,
+    color: theme.colors.accent,
+  },
+
   // Botón seguir 
   followButton: {
     flexDirection: 'row',
