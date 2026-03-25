@@ -1,7 +1,8 @@
 import { StyleSheet } from 'react-native';
 import { useAppThemeContext } from 'src/context/ThemeContext';
+import { AppTheme } from 'src/theme/designSystem';
 
-export const createCategoryBadgeStyles = (theme: ReturnType<typeof useAppThemeContext>) => StyleSheet.create({
+export const createCategoryBadgeStyles = (theme: AppTheme) => StyleSheet.create({
 
   container: {
     flexDirection: 'row',
@@ -23,6 +24,8 @@ export const createCategoryBadgeStyles = (theme: ReturnType<typeof useAppThemeCo
     width: theme.layout.categoryIconSize,
     height: theme.layout.categoryIconSize,
     borderRadius: theme.radius.sm,
+    borderWidth: theme.borders.thick,
+    backgroundColor: theme.colors.backgroundAlt,
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,

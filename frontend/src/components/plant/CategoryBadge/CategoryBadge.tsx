@@ -50,7 +50,7 @@ export const CategoryBadge: React.FC<CategoryBadgeProps> = ({
       <View
         style={[
           styles.iconContainer,
-          { backgroundColor: category.color + '22' },
+          { borderColor: category.color },
         ]}
       >
         <Feather
