@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import React from 'react';
 import { Text, View } from 'react-native';
+import { EmptyState } from 'src/components/common/EmptyState/EmptyState';
 import { CustomSafeArea } from 'src/components/layout/CustomSafeArea';
 import { AppHeader } from 'src/components/navigation/AppHeader/AppHeader';
 import { useDashboardTheme } from './Dashboard.styles';
@@ -17,6 +18,8 @@ function getGreeting(): { text: string; icon: string } {
 export const Dashboard: React.FC = () => {
   const { theme, styles } = useDashboardTheme();
   const greeting = getGreeting();
+  const loading = false;
+  const plantsCount = 0;
 
   return (
     <CustomSafeArea>
@@ -26,19 +29,27 @@ export const Dashboard: React.FC = () => {
           subtitle="BIENVENIDO"
           showBack={false}
         />
-        <View style={styles.greetingSection}>
-          <Feather
-            name={greeting.icon as any}
-            size={theme.typography.size['6xl']}
-            color={theme.colors.accent}
+        {!loading && plantsCount === 0 ? (
+          <EmptyState
+            iconName="sun"
+            title="Todo listo"
+            subtitle="Agrega plantas para ver tu resumen"
           />
-          <Text style={styles.greetingTitle}>
-            {greeting.text}, Esteban
-          </Text>
-          <Text style={styles.greetingSubtitle}>
-            Bienvenido a MyPlantCenter
-          </Text>
-        </View>
+        ) : (
+          <View style={styles.greetingSection}>
+            <Feather
+              name={greeting.icon as any}
+              size={theme.typography.size['6xl']}
+              color={theme.colors.accent}
+            />
+            <Text style={styles.greetingTitle}>
+              {greeting.text}, Esteban
+            </Text>
+            <Text style={styles.greetingSubtitle}>
+              Bienvenido a MyPlantCenter
+            </Text>
+          </View>
+        )}
       </View>
     </CustomSafeArea>
   );
