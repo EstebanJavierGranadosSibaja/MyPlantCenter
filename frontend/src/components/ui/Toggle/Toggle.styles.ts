@@ -1,7 +1,8 @@
 import { StyleSheet } from 'react-native';
 import { useAppThemeContext } from 'src/context/ThemeContext';
+import { AppTheme } from 'src/theme/designSystem';
 
-export const createToggleStyles = (theme: ReturnType<typeof useAppThemeContext>) => StyleSheet.create({
+export const createToggleStyles = (theme: AppTheme) => StyleSheet.create({
 
   row: {
     flexDirection: 'row',
@@ -18,7 +19,6 @@ export const createToggleStyles = (theme: ReturnType<typeof useAppThemeContext>)
     fontFamily: theme.typography.family.bodyMedium,
     fontSize: theme.typography.size.lg,
     color: theme.colors.textPrimary,
-    fontWeight: '500' as const,
   },
 
   description: {
