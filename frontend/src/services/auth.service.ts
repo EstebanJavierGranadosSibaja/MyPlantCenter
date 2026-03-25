@@ -1,12 +1,12 @@
+import { FirebaseError } from 'firebase/app';
 import {
     createUserWithEmailAndPassword,
-    User,
     getIdToken,
     signInWithEmailAndPassword,
     signOut,
     updateProfile,
+    User,
 } from 'firebase/auth';
-import { FirebaseError } from 'firebase/app';
 
 import { auth } from 'src/config/firebase';
 import httpClient from 'src/services/http/client';
@@ -108,9 +108,8 @@ async function ensureBackendProfile(user: User): Promise<void> {
     const provider = method === 'google' ? 'google.com' : 'password';
 
     const existingProfile = await httpClient.get<ApiResponse<unknown>>(`/api/users/${user.uid}`);
-    const existingAuthUser = await httpClient.get<ApiResponse<unknown>>(`/api/auth-users/${user.uid}`);
 
-    if (existingProfile.data.success && existingAuthUser.data.success) {
+    if (existingProfile.data.success) {
         return;
     }
 
