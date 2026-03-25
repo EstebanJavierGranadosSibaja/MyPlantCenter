@@ -1,7 +1,8 @@
 import { StyleSheet } from 'react-native';
 import { useAppThemeContext } from 'src/context/ThemeContext';
+import { AppTheme } from 'src/theme/designSystem';
 
-export const createTabPerfilStyles = (theme: ReturnType<typeof useAppThemeContext>) => StyleSheet.create({
+export const createTabPerfilStyles = (theme: AppTheme) => StyleSheet.create({
 
   container: {
     paddingHorizontal: theme.layout.screenPaddingH,
@@ -13,7 +14,7 @@ export const createTabPerfilStyles = (theme: ReturnType<typeof useAppThemeContex
     fontFamily: theme.typography.family.bodySemiBold,
     fontSize: theme.typography.size.xs,
     color: theme.colors.textMuted,
-    letterSpacing: theme.spacing.xs,
+    letterSpacing: 1.4,
     textTransform: 'uppercase' as const,
     marginBottom: theme.spacing.sm,
   },
@@ -22,7 +23,6 @@ export const createTabPerfilStyles = (theme: ReturnType<typeof useAppThemeContex
     fontFamily: theme.typography.family.bodyRegular,
     fontSize: theme.typography.size.lg,
     color: theme.colors.textSecondary,
-    fontStyle: 'italic' as const,
     lineHeight: theme.typography.lineHeight.relaxed,
   },
 
@@ -77,10 +77,9 @@ export const createTabPerfilStyles = (theme: ReturnType<typeof useAppThemeContex
   },
 
   favPlantName: {
-    fontFamily: theme.typography.family.displayBold,
+    fontFamily: theme.typography.family.displayBoldItalic,
     fontSize: theme.typography.size['2xl'],
     color: theme.colors.heroText,
-    fontStyle: 'italic' as const,
   },
 
   favPlantCategoria: {
@@ -144,10 +143,14 @@ export const createTabPerfilStyles = (theme: ReturnType<typeof useAppThemeContex
   },
 
   saveButton: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
     backgroundColor: theme.colors.primary,
     borderRadius: theme.radius.md,
-    paddingVertical: theme.spacing.lg - 1,
-    alignItems: 'center',
+    paddingVertical: theme.spacing.md + 3,
+    paddingHorizontal: theme.spacing.xl,
     marginTop: theme.spacing.sm,
     shadowColor: theme.shadows.md.color,
     shadowOffset: theme.shadows.md.offset,
@@ -160,7 +163,7 @@ export const createTabPerfilStyles = (theme: ReturnType<typeof useAppThemeContex
     fontFamily: theme.typography.family.bodySemiBold,
     fontSize: theme.typography.size.lg,
     color: theme.colors.accentSoft,
-    letterSpacing: theme.spacing['4xs'],
+    letterSpacing: 0.4,
   },
 
 });

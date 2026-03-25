@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
+import { EmptyState } from 'src/components/common/EmptyState/EmptyState';
 import { EditProfileDTO, UserProfile } from 'src/types-dtos/user.types';
 import { useTabPerfilTheme } from './TabPerfil.styles';
 
@@ -77,27 +78,35 @@ export const TabPerfil: React.FC<TabPerfilProps> = ({
       {/* ── Logros ── */}
       <View>
         <Text style={styles.sectionTitle}>Logros</Text>
-        <View style={styles.logrosRow}>
-          {profile.achievements.map(logro => (
-            <View
-              key={logro.id}
-              style={[
-                styles.logroItem,
-                {
-                  backgroundColor: logro.unlocked
-                    ? theme.colors.logroActiveBg
-                    : theme.colors.cardBg,
-                  borderColor: logro.unlocked
-                    ? theme.colors.logroActiveBorder
-                    : theme.colors.border,
-                  opacity: logro.unlocked ? 1 : theme.opacity.disabled,
-                },
-              ]}
-            >
-              <Text style={styles.logroEmoji}>{logro.emoji}</Text>
-            </View>
-          ))}
-        </View>
+        {profile.achievements.length === 0 ? (
+          <EmptyState
+            iconName="award"
+            title="Sin logros aún"
+            subtitle="Completa acciones para desbloquear logros"
+          />
+        ) : (
+          <View style={styles.logrosRow}>
+            {profile.achievements.map(logro => (
+              <View
+                key={logro.id}
+                style={[
+                  styles.logroItem,
+                  {
+                    backgroundColor: logro.unlocked
+                      ? theme.colors.logroActiveBg
+                      : theme.colors.cardBg,
+                    borderColor: logro.unlocked
+                      ? theme.colors.logroActiveBorder
+                      : theme.colors.border,
+                    opacity: logro.unlocked ? 1 : theme.opacity.disabled,
+                  },
+                ]}
+              >
+                <Text style={styles.logroEmoji}>{logro.emoji}</Text>
+              </View>
+            ))}
+          </View>
+        )}
       </View>
 
       {/* ── Botón guardar ── */}
