@@ -1,7 +1,8 @@
 import { StyleSheet } from 'react-native';
 import { useAppThemeContext } from 'src/context/ThemeContext';
+import { AppTheme } from 'src/theme/designSystem';
 
-export const createTabCategoriasStyles = (theme: ReturnType <typeof useAppThemeContext>) => StyleSheet.create({
+export const createTabCategoriasStyles = (theme: AppTheme) => StyleSheet.create({
 
   container: {
     paddingHorizontal: theme.layout.screenPaddingH,
@@ -13,7 +14,7 @@ export const createTabCategoriasStyles = (theme: ReturnType <typeof useAppThemeC
     fontFamily:    theme.typography.family.bodySemiBold,
     fontSize:      theme.typography.size.xs,
     color:         theme.colors.textMuted,
-    letterSpacing: theme.spacing['3xs'],
+    letterSpacing: 1.4,
     textTransform: 'uppercase' as const,
     marginBottom:  theme.spacing.sm,
   },
@@ -24,15 +25,15 @@ export const createTabCategoriasStyles = (theme: ReturnType <typeof useAppThemeC
 
   chartContainer: {
     backgroundColor: theme.colors.cardBg,
-    borderRadius:    theme.radius.lg,
+    borderRadius:    theme.radius.md,
     padding:         theme.spacing.lg,
     borderWidth:     theme.borders.thick,
     borderColor:     theme.colors.border,
-    shadowColor: theme.shadows.md.color,
-    shadowOffset: theme.shadows.md.offset,
-    shadowOpacity: theme.shadows.md.opacity,
-    shadowRadius: theme.shadows.md.radius,
-    elevation: theme.shadows.md.elevation,
+    shadowColor: theme.shadows.sm.color,
+    shadowOffset: theme.shadows.sm.offset,
+    shadowOpacity: theme.shadows.sm.opacity,
+    shadowRadius: theme.shadows.sm.radius,
+    elevation: theme.shadows.sm.elevation,
   },
 
   chartBars: {
@@ -59,6 +60,16 @@ export const createTabCategoriasStyles = (theme: ReturnType <typeof useAppThemeC
     fontSize:  theme.typography.size.base,
     lineHeight: theme.typography.lineHeight.tight,
     textAlign: 'center' as const,
+  },
+
+  chartIconsRow: {
+    flexDirection: 'row',
+    gap: theme.spacing.sm + 2,
+  },
+
+  chartIconCell: {
+    flex: 1,
+    alignItems: 'center',
   },
 
 });

@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import React from 'react';
 import { Text, View } from 'react-native';
+import { EmptyState } from 'src/components/common/EmptyState/EmptyState';
 import { CategoryBadge } from 'src/components/plant/CategoryBadge/CategoryBadge';
 import { UserProfile } from 'src/types-dtos/user.types';
 import { useTabCategoriasTheme } from './TabCategorias.styles';
@@ -11,6 +12,16 @@ interface TabCategoriasProps {
 
 export const TabCategorias: React.FC<TabCategoriasProps> = ({ profile }) => {
   const { theme, styles } = useTabCategoriasTheme();
+
+  if (profile.categories.length === 0) {
+    return (
+      <EmptyState
+        iconName="grid"
+        title="Sin categorías"
+        subtitle="Agrega tu primera categoría de plantas"
+      />
+    );
+  }
 
   const maxAmount = Math.max(
     ...profile.categories.map(c => c.amount),
@@ -59,9 +70,9 @@ export const TabCategorias: React.FC<TabCategoriasProps> = ({ profile }) => {
           </View>
 
           {/* Icons below bars */}
-          <View style={{ flexDirection: 'row', gap: theme.spacing.xs + 2 }}>
+          <View style={styles.chartIconsRow}>
             {profile.categories.map(cat => (
-              <View key={cat.id} style={{ flex: 1, alignItems: 'center' }}>
+              <View key={cat.id} style={styles.chartIconCell}>
                 <Feather name={cat.iconName} size={theme.typography.size.lg} color={cat.color} />
               </View>
             ))}
