@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "name": "MyPlantCenter",
+    "slug": "myplantcenter-monorepo",
+    "android": {
+      "package": "com.myplantcenter"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "6f66a106-80c0-481e-a9cb-c5037ee635a4"
+      }
+    },
+    "owner": "estebanjgs"
+  }
+}

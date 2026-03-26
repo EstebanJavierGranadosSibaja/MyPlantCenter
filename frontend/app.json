@@ -19,7 +19,8 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.estebanjgs.myplantcenter"
     },
     "web": {
       "output": "single",
@@ -41,6 +42,12 @@
     ],
     "experiments": {
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "b7ab4768-8267-40e2-b532-1821165ec556"
+      }
+    },
+    "owner": "estebanjgs"
   }
 }
