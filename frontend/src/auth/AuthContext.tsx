@@ -14,9 +14,9 @@ interface AuthContextValue {
     error: string | null;
     isAuthenticated: boolean;
     loginWithEmail: (dto: LoginDTO) => Promise<boolean>;
-    loginWithGoogle: () => Promise<boolean>;
+    loginWithGoogle: (idToken: string) => Promise<boolean>;
     registerWithEmail: (dto: RegisterDTO) => Promise<boolean>;
-    registerWithGoogle: (nickname: string) => Promise<boolean>;
+    registerWithGoogle: (nickname: string, idToken: string) => Promise<boolean>;
     logout: () => Promise<void>;
     clearError: () => void;
 }
@@ -57,16 +57,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         handleResponse(() => authService.loginWithEmail(dto)),
         [handleResponse]);
 
-    const loginWithGoogle = useCallback(() =>
-        handleResponse(() => authService.loginWithGoogle()),
+    const loginWithGoogle = useCallback((idToken: string) =>
+        handleResponse(() => authService.loginWithGoogle(idToken)),
         [handleResponse]);
 
     const registerWithEmail = useCallback((dto: RegisterDTO) =>
         handleResponse(() => authService.registerWithEmail(dto)),
         [handleResponse]);
 
-    const registerWithGoogle = useCallback((nickname: string) =>
-        handleResponse(() => authService.registerWithGoogle(nickname)),
+    const registerWithGoogle = useCallback((nickname: string, idToken: string) =>
+        handleResponse(() => authService.registerWithGoogle(nickname, idToken)),
         [handleResponse]);
 
     const logout = useCallback(async () => {

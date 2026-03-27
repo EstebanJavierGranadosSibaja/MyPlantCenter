@@ -2,7 +2,9 @@ import { FirebaseError } from 'firebase/app';
 import {
     createUserWithEmailAndPassword,
     getIdToken,
+    GoogleAuthProvider,
     signInWithEmailAndPassword,
+    signInWithCredential,
     signOut,
     updateProfile,
     User,
@@ -100,10 +102,16 @@ function buildAuthUser(
     };
 }
 
-async function ensureBackendProfile(user: User): Promise<void> {
+async function ensureBackendProfile(
+    user: User,
+    options?: {
+        nickname?: string;
+    },
+): Promise<void> {
     const email = user.email ?? '';
-    const fullName = user.displayName?.trim() || deriveNickname(email, user.displayName);
-    const nickname = deriveNickname(email, user.displayName);
+    const preferredNickname = stripNicknamePrefix(options?.nickname ?? '');
+    const nickname = preferredNickname || deriveNickname(email, user.displayName);
+    const fullName = user.displayName?.trim() || nickname;
     const method = resolveAuthMethod(user);
     const provider = method === 'google' ? 'google.com' : 'password';
 
@@ -176,15 +184,43 @@ const authService = {
         }
     },
 
-    async loginWithGoogle(): Promise<AuthResponse> {
-        // Para activar Google OAuth sin refactor grande:
-        // 1. Integrar expo-auth-session/providers/google
-        // 2. Intercambiar Google credential por Firebase credential con GoogleAuthProvider
-        // 3. Reutilizar el mismo flujo de post-login y token de este servicio
-        return {
-            success: false,
-            error: 'Google OAuth aún no está habilitado en esta fase.',
-        };
+    async loginWithGoogle(idToken: string): Promise<AuthResponse> {
+        if (!idToken?.trim()) {
+            return {
+                success: false,
+                error: 'No se recibio idToken de Google.',
+            };
+        }
+
+        try {
+            const credential = GoogleAuthProvider.credential(idToken);
+            const credentials = await signInWithCredential(auth, credential);
+
+            await ensureBackendProfile(credentials.user);
+
+            const token = await getIdToken(credentials.user, true);
+            const email = credentials.user.email ?? '';
+            const nickname = deriveNickname(email, credentials.user.displayName);
+            const fullName = credentials.user.displayName?.trim() || nickname;
+
+            return {
+                success: true,
+                user: buildAuthUser(
+                    credentials.user.uid,
+                    email,
+                    fullName,
+                    nickname,
+                    resolveAuthMethod(credentials.user),
+                ),
+                token,
+            };
+        } catch (error: unknown) {
+            return {
+                success: false,
+                error: normalizeFirebaseError(error),
+            };
+        }
+
     },
 
     async registerWithEmail(dto: RegisterDTO): Promise<AuthResponse> {
@@ -238,16 +274,46 @@ const authService = {
         }
     },
 
-    async registerWithGoogle(nickname: string): Promise<AuthResponse> {
-        // Para activar Google OAuth sin refactor grande:
-        // 1. Resolver autenticación con expo-auth-session
-        // 2. Convertir credencial Google a Firebase con GoogleAuthProvider
-        // 3. Llamar POST /api/users con uid y perfil base igual que registerWithEmail
-        // 4. Reutilizar buildAuthUser + token de Firebase
-        return {
-            success: false,
-            error: `Google OAuth aún no está habilitado. Nickname recibido: ${stripNicknamePrefix(nickname)}`,
-        };
+    async registerWithGoogle(nickname: string, idToken: string): Promise<AuthResponse> {
+        if (!idToken?.trim()) {
+            return {
+                success: false,
+                error: 'No se recibio idToken de Google.',
+            };
+        }
+
+        try {
+            const credential = GoogleAuthProvider.credential(idToken);
+            const credentials = await signInWithCredential(auth, credential);
+            const preferredNickname = stripNicknamePrefix(nickname);
+
+            await ensureBackendProfile(credentials.user, {
+                nickname: preferredNickname,
+            });
+
+            const token = await getIdToken(credentials.user, true);
+            const email = credentials.user.email ?? '';
+            const resolvedNickname = preferredNickname || deriveNickname(email, credentials.user.displayName);
+            const fullName = credentials.user.displayName?.trim() || resolvedNickname;
+
+            return {
+                success: true,
+                user: buildAuthUser(
+                    credentials.user.uid,
+                    email,
+                    fullName,
+                    resolvedNickname,
+                    resolveAuthMethod(credentials.user),
+                ),
+                token,
+            };
+        } catch (error: unknown) {
+            return {
+                success: false,
+                error: normalizeFirebaseError(error),
+            };
+        }
+
     },
 
     async logout(): Promise<void> {

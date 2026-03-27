@@ -3,6 +3,7 @@ import React, { useRef, useState } from 'react';
 import { Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useAuth } from 'src/auth/AuthContext';
 import { CustomSafeArea } from 'src/components/layout/CustomSafeArea';
+import { useGoogleAuth } from 'src/hooks/useAuth';
 import { AuthStackParamList } from 'src/navigation/AppNavigator';
 import { validateRegisterInput } from 'src/services/validators/auth.validators';
 import { useRegisterTheme } from './Register.styles';
@@ -12,6 +13,14 @@ type RegisterProps = NativeStackScreenProps<AuthStackParamList, 'Register'>;
 export const Register: React.FC<RegisterProps> = ({ navigation }) => {
   const { styles, theme } = useRegisterTheme();
   const { registerWithEmail, registerWithGoogle, loading, error, clearError } = useAuth();
+  const { authGoogle, googleLoading } = useGoogleAuth({
+    onSuccess: async (idToken: string) => {
+      await registerWithGoogle(nickname.trim(), idToken);
+    },
+    onError: (message: string) => {
+      setLocalError(message);
+    },
+  });
 
   const [fullName, setFullName] = useState('');
   const [nickname, setNickname] = useState('');
@@ -53,7 +62,7 @@ export const Register: React.FC<RegisterProps> = ({ navigation }) => {
   const handleGoogleRegister = async () => {
     setLocalError(null);
     clearError();
-    await registerWithGoogle(nickname.trim());
+    await authGoogle();
   };
 
   return (
@@ -169,12 +178,12 @@ export const Register: React.FC<RegisterProps> = ({ navigation }) => {
           </View>
 
           <TouchableOpacity
-            style={[styles.googleButton, loading && styles.buttonDisabled]}
+            style={[styles.googleButton, (loading || googleLoading) && styles.buttonDisabled]}
             onPress={handleGoogleRegister}
-            disabled={loading}
+            disabled={loading || googleLoading}
             accessibilityRole="button"
             accessibilityLabel="Crear cuenta con Google"
-            accessibilityState={{ disabled: loading }}
+            accessibilityState={{ disabled: loading || googleLoading }}
           >
             <View style={styles.googleIconWrap}>
               <Image
@@ -183,7 +192,7 @@ export const Register: React.FC<RegisterProps> = ({ navigation }) => {
                 resizeMode="contain"
               />
             </View>
-            <Text style={styles.googleButtonText}>Crear cuenta con Google</Text>
+            <Text style={styles.googleButtonText}>{googleLoading ? 'Conectando con Google...' : 'Crear cuenta con Google'}</Text>
           </TouchableOpacity>
         </View>
 
