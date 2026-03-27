@@ -11,18 +11,38 @@ interface UseGoogleAuthOptions {
 }
 
 type GoogleResponseShape = {
+    type?: string;
     params?: {
         id_token?: string;
+        error?: string;
+        error_description?: string;
     };
     authentication?: {
         idToken?: string | null;
     };
+    error?: {
+        code?: string;
+        message?: string;
+    };
 };
+
+function getRedirectUriFromRequestUrl(requestUrl?: string): string {
+    if (!requestUrl) {
+        return 'N/A';
+    }
+
+    try {
+        const parsed = new URL(requestUrl);
+        return parsed.searchParams.get('redirect_uri') ?? 'N/A';
+    } catch {
+        return 'N/A';
+    }
+}
 
 export function useGoogleAuth({ onSuccess, onError }: UseGoogleAuthOptions) {
     const defaultClientId = process.env.EXPO_PUBLIC_GOOGLE_ID;
     const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? defaultClientId;
-    const isExpoGo = Constants.appOwnership === 'expo';
+    const shouldUseProxy = Constants.appOwnership !== 'standalone';
     const owner = Constants.expoConfig?.owner;
     const slug = Constants.expoConfig?.slug;
     const projectNameForProxy = owner && slug ? `@${owner}/${slug}` : undefined;
@@ -43,9 +63,44 @@ export function useGoogleAuth({ onSuccess, onError }: UseGoogleAuthOptions) {
                 return;
             }
 
+            if (response.type === 'dismiss') {
+                console.info('[GoogleAuth][DISMISS]', {
+                    appOwnership: Constants.appOwnership,
+                    shouldUseProxy,
+                    projectNameForProxy,
+                });
+
+                if (mounted) {
+                    setGoogleLoading(false);
+                }
+                return;
+            }
+
             if (response.type !== 'success') {
+                const shapedResponse = response as unknown as GoogleResponseShape;
+                const oauthError = shapedResponse.params?.error ?? shapedResponse.error?.code;
+                const oauthDescription =
+                    shapedResponse.params?.error_description ??
+                    shapedResponse.error?.message ??
+                    'Sin detalle adicional.';
+                const redirectUri = getRedirectUriFromRequestUrl(request?.url);
+
+                console.error('[GoogleAuth][RESPONSE_ERROR]', {
+                    type: shapedResponse.type ?? response.type,
+                    oauthError,
+                    oauthDescription,
+                    params: shapedResponse.params,
+                    requestUrl: request?.url,
+                    redirectUri,
+                    appOwnership: Constants.appOwnership,
+                    shouldUseProxy,
+                    projectNameForProxy,
+                });
+
                 if (response.type !== 'dismiss') {
-                    onError?.('Error al autenticar con Google.');
+                    onError?.(
+                        `Google auth fallo (${oauthError ?? response.type}). Redirect URI usado: ${redirectUri}. Detalle: ${oauthDescription}`,
+                    );
                 }
 
                 if (mounted) {
@@ -90,11 +145,20 @@ export function useGoogleAuth({ onSuccess, onError }: UseGoogleAuthOptions) {
             return;
         }
 
+        const redirectUri = getRedirectUriFromRequestUrl(request.url);
+        console.info('[GoogleAuth][REQUEST]', {
+            appOwnership: Constants.appOwnership,
+            shouldUseProxy,
+            projectNameForProxy,
+            requestUrl: request.url,
+            redirectUri,
+        });
+
         setGoogleLoading(true);
 
         try {
             await promptAsync(
-                isExpoGo
+                shouldUseProxy
                     ? {
                         useProxy: true,
                         projectNameForProxy,
