@@ -117,28 +117,3 @@ export const XPBar: React.FC<{
     />
   );
 };
-
-// Variante Salud 
-export const HealthBar: React.FC<{
-  health: number;   // 0 a 100
-  height?: number;
-}> = ({ health, height }) => {
-  const { theme } = useProgressBarTheme();
-
-  const barHeight = height ?? theme.spacing.xs;
-
-  // Color segun la salud de la plantsa
-  const healthColor =
-    health >= 85 ? theme.colors.success :   // verde
-      health >= 65 ? theme.colors.warning :   // naranja
-        theme.colors.error;      // rojo
-
-  return (
-    <ProgressBar
-      value={health}
-      height={barHeight}
-      color={healthColor}
-      animDuration={800}
-    />
-  );
-};

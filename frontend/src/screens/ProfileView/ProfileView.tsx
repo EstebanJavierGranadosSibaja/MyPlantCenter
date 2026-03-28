@@ -3,7 +3,6 @@ import { CustomSafeArea } from 'src/components/layout/CustomSafeArea';
 import { useProfileViewState } from 'src/hooks/useProfileViewState';
 import { ProfileViewHeader } from './components/ProfileViewHeader';
 import { ProfileHero } from './profile/ProfileHero/ProfileHero';
-//import { ProfileViewStats } from './components/ProfileViewStats';
 import { ProfileViewStates } from './components/ProfileViewStates';
 import { ProfileViewTabs } from './components/ProfileViewTabs';
 
@@ -38,8 +37,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ userId, isOwner }) => 
             />
 
             <ProfileHero {...state.heroProps} />
-
-            {/* <ProfileViewStats profile={state.profile} /> */}
 
             <ProfileViewTabs
                 isOwner={isOwner}

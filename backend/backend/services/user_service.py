@@ -23,7 +23,7 @@ def _build_default_user_payload(payload: dict) -> dict:
 
     return {
         "authUserId": payload["authUserId"],
-        "name": payload["name"].strip(),
+        "displayName": payload["name"].strip(),
         "nickname": nickname,
         "friendCode": payload["id"],
         "description": "",
@@ -35,9 +35,11 @@ def _build_default_user_payload(payload: dict) -> dict:
         "streakDays": 0,
         "bestStreak": 0,
         "lastActivityDate": now,
+        "lastActiveAt": now,
         "streakFrozenUntil": None,
         "level": 1,
         "xp": 0,
+        "xpMax": 100,
         "stats": {
             "plantsCount": 0,
             "friendsCount": 0,
@@ -50,6 +52,12 @@ def _build_default_user_payload(payload: dict) -> dict:
             "showStreak": True,
             "showBirthday": False,
             "allowRequests": True,
+        },
+        "notificationPrefs": {
+            "wateringReminders": True,
+            "healthAlerts": True,
+            "newFriends": True,
+            "achievementsUnlocked": True,
         },
         "notifications": {
             "wateringReminders": True,
@@ -111,9 +119,12 @@ def _update_user_sync(user_id: str, payload: dict) -> None:
 
     updates: dict = {}
 
-    for field in ("name", "description", "birthday", "location", "visibility"):
+    for field in ("description", "birthday", "location", "visibility"):
         if field in payload and payload[field] is not None:
             updates[field] = payload[field]
+
+    if "name" in payload and payload["name"] is not None:
+        updates["displayName"] = payload["name"].strip()
 
     if "nickname" in payload and payload["nickname"] is not None:
         updates["nickname"] = _sanitize_nickname(payload["nickname"])
@@ -127,6 +138,7 @@ def _update_user_sync(user_id: str, payload: dict) -> None:
     for key, value in notifications_payload.items():
         if value is not None:
             updates[f"notifications.{key}"] = value
+            updates[f"notificationPrefs.{key}"] = value
 
     if not updates:
         return

@@ -9,12 +9,6 @@ export const createProfileViewStyles = (theme: AppTheme) => StyleSheet.create({
     backgroundColor: theme.colors.background,
   },
 
-  statsCard: {
-    marginHorizontal: theme.spacing.lg,
-    marginTop: theme.layout.statsCardOverlap,
-    zIndex: 2,
-  },
-
   centered: {
     flex: 1,
     backgroundColor: theme.colors.background,
