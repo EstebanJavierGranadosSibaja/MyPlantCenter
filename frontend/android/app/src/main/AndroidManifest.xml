@@ -25,6 +25,7 @@
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="myplantcenter"/>
+        <data android:scheme="com.googleusercontent.apps.847948638942-v931v52eu5d98t3s33qobqsd9pt4nstb"/>
       </intent-filter>
     </activity>
   </application>

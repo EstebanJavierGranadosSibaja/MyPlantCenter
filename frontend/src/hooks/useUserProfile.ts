@@ -40,6 +40,16 @@ export function useUserProfile(userId: string) {
 
   // Acciones
   const fetchProfile = useCallback(async () => {
+    if (!userId) {
+      setState(s => ({
+        ...s,
+        profile: null,
+        loading: false,
+        error: null,
+      }));
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await userService.getProfile(userId);
@@ -56,10 +66,19 @@ export function useUserProfile(userId: string) {
     setSaving(true);
     try {
       const res = await userService.updateProfile(userId, dto);
-      if (res.success) setProfile(res.data);
-      else setError(res.error ?? 'Error al actualizar.');
+      if (res.success) {
+        setProfile(res.data);
+      } else {
+        setError(res.error ?? 'Error al actualizar.');
+      }
+      return res;
     } catch {
       setError('Error de conexión. Intenta de nuevo.');
+      return {
+        success: false,
+        error: 'Error de conexión. Intenta de nuevo.',
+        data: undefined as unknown as UserProfile,
+      };
     } finally {
       setSaving(false);
     }

@@ -6,18 +6,23 @@ import React from 'react';
 import { ActivityIndicator, View } from 'react-native';
 
 import { useAuth } from 'src/auth/AuthContext';
+import { FormToastProvider } from 'src/components/common/FormToast/FormToast';
 import { useTabBarTheme } from 'src/components/navigation/AppTabBar.styles';
 import { useAppThemeContext } from 'src/context/ThemeContext';
 import { Dashboard } from 'src/screens/Dashboard/Dashboard';
 import { Explorar } from 'src/screens/Explore/Explore';
 import { Login } from 'src/screens/Login/Login';
+import { EditPlant } from 'src/screens/Plants/EditPlant/EditPlant';
 import { ProfileView } from 'src/screens/ProfileView/ProfileView';
+import { EditProfile } from 'src/screens/ProfileView/profile/EditProfile/EditProfile';
 import { Register } from 'src/screens/Register/Register';
 
 // Tipos 
 export type RootStackParamList = {
   MainTabs: undefined;
   UserProfile: { userId: string };
+  EditPlant: { plantId: string };
+  EditProfile: undefined;
 };
 
 export type TabParamList = {
@@ -55,6 +60,16 @@ function VisitorProfileScreen({
       isOwner={false}
     />
   );
+}
+
+function EditProfileScreen() {
+  const { user } = useAuth();
+
+  if (!user) {
+    return null;
+  }
+
+  return <EditProfile userId={user.id} />;
 }
 
 // Tab Navigator
@@ -103,6 +118,8 @@ function RootStack() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="MainTabs" component={TabNavigator} />
       <Stack.Screen name="UserProfile" component={VisitorProfileScreen} />
+      <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+      <Stack.Screen name="EditPlant" component={EditPlant} />
     </Stack.Navigator>
   );
 }
@@ -137,8 +154,11 @@ export function AppNavigator() {
   }
 
   return (
-    <NavigationContainer>
-      {isAuthenticated ? <RootStack /> : <AuthNavigator />}
-    </NavigationContainer>
+    <>
+      <NavigationContainer>
+        {isAuthenticated ? <RootStack /> : <AuthNavigator />}
+      </NavigationContainer>
+      <FormToastProvider />
+    </>
   );
 }

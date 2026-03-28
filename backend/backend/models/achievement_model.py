@@ -6,9 +6,8 @@ class AchievementModel(BaseModel):
     userId: str
     templateId: str
     tier: str
-    category: str
     progress: int
-    goal: int
+    type: str
     unlocked: bool
     unlockedAt: str | None = None
     notified: bool

@@ -46,6 +46,13 @@ export interface AuthResponse {
     token?: string;
 }
 
+export interface GoogleTokens {
+    idToken?: string;
+    accessToken?: string;
+}
+
+const debugAuth = process.env.EXPO_PUBLIC_DEBUG_AUTH === 'true';
+
 function deriveNickname(email: string, fallback?: string | null): string {
     const source = fallback && fallback.trim().length > 0 ? fallback : email.split('@')[0];
     return stripNicknamePrefix(source);
@@ -58,10 +65,16 @@ function resolveAuthMethod(user: User): AuthMethod {
 
 function normalizeFirebaseError(error: unknown): string {
     if (error instanceof FirebaseError) {
+        const messageLower = error.message.toLowerCase();
+
         switch (error.code) {
             case 'auth/invalid-email':
                 return 'Correo inválido.';
             case 'auth/invalid-credential':
+                if (messageLower.includes('not allowed to be used with this application') || messageLower.includes('not authorized to be used in the project')) {
+                    return 'El Google Client ID configurado no pertenece al mismo proyecto de Firebase. Usa los OAuth Client IDs creados dentro de este Firebase project.';
+                }
+                return 'Credencial de Google inválida o expirada. Intenta de nuevo y verifica la configuración OAuth de Android.';
             case 'auth/wrong-password':
                 return 'Correo o contraseña incorrectos.';
             case 'auth/email-already-in-use':
@@ -70,6 +83,8 @@ function normalizeFirebaseError(error: unknown): string {
                 return 'La contraseña es demasiado débil.';
             case 'auth/configuration-not-found':
                 return 'Configuracion de Firebase Auth no encontrada, verifica API key, appId y habilita Email/Password en Firebase Console.';
+            case 'auth/account-exists-with-different-credential':
+                return 'Este correo ya existe con otro método de inicio de sesión.';
             default:
                 return error.message;
         }
@@ -114,12 +129,6 @@ async function ensureBackendProfile(
     const fullName = user.displayName?.trim() || nickname;
     const method = resolveAuthMethod(user);
     const provider = method === 'google' ? 'google.com' : 'password';
-
-    const existingProfile = await httpClient.get<ApiResponse<unknown>>(`/api/users/${user.uid}`);
-
-    if (existingProfile.data.success) {
-        return;
-    }
 
     const response = await httpClient.post<ApiResponse<unknown>>('/api/users', {
         id: user.uid,
@@ -177,6 +186,13 @@ const authService = {
                 token,
             };
         } catch (error: unknown) {
+            if (debugAuth && error instanceof FirebaseError) {
+                console.error('[AuthService][EmailLoginError]', {
+                    code: error.code,
+                    message: error.message,
+                });
+            }
+
             return {
                 success: false,
                 error: normalizeFirebaseError(error),
@@ -184,16 +200,19 @@ const authService = {
         }
     },
 
-    async loginWithGoogle(idToken: string): Promise<AuthResponse> {
-        if (!idToken?.trim()) {
+    async loginWithGoogle(tokens: GoogleTokens): Promise<AuthResponse> {
+        const idToken = tokens.idToken?.trim();
+        const accessToken = tokens.accessToken?.trim();
+
+        if (!idToken && !accessToken) {
             return {
                 success: false,
-                error: 'No se recibio idToken de Google.',
+                error: 'No se recibieron tokens de Google (idToken/accessToken).',
             };
         }
 
         try {
-            const credential = GoogleAuthProvider.credential(idToken);
+            const credential = GoogleAuthProvider.credential(idToken ?? null, accessToken);
             const credentials = await signInWithCredential(auth, credential);
 
             await ensureBackendProfile(credentials.user);
@@ -215,6 +234,15 @@ const authService = {
                 token,
             };
         } catch (error: unknown) {
+            if (debugAuth && error instanceof FirebaseError) {
+                console.error('[AuthService][GoogleRegisterError]', {
+                    code: error.code,
+                    message: error.message,
+                    hasIdToken: Boolean(idToken),
+                    hasAccessToken: Boolean(accessToken),
+                });
+            }
+
             return {
                 success: false,
                 error: normalizeFirebaseError(error),
@@ -274,16 +302,19 @@ const authService = {
         }
     },
 
-    async registerWithGoogle(nickname: string, idToken: string): Promise<AuthResponse> {
-        if (!idToken?.trim()) {
+    async registerWithGoogle(nickname: string, tokens: GoogleTokens): Promise<AuthResponse> {
+        const idToken = tokens.idToken?.trim();
+        const accessToken = tokens.accessToken?.trim();
+
+        if (!idToken && !accessToken) {
             return {
                 success: false,
-                error: 'No se recibio idToken de Google.',
+                error: 'No se recibieron tokens de Google (idToken/accessToken).',
             };
         }
 
         try {
-            const credential = GoogleAuthProvider.credential(idToken);
+            const credential = GoogleAuthProvider.credential(idToken ?? null, accessToken);
             const credentials = await signInWithCredential(auth, credential);
             const preferredNickname = stripNicknamePrefix(nickname);
 

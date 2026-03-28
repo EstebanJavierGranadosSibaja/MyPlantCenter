@@ -5,23 +5,23 @@ from .plant_model import PlantModel
 
 
 class UserStatsModel(BaseModel):
-    plantsCount: int
-    friendsCount: int
-    wateredToday: int
-    activeDays: int
+    plantsCount: int = 0
+    friendsCount: int = 0
+    wateredToday: int = 0
+    activeDays: int = 0
 
 
 class UserPrivacyModel(BaseModel):
-    showStreak: bool
-    showBirthday: bool
-    allowRequests: bool
+    showStreak: bool = True
+    showBirthday: bool = False
+    allowRequests: bool = True
 
 
 class UserNotificationsModel(BaseModel):
-    wateringReminders: bool
-    healthAlerts: bool
-    newFriends: bool
-    achievementsUnlocked: bool
+    wateringReminders: bool = True
+    healthAlerts: bool = True
+    newFriends: bool = True
+    achievementsUnlocked: bool = True
 
 
 class UserCreateModel(BaseModel):
@@ -62,7 +62,8 @@ class UserUpdateModel(BaseModel):
 class UserModel(BaseModel):
     id: str
     authUserId: str
-    name: str
+    name: str | None = None
+    displayName: str | None = None
     nickname: str
     friendCode: str
     description: str | None = None
@@ -73,15 +74,18 @@ class UserModel(BaseModel):
     favoritePlantId: str | None = None
     streakDays: int
     bestStreak: int
-    lastActivityDate: str
+    lastActivityDate: str | None = None
+    lastActiveAt: str | None = None
     streakFrozenUntil: str | None = None
     level: int
     xp: int
-    stats: UserStatsModel
+    xpMax: int | None = None
+    stats: UserStatsModel = Field(default_factory=UserStatsModel)
     registeredAt: str
     updatedAt: str
-    privacy: UserPrivacyModel
-    notifications: UserNotificationsModel
+    privacy: UserPrivacyModel = Field(default_factory=UserPrivacyModel)
+    notifications: UserNotificationsModel | None = None
+    notificationPrefs: UserNotificationsModel | None = None
 
 
 class UserInfoTileModel(BaseModel):

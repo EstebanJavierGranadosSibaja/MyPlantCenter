@@ -12,8 +12,8 @@ class PlantModel(BaseModel):
     nickname: str
     scientificName: str
     iconKey: str
-    iconSet: str
-    iconEmoji: str
+    iconSet: str | None = None
+    iconEmoji: str | None = None
     healthStatus: int
     progress: int
     favorite: bool
@@ -23,6 +23,7 @@ class PlantModel(BaseModel):
     order: int
     createdAt: str
     updatedAt: str
+    progressMetric: str | None = None
 
 
 class PlantDetailResponse(BaseModel):

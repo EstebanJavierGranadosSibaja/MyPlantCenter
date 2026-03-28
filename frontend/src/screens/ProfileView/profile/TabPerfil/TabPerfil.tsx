@@ -1,29 +1,35 @@
 import { Feather } from '@expo/vector-icons';
 import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { EmptyState } from 'src/components/common/EmptyState/EmptyState';
-import { EditProfileDTO, UserProfile } from 'src/types-dtos/user.types';
+import { UserProfile } from 'src/types-dtos/user.types';
+import { EditProfile } from '../EditProfile/EditProfile';
 import { useTabPerfilTheme } from './TabPerfil.styles';
 
 
 interface TabPerfilProps {
   profile: UserProfile;
   editMode: boolean;
-  saving: boolean;
-  draft: EditProfileDTO;
-  onDraftChange: (draft: EditProfileDTO) => void;
-  onSave: () => void;
+  onProfileSaved: () => void;
 }
 
 export const TabPerfil: React.FC<TabPerfilProps> = ({
   profile,
   editMode,
-  saving,
-  draft,
-  onDraftChange,
-  onSave,
+  onProfileSaved,
 }) => {
   const { theme, styles } = useTabPerfilTheme();
+
+  if (editMode) {
+    return (
+      <View style={styles.container}>
+        <EditProfile
+          userId={profile.id}
+          onSaved={onProfileSaved}
+        />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -108,21 +114,6 @@ export const TabPerfil: React.FC<TabPerfilProps> = ({
           </View>
         )}
       </View>
-
-      {/* ── Botón guardar ── */}
-      {editMode && (
-        <TouchableOpacity
-          style={styles.saveButton}
-          onPress={onSave}
-          activeOpacity={0.8}
-          accessibilityRole="button"
-          accessibilityLabel="Guardar cambios del perfil"
-        >
-          <Text style={styles.saveButtonText}>
-            {saving ? 'Guardando...' : 'Guardar cambios'}
-          </Text>
-        </TouchableOpacity>
-      )}
 
     </View>
   );

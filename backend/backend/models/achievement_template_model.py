@@ -2,7 +2,6 @@ from pydantic import BaseModel, Field
 
 
 class AchievementTierModel(BaseModel):
-    tier: str
     goal: int
     xpReward: int
 
@@ -12,9 +11,9 @@ class AchievementTemplateModel(BaseModel):
     title: str
     description: str
     iconKey: str
-    iconSet: str
+    iconSet: str | None = None
     emoji: str
     category: str
     createdAt: str
     updatedAt: str
-    tiers: list[AchievementTierModel] = Field(default_factory=list)
+    tiers: dict[str, AchievementTierModel] = Field(default_factory=dict)

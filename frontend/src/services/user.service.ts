@@ -20,9 +20,8 @@ interface RawAchievement {
   userId: string;
   templateId: string;
   tier: string;
-  category: string;
   progress: number;
-  goal: number;
+  type: string;
   unlocked: boolean;
   unlockedAt?: string | null;
   notified: boolean;
@@ -35,9 +34,9 @@ interface RawAchievementTemplate {
   title: string;
   description: string;
   iconKey: string;
-  iconSet: string;
+  iconSet?: string;
   emoji: string;
-  category: string;
+  category?: string;
 }
 
 interface RawLevelConfig {
@@ -48,7 +47,7 @@ interface RawLevelConfig {
   xpMax: number;
   badge: string;
   iconKey: string;
-  iconSet: string;
+  iconSet?: string;
   createdAt: string;
   updatedAt: string;
 }

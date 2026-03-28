@@ -15,7 +15,7 @@ interface RawLevelConfig {
   xpMax: number;
   badge: string;
   iconKey: string;
-  iconSet: string;
+  iconSet?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -43,7 +43,8 @@ interface RawUserNotifications {
 interface RawUser {
   id: string;
   authUserId: string;
-  name: string;
+  name?: string;
+  displayName?: string;
   nickname: string;
   friendCode: string;
   description?: string | null;
@@ -54,15 +55,17 @@ interface RawUser {
   favoritePlantId?: string | null;
   streakDays: number;
   bestStreak: number;
-  lastActivityDate: string;
+  lastActivityDate?: string;
+  lastActiveAt?: string;
   streakFrozenUntil?: string | null;
   level: number;
   xp: number;
-  stats: RawUserStats;
+  stats?: RawUserStats;
   registeredAt: string;
   updatedAt: string;
-  privacy: RawUserPrivacy;
-  notifications: RawUserNotifications;
+  privacy?: RawUserPrivacy;
+  notifications?: RawUserNotifications;
+  notificationPrefs?: RawUserNotifications;
 }
 
 interface RawPlant {
@@ -73,8 +76,8 @@ interface RawPlant {
   nickname: string;
   scientificName: string;
   iconKey: string;
-  iconSet: string;
-  iconEmoji: string;
+  iconSet?: string;
+  iconEmoji?: string;
   healthStatus: number;
   progress: number;
   favorite: boolean;
@@ -90,10 +93,10 @@ interface RawCategory {
   id: string;
   name: string;
   iconKey: string;
-  iconSet: string;
-  iconEmoji: string;
+  iconSet?: string;
+  iconEmoji?: string;
   color: string;
-  count: number;
+  count?: number;
   order: number;
   createdAt: string;
 }
@@ -151,10 +154,28 @@ export function mapUserFromApi(
   levelConfig?: RawLevelConfig | null,
 ): UserProfile {
   const user = raw.user;
+  const stats = user.stats ?? {
+    plantsCount: 0,
+    friendsCount: 0,
+    wateredToday: 0,
+    activeDays: 0,
+  };
+  const notifications = user.notificationPrefs ?? user.notifications ?? {
+    wateringReminders: true,
+    healthAlerts: true,
+    newFriends: true,
+    achievementsUnlocked: true,
+  };
+  const privacy = user.privacy ?? {
+    showStreak: true,
+    showBirthday: false,
+    allowRequests: true,
+  };
+  const resolvedName = user.displayName ?? user.name ?? '';
 
   return {
     id: normalizeId(user.id),
-    name: user.name,
+    name: resolvedName,
     nickname: addNicknamePrefix(user.nickname),
     description: user.description ?? '',
     avatarUrl: user.avatarUrl ?? undefined,
@@ -169,27 +190,27 @@ export function mapUserFromApi(
       xpMax: levelConfig?.xpMax ?? user.xp,
     },
     stats: {
-      plantsCount: user.stats.plantsCount,
-      friendsCount: user.stats.friendsCount,
+      plantsCount: stats.plantsCount,
+      friendsCount: stats.friendsCount,
       streak: user.streakDays,
       bestStreak: user.bestStreak,
-      wateredToday: user.stats.wateredToday,
-      activeDays: user.stats.activeDays,
+      wateredToday: stats.wateredToday,
+      activeDays: stats.activeDays,
     },
     favoritePlant: mapFavoritePlant(raw.favoritePlant),
     categories: raw.categories.map(mapCategoryFromApi),
     achievements: [],
     privacy: {
       publicProfile: user.visibility === 'public',
-      showStreak: user.privacy.showStreak,
-      showBirthday: user.privacy.showBirthday,
-      allowRequests: user.privacy.allowRequests,
+      showStreak: privacy.showStreak,
+      showBirthday: privacy.showBirthday,
+      allowRequests: privacy.allowRequests,
     },
     notifications: {
-      wateringReminders: user.notifications.wateringReminders,
-      healthAlerts: user.notifications.healthAlerts,
-      newFriends: user.notifications.newFriends,
-      achievementsUnlocked: user.notifications.achievementsUnlocked,
+      wateringReminders: notifications.wateringReminders,
+      healthAlerts: notifications.healthAlerts,
+      newFriends: notifications.newFriends,
+      achievementsUnlocked: notifications.achievementsUnlocked,
     },
   };
 }

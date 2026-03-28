@@ -1,6 +1,7 @@
 from typing import Any
 
 from fastapi.concurrency import run_in_threadpool
+from google.cloud.firestore_v1.base_query import FieldFilter
 
 from backend.config.firebase import get_firestore_client
 from backend.utils.response import error_response, serialize_document
@@ -45,7 +46,7 @@ def _read_collection_sync(
     query = _resolve_collection_path(collection_path)
 
     for field_name, operator, value in filters or []:
-        query = query.where(field_name, operator, value)
+        query = query.where(filter=FieldFilter(field_name, operator, value))
 
     if order_by:
         query = query.order_by(order_by)

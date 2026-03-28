@@ -1,52 +1,83 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import React, { useRef, useState } from 'react';
-import { Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { zodResolver } from '@hookform/resolvers/zod';
+import React, { useRef } from 'react';
+import { ActivityIndicator, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useForm } from 'react-hook-form';
 import { useAuth as useAuthContext } from 'src/auth/AuthContext';
+import { useFormToast } from 'src/components/common/FormToast/useFormToast';
 import { CustomSafeArea } from 'src/components/layout/CustomSafeArea';
+import { FormInput } from 'src/components/ui/FormInput/FormInput';
 import { useGoogleAuth } from 'src/hooks/useAuth';
 import { AuthStackParamList } from 'src/navigation/AppNavigator';
-import { validateLoginInput } from 'src/services/validators/auth.validators';
+import { LoginFormValues, LoginSchema } from 'src/services/validators/auth.validators';
 import { useLoginTheme } from './Login.styles';
 
 type LoginProps = NativeStackScreenProps<AuthStackParamList, 'Login'>;
 
 export const Login: React.FC<LoginProps> = ({ navigation }) => {
-    const { styles, theme } = useLoginTheme();
-    const { loginWithEmail, loginWithGoogle, loading, error, clearError } = useAuthContext();
+    const { styles } = useLoginTheme();
+    const { loginWithEmail, loginWithGoogle, loading, clearError } = useAuthContext();
+    const { showToast } = useFormToast();
     const { authGoogle, googleLoading } = useGoogleAuth({
-        onSuccess: async (idToken: string) => {
-            await loginWithGoogle(idToken);
+        onSuccess: async tokens => {
+            await loginWithGoogle(tokens);
         },
         onError: (message: string) => {
-            setLocalError(message);
+            showToast({
+                type: 'error',
+                title: message,
+                autoDismiss: false,
+            });
         },
     });
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [localError, setLocalError] = useState<string | null>(null);
     const passwordRef = useRef<TextInput>(null);
+    const {
+        control,
+        handleSubmit,
+        formState: { errors, isSubmitting },
+    } = useForm<LoginFormValues>({
+        resolver: zodResolver(LoginSchema),
+        defaultValues: {
+            email: '',
+            password: '',
+        },
+        mode: 'onSubmit',
+    });
 
-    const handleLogin = async () => {
-        const validationError = validateLoginInput({
-            email,
-            password,
+    const handleLogin = handleSubmit(async values => {
+        clearError();
+        const success = await loginWithEmail({
+            email: values.email.trim(),
+            password: values.password,
         });
 
-        if (validationError) {
-            setLocalError(validationError);
-            return;
+        if (!success) {
+            showToast({
+                type: 'error',
+                title: 'Correo o contraseña incorrectos',
+            });
         }
+    }, invalidValues => {
+        const firstError =
+            invalidValues.email?.message ??
+            invalidValues.password?.message ??
+            errors.email?.message ??
+            errors.password?.message ??
+            'Revisa los campos del formulario.';
 
-        setLocalError(null);
-        clearError();
-        await loginWithEmail({ email: email.trim(), password });
-    };
+        showToast({
+            type: 'warning',
+            title: 'Revisa los campos del formulario',
+            subtitle: firstError,
+        });
+    });
 
     const handleGoogleLogin = async () => {
-        setLocalError(null);
         clearError();
         await authGoogle();
     };
+
+    const isButtonDisabled = isSubmitting || loading;
 
     return (
         <CustomSafeArea>
@@ -55,15 +86,10 @@ export const Login: React.FC<LoginProps> = ({ navigation }) => {
                 <Text style={styles.subtitle}>Bienvenido de vuelta a MyPlantCenter</Text>
 
                 <View style={styles.formCard}>
-                    <TextInput
-                        value={email}
-                        onChangeText={value => {
-                            setEmail(value);
-                            if (localError) setLocalError(null);
-                        }}
+                    <FormInput
+                        control={control}
+                        name="email"
                         placeholder="Correo"
-                        placeholderTextColor={theme.colors.textMuted}
-                        style={styles.input}
                         keyboardType="email-address"
                         autoCapitalize="none"
                         autoCorrect={false}
@@ -73,17 +99,12 @@ export const Login: React.FC<LoginProps> = ({ navigation }) => {
                         onSubmitEditing={() => passwordRef.current?.focus()}
                     />
 
-                    <TextInput
-                        ref={passwordRef}
-                        value={password}
-                        onChangeText={value => {
-                            setPassword(value);
-                            if (localError) setLocalError(null);
-                        }}
+                    <FormInput
+                        control={control}
+                        name="password"
+                        inputRef={passwordRef}
                         placeholder="Contrasena"
-                        placeholderTextColor={theme.colors.textMuted}
-                        style={styles.input}
-                        secureTextEntry
+                        isPassword
                         autoCorrect={false}
                         autoComplete="password"
                         textContentType="password"
@@ -91,17 +112,16 @@ export const Login: React.FC<LoginProps> = ({ navigation }) => {
                         onSubmitEditing={handleLogin}
                     />
 
-                    {(localError || error) ? <Text style={styles.errorText}>{localError ?? error}</Text> : null}
-
                     <TouchableOpacity
-                        style={[styles.button, loading && styles.buttonDisabled]}
+                        style={[styles.button, isButtonDisabled && styles.buttonDisabled]}
                         onPress={handleLogin}
-                        disabled={loading}
+                        disabled={isButtonDisabled}
                         accessibilityRole="button"
                         accessibilityLabel="Ingresar"
-                        accessibilityState={{ disabled: loading }}
+                        accessibilityState={{ disabled: isButtonDisabled }}
                     >
-                        <Text style={styles.buttonText}>{loading ? 'Ingresando...' : 'Ingresar'}</Text>
+                        {isSubmitting ? <ActivityIndicator color="white" /> : null}
+                        <Text style={styles.buttonText}>{isSubmitting ? 'Ingresando...' : 'Ingresar'}</Text>
                     </TouchableOpacity>
 
                     <View style={styles.socialDivider}>

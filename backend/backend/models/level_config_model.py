@@ -9,6 +9,6 @@ class LevelConfigModel(BaseModel):
     xpMax: int
     badge: str
     iconKey: str
-    iconSet: str
+    iconSet: str | None = None
     createdAt: str
     updatedAt: str

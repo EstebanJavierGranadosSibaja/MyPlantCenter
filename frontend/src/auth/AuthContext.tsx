@@ -5,7 +5,7 @@ import React, {
     useEffect,
     useState,
 } from 'react';
-import { authService, AuthUser, LoginDTO, RegisterDTO } from 'src/services/auth.service';
+import { authService, AuthUser, GoogleTokens, LoginDTO, RegisterDTO } from 'src/services/auth.service';
 
 // Tipos
 interface AuthContextValue {
@@ -14,9 +14,9 @@ interface AuthContextValue {
     error: string | null;
     isAuthenticated: boolean;
     loginWithEmail: (dto: LoginDTO) => Promise<boolean>;
-    loginWithGoogle: (idToken: string) => Promise<boolean>;
+    loginWithGoogle: (tokens: GoogleTokens) => Promise<boolean>;
     registerWithEmail: (dto: RegisterDTO) => Promise<boolean>;
-    registerWithGoogle: (nickname: string, idToken: string) => Promise<boolean>;
+    registerWithGoogle: (nickname: string, tokens: GoogleTokens) => Promise<boolean>;
     logout: () => Promise<void>;
     clearError: () => void;
 }
@@ -57,16 +57,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         handleResponse(() => authService.loginWithEmail(dto)),
         [handleResponse]);
 
-    const loginWithGoogle = useCallback((idToken: string) =>
-        handleResponse(() => authService.loginWithGoogle(idToken)),
+    const loginWithGoogle = useCallback((tokens: GoogleTokens) =>
+        handleResponse(() => authService.loginWithGoogle(tokens)),
         [handleResponse]);
 
     const registerWithEmail = useCallback((dto: RegisterDTO) =>
         handleResponse(() => authService.registerWithEmail(dto)),
         [handleResponse]);
 
-    const registerWithGoogle = useCallback((nickname: string, idToken: string) =>
-        handleResponse(() => authService.registerWithGoogle(nickname, idToken)),
+    const registerWithGoogle = useCallback((nickname: string, tokens: GoogleTokens) =>
+        handleResponse(() => authService.registerWithGoogle(nickname, tokens)),
         [handleResponse]);
 
     const logout = useCallback(async () => {

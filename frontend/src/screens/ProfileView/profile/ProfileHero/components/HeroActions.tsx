@@ -32,16 +32,16 @@ export const HeroActions: React.FC<HeroActionsProps> = ({
                 onPress={editMode ? onSave : onEdit}
                 activeOpacity={0.8}
                 disabled={saving}
-                accessibilityLabel={editMode ? 'Guardar perfil' : 'Editar perfil'}
+                accessibilityLabel={editMode ? 'Cancelar edicion de perfil' : 'Editar perfil'}
                 accessibilityRole="button"
             >
                 <Feather
-                    name={editMode ? 'check' : 'edit-2'}
+                    name={editMode ? 'x' : 'edit-2'}
                     size={theme.typography.size.md}
                     color={theme.colors.accentSoft}
                 />
                 <Text style={styles.actionButtonTextPrimary}>
-                    {saving ? 'Guardando...' : editMode ? 'Guardar' : 'Editar perfil'}
+                    {saving ? 'Guardando...' : editMode ? 'Cancelar' : 'Editar perfil'}
                 </Text>
             </TouchableOpacity>
 

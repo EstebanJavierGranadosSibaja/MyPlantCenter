@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig, isAxiosError } from 'axios';
 import { getIdToken } from 'firebase/auth';
 
 import { auth } from 'src/config/firebase';
@@ -16,7 +16,7 @@ function createTraceId(): string {
 }
 
 function normalizeErrorMessage(error: unknown): string {
-  if (axios.isAxiosError(error)) {
+  if (isAxiosError(error)) {
     const detail = error.response?.data as { detail?: string; message?: string } | undefined;
     return detail?.detail ?? detail?.message ?? error.message ?? 'Error de red inesperado.';
   }
@@ -67,11 +67,11 @@ httpClient.interceptors.response.use(
     return response;
   },
   async (error: AxiosError | Error) => {
-    const cfg = axios.isAxiosError(error) ? error.config : undefined;
+    const cfg = isAxiosError(error) ? error.config : undefined;
     const traceId = cfg?.headers?.['x-trace-id'] as string | undefined;
     const method = (cfg?.method ?? 'GET').toUpperCase();
     const url = `${cfg?.baseURL ?? ''}${cfg?.url ?? ''}`;
-    const status = axios.isAxiosError(error) ? (error.response?.status ?? 'NETWORK') : 'ERROR';
+    const status = isAxiosError(error) ? (error.response?.status ?? 'NETWORK') : 'ERROR';
     console.error(`[HTTP][ERR][${traceId ?? 'no-trace'}] ${status} ${method} ${url} -> ${normalizeErrorMessage(error)}`);
 
     const normalized: ApiResponse<never> = {
@@ -81,14 +81,14 @@ httpClient.interceptors.response.use(
     };
 
     const safeConfig = (
-      axios.isAxiosError(error) ? error.config : undefined
+      isAxiosError(error) ? error.config : undefined
     ) ?? ({ headers: {} } as InternalAxiosRequestConfig);
 
     const safeResponse: AxiosResponse<ApiResponse<never>> = {
       data: normalized,
-      status: axios.isAxiosError(error) ? (error.response?.status ?? 500) : 500,
-      statusText: axios.isAxiosError(error) ? (error.response?.statusText ?? 'ERROR') : 'ERROR',
-      headers: axios.isAxiosError(error) ? (error.response?.headers ?? {}) : {},
+      status: isAxiosError(error) ? (error.response?.status ?? 500) : 500,
+      statusText: isAxiosError(error) ? (error.response?.statusText ?? 'ERROR') : 'ERROR',
+      headers: isAxiosError(error) ? (error.response?.headers ?? {}) : {},
       config: safeConfig,
     };
 

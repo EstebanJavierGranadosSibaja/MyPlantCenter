@@ -12,17 +12,15 @@ import { HeroHighlights } from './components/HeroHighlights';
 import { HeroActions } from './components/HeroActions';
 
 import { useProfileHeroTheme } from './ProfileHero.styles';
-import { UserProfile, EditProfileDTO } from 'src/types-dtos/user.types';
+import { UserProfile } from 'src/types-dtos/user.types';
 
 // Props
 export interface ProfileHeroProps {
   profile: UserProfile;
   editMode: boolean;
   saving: boolean;
-  draft: EditProfileDTO;
   onEdit: () => void;
   onSave: () => void;
-  onDraftChange: (draft: EditProfileDTO) => void;
   isOwner: boolean;
 }
 
@@ -31,10 +29,8 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
   profile,
   editMode,
   saving,
-  draft,
   onEdit,
   onSave,
-  onDraftChange,
   isOwner,
 }) => {
   const { styles, theme } = useProfileHeroTheme();
@@ -61,9 +57,6 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
       {/* Identidad — nombre y apodo */}
       <HeroIdentity
         profile={profile}
-        editMode={editMode}
-        draft={draft}
-        onDraftChange={onDraftChange}
       />
 
       {/* XP bar */}
@@ -83,9 +76,6 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
       {/* Bio */}
       <HeroBio
         description={profile.description}
-        editMode={editMode}
-        draft={draft}
-        onDraftChange={onDraftChange}
       />
 
       {/* Stats */}

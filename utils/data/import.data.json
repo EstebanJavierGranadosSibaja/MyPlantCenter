@@ -1,0 +1,24 @@
+{
+  "plants": {
+    "plant_004": {
+      "id": "plant_004",
+      "userId": "user_001",
+      "categoryId": "cat_001",
+      "name": "Pothos Dorado",
+      "nickname": "Poti",
+      "scientificName": "Epipremnum aureum",
+      "iconKey": "leaf",
+      "iconSet": "feather",
+      "iconEmoji": "leaf",
+      "healthStatus": 92,
+      "progress": 35,
+      "favorite": false,
+      "careFrequencyPerWeek": 2,
+      "lastWatered": "2026-03-27T08:30:00Z",
+      "description": "En sala, luz indirecta y riego moderado.",
+      "order": 4,
+      "createdAt": "2026-03-27T10:00:00Z",
+      "updatedAt": "2026-03-27T10:00:00Z"
+    }
+  }
+}

@@ -1,69 +1,104 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import React, { useRef, useState } from 'react';
-import { Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { zodResolver } from '@hookform/resolvers/zod';
+import React, { useRef } from 'react';
+import { ActivityIndicator, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useForm } from 'react-hook-form';
 import { useAuth } from 'src/auth/AuthContext';
+import { useFormToast } from 'src/components/common/FormToast/useFormToast';
 import { CustomSafeArea } from 'src/components/layout/CustomSafeArea';
+import { FormInput } from 'src/components/ui/FormInput/FormInput';
 import { useGoogleAuth } from 'src/hooks/useAuth';
 import { AuthStackParamList } from 'src/navigation/AppNavigator';
-import { validateRegisterInput } from 'src/services/validators/auth.validators';
+import { RegisterFormValues, RegisterSchema } from 'src/services/validators/auth.validators';
 import { useRegisterTheme } from './Register.styles';
 
 type RegisterProps = NativeStackScreenProps<AuthStackParamList, 'Register'>;
 
 export const Register: React.FC<RegisterProps> = ({ navigation }) => {
-  const { styles, theme } = useRegisterTheme();
+  const { styles } = useRegisterTheme();
   const { registerWithEmail, registerWithGoogle, loading, error, clearError } = useAuth();
+  const { showToast } = useFormToast();
   const { authGoogle, googleLoading } = useGoogleAuth({
-    onSuccess: async (idToken: string) => {
-      await registerWithGoogle(nickname.trim(), idToken);
+    onSuccess: async tokens => {
+      const currentNickname = getValues('nickname').trim();
+      await registerWithGoogle(currentNickname, tokens);
     },
     onError: (message: string) => {
-      setLocalError(message);
+      showToast({
+        type: 'error',
+        title: message,
+        autoDismiss: false,
+      });
     },
   });
 
-  const [fullName, setFullName] = useState('');
-  const [nickname, setNickname] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [localError, setLocalError] = useState<string | null>(null);
   const nicknameRef = useRef<TextInput>(null);
   const emailRef = useRef<TextInput>(null);
   const passwordRef = useRef<TextInput>(null);
   const confirmPasswordRef = useRef<TextInput>(null);
+  const {
+    control,
+    getValues,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<RegisterFormValues>({
+    resolver: zodResolver(RegisterSchema),
+    defaultValues: {
+      fullName: '',
+      nickname: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+    },
+    mode: 'onSubmit',
+  });
 
-  const handleRegister = async () => {
-    const validationError = validateRegisterInput({
-      fullName,
-      nickname,
-      email,
-      password,
-      confirmPassword,
-    });
-
-    if (validationError) {
-      setLocalError(validationError);
-      return;
-    }
-
-    setLocalError(null);
+  const handleRegister = handleSubmit(async values => {
     clearError();
-    await registerWithEmail({
-      fullName: fullName.trim(),
-      nickname: nickname.trim(),
-      email: email.trim(),
-      password,
-      confirmPassword,
+    const success = await registerWithEmail({
+      fullName: values.fullName.trim(),
+      nickname: values.nickname.trim(),
+      email: values.email.trim(),
+      password: values.password,
+      confirmPassword: values.confirmPassword,
       method: 'email',
     });
-  };
+
+    if (!success) {
+      showToast({
+        type: 'error',
+        title: 'No se pudo crear la cuenta',
+        subtitle: error ?? 'Verifica tu conexión',
+        autoDismiss: false,
+      });
+    }
+  }, invalidValues => {
+    const firstError =
+      invalidValues.fullName?.message ??
+      invalidValues.nickname?.message ??
+      invalidValues.email?.message ??
+      invalidValues.password?.message ??
+      invalidValues.confirmPassword?.message ??
+      errors.fullName?.message ??
+      errors.nickname?.message ??
+      errors.email?.message ??
+      errors.password?.message ??
+      errors.confirmPassword?.message ??
+      'Revisa los campos del formulario.';
+
+    showToast({
+      type: 'warning',
+      title: 'Revisa los campos del formulario',
+      subtitle: firstError,
+    });
+  });
 
   const handleGoogleRegister = async () => {
-    setLocalError(null);
     clearError();
     await authGoogle();
   };
+
+  const isButtonDisabled = isSubmitting || loading;
 
   return (
     <CustomSafeArea>
@@ -72,47 +107,32 @@ export const Register: React.FC<RegisterProps> = ({ navigation }) => {
         <Text style={styles.subtitle}>Configura tu perfil para empezar</Text>
 
         <View style={styles.formCard}>
-          <TextInput
-            value={fullName}
-            onChangeText={value => {
-              setFullName(value);
-              if (localError) setLocalError(null);
-            }}
+          <FormInput
+            control={control}
+            name="fullName"
             placeholder="Nombre completo"
-            placeholderTextColor={theme.colors.textMuted}
-            style={styles.input}
             autoCorrect={false}
             textContentType="name"
             returnKeyType="next"
             onSubmitEditing={() => nicknameRef.current?.focus()}
           />
 
-          <TextInput
-            ref={nicknameRef}
-            value={nickname}
-            onChangeText={value => {
-              setNickname(value);
-              if (localError) setLocalError(null);
-            }}
+          <FormInput
+            control={control}
+            name="nickname"
+            inputRef={nicknameRef}
             placeholder="@apodo"
-            placeholderTextColor={theme.colors.textMuted}
-            style={styles.input}
             autoCapitalize="none"
             autoCorrect={false}
             returnKeyType="next"
             onSubmitEditing={() => emailRef.current?.focus()}
           />
 
-          <TextInput
-            ref={emailRef}
-            value={email}
-            onChangeText={value => {
-              setEmail(value);
-              if (localError) setLocalError(null);
-            }}
+          <FormInput
+            control={control}
+            name="email"
+            inputRef={emailRef}
             placeholder="Correo"
-            placeholderTextColor={theme.colors.textMuted}
-            style={styles.input}
             keyboardType="email-address"
             autoCapitalize="none"
             autoCorrect={false}
@@ -122,17 +142,12 @@ export const Register: React.FC<RegisterProps> = ({ navigation }) => {
             onSubmitEditing={() => passwordRef.current?.focus()}
           />
 
-          <TextInput
-            ref={passwordRef}
-            value={password}
-            onChangeText={value => {
-              setPassword(value);
-              if (localError) setLocalError(null);
-            }}
+          <FormInput
+            control={control}
+            name="password"
+            inputRef={passwordRef}
             placeholder="Contrasena"
-            placeholderTextColor={theme.colors.textMuted}
-            style={styles.input}
-            secureTextEntry
+            isPassword
             autoCorrect={false}
             autoComplete="password"
             textContentType="password"
@@ -140,17 +155,12 @@ export const Register: React.FC<RegisterProps> = ({ navigation }) => {
             onSubmitEditing={() => confirmPasswordRef.current?.focus()}
           />
 
-          <TextInput
-            ref={confirmPasswordRef}
-            value={confirmPassword}
-            onChangeText={value => {
-              setConfirmPassword(value);
-              if (localError) setLocalError(null);
-            }}
+          <FormInput
+            control={control}
+            name="confirmPassword"
+            inputRef={confirmPasswordRef}
             placeholder="Confirmar contrasena"
-            placeholderTextColor={theme.colors.textMuted}
-            style={styles.input}
-            secureTextEntry
+            isPassword
             autoCorrect={false}
             autoComplete="password"
             textContentType="password"
@@ -158,17 +168,16 @@ export const Register: React.FC<RegisterProps> = ({ navigation }) => {
             onSubmitEditing={handleRegister}
           />
 
-          {(localError || error) ? <Text style={styles.errorText}>{localError ?? error}</Text> : null}
-
           <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
+            style={[styles.button, isButtonDisabled && styles.buttonDisabled]}
             onPress={handleRegister}
-            disabled={loading}
+            disabled={isButtonDisabled}
             accessibilityRole="button"
             accessibilityLabel="Crear cuenta"
-            accessibilityState={{ disabled: loading }}
+            accessibilityState={{ disabled: isButtonDisabled }}
           >
-            <Text style={styles.buttonText}>{loading ? 'Creando...' : 'Crear cuenta'}</Text>
+            {isSubmitting ? <ActivityIndicator color="white" /> : null}
+            <Text style={styles.buttonText}>{isSubmitting ? 'Creando...' : 'Crear cuenta'}</Text>
           </TouchableOpacity>
 
           <View style={styles.socialDivider}>

@@ -69,6 +69,6 @@ uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000
 
 ## Notas de normalizacion de datos
 
-- `users/{userId}/categories` ahora se consulta como subcoleccion para respetar el schema validado.
+- Las categorias normalizadas viven en `categories` (coleccion global) y se filtran por `userId`.
 - `GET /api/users/{userId}/stats` se alimenta desde `users.stats`, no desde una coleccion separada.
 - `GET /api/users/{userId}/info-tiles` se calcula a partir de datos del usuario y stats embebidos.
