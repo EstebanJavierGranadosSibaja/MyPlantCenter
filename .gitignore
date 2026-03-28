@@ -40,6 +40,8 @@ app-example
 
 prompt-context.md
 
+utilities/llave-privada-db.json
+
 # generated native folders
 /ios
 /android
