@@ -4,15 +4,15 @@
 
 ### Backend
 1. Crear archivo local desde plantilla:
-   - `copy backend/.env.example backend/.env`
-2. Ajustar valores en `backend/.env`.
+   - `copy apps/api/.env.example apps/api/.env`
+2. Ajustar valores en `apps/api/.env`.
 3. Instalar dependencias:
    - `npm run backend:install`
 
 ### Frontend
 1. Crear archivo local desde plantilla:
-   - `copy frontend/.env.example frontend/.env.local`
-2. Ajustar valores en `frontend/.env.local`.
+   - `copy apps/mobile/.env.example apps/mobile/.env.local`
+2. Ajustar valores en `apps/mobile/.env.local`.
 3. Instalar dependencias:
    - `npm run frontend:install`
 
@@ -20,9 +20,9 @@
 
 1. Verificar que no hay `.env` reales trackeados:
    - `git ls-files "*.env" "*.env.*"`
-2. Verificar que `frontend/.env.example` cubre todas las variables `EXPO_PUBLIC_*`:
-   - `node utils/scripts/check-seed-structure.js` (estructura de seed)
-   - Verificacion de variables en CI/manual con grep de `EXPO_PUBLIC_` en `frontend/src/**`.
+2. Verificar que `apps/mobile/.env.example` cubre todas las variables `EXPO_PUBLIC_*`:
+   - `node scripts/firestore/check-structure.js` (estructura de seed)
+   - Verificacion de variables en CI/manual con grep de `EXPO_PUBLIC_` en `apps/mobile/src/**`.
 
 Criterio de pase:
 - No hay secretos en commits.
@@ -50,9 +50,9 @@ Criterio de pase:
 ## 4. Validaciones backend/frontend
 
 1. Lint frontend:
-   - `npm --prefix frontend run lint`
+   - `npm --prefix apps/mobile run lint`
 2. TypeScript frontend:
-   - `npm --prefix frontend run tsc --noEmit`
+   - `npm --prefix apps/mobile run tsc --noEmit`
 3. Levantar backend:
    - `npm run backend:start:local`
 4. Health:
@@ -87,7 +87,7 @@ Criterio de pase:
 
 Recorrido minimo:
 1. Backend arriba.
-2. Frontend en ejecucion (`npm --prefix frontend run start`).
+2. Frontend en ejecucion (`npm --prefix apps/mobile run start`).
 3. Flujo tecnico verificado:
    - Health OK
    - Consulta usuario/perfil/planta OK
@@ -138,4 +138,4 @@ Google login/register con redirect nativo requiere prueba en dispositivo/emulado
    - `npm run backend:check:firestore-contract`
    - `npm run data:check:firestore-freshness`
 4. Verificacion TS frontend:
-   - `npm --prefix frontend exec tsc --noEmit`
+   - `npm --prefix apps/mobile exec tsc --noEmit`

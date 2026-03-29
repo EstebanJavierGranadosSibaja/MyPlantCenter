@@ -1,0 +1,37 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "@screens/*": [
+        "./src/features/*"
+      ],
+      "@core/*": [
+        "./src/core/*"
+      ],
+      "@shared/*": [
+        "./src/shared/*"
+      ],
+      "@features/*": [
+        "./src/features/*"
+      ],
+      "@auth/*": [
+        "./src/features/auth/*"
+      ],
+      "@plants/*": [
+        "./src/features/plants/*"
+      ],
+      "@profile/*": [
+        "./src/features/profile/*"
+      ],
+      "@friends/*": [
+        "./src/features/friends/*"
+      ]
+    }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx"
+  ]
+}

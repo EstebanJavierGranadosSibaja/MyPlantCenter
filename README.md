@@ -4,8 +4,8 @@ Estructura final del proyecto:
 
 ```text
 MyPlantCenter/
-├── frontend/   # Expo React Native app
-└── backend/    # FastAPI backend
+├── apps/mobile/   # Expo React Native app
+└── apps/api/   # FastAPI backend
 ```
 
 ## Comandos desde la raiz
@@ -28,6 +28,6 @@ npm run backend:start:local
 
 ## Variables de entorno
 
-- Frontend: usa `frontend/.env.local`.
-- Backend: copia `backend/.env.example` a `backend/.env`.
-- Credenciales Firebase Admin: coloca `serviceAccountKey.json` dentro de `backend/`.
+- Frontend: usa `apps/mobile/.env.local`.
+- Backend: copia `apps/api/.env.example` a `apps/api/.env`.
+- Credenciales Firebase Admin: coloca `serviceAccountKey.json` dentro de `apps/api/`.

@@ -1,0 +1,647 @@
+{
+  "achievementTemplates": {
+    "tpl_001": {
+      "description": "Completa 5 riegos",
+      "title": "Primera Riega",
+      "tiers": [
+        {
+          "xpReward": 50,
+          "tier": "bronze",
+          "goal": 5
+        },
+        {
+          "xpReward": 120,
+          "tier": "silver",
+          "goal": 15
+        },
+        {
+          "xpReward": 250,
+          "tier": "gold",
+          "goal": 30
+        }
+      ],
+      "iconKey": "droplet",
+      "iconSet": "feather",
+      "createdAt": {
+        "_seconds": 1773829800,
+        "_nanoseconds": 0
+      },
+      "category": "care",
+      "updatedAt": {
+        "_seconds": 1773829800,
+        "_nanoseconds": 0
+      },
+      "id": "tpl_001",
+      "emoji": "water"
+    }
+  },
+  "achievements": {
+    "achievement_001": {
+      "notified": false,
+      "tier": "bronze",
+      "goal": 5,
+      "unlocked": false,
+      "templateId": "tpl_001",
+      "createdAt": {
+        "_seconds": 1773829800,
+        "_nanoseconds": 0
+      },
+      "category": "care",
+      "unlockedAt": null,
+      "userId": "user_001",
+      "updatedAt": {
+        "_seconds": 1773829800,
+        "_nanoseconds": 0
+      },
+      "id": "achievement_001",
+      "progress": 1
+    }
+  },
+  "authUsers": {
+    "hzowm26Ls9gRpA6JGhAh0TCd9N72": {
+      "method": "google",
+      "status": "active",
+      "nickname": "Esteban Javier Granados Sibaja",
+      "updatedAt": "2026-03-27T04:42:24.676753+00:00",
+      "profileId": "hzowm26Ls9gRpA6JGhAh0TCd9N72",
+      "email": "esteban.j.granados@gmail.com",
+      "createdAt": "2026-03-27T04:42:24.676753+00:00",
+      "provider": "google.com",
+      "lastLoginAt": "2026-03-27T04:42:24.676753+00:00",
+      "id": "hzowm26Ls9gRpA6JGhAh0TCd9N72",
+      "fullName": "Esteban Javier Granados Sibaja",
+      "emailVerified": true,
+      "emailLower": "esteban.j.granados@gmail.com"
+    },
+    "rCRqZ1Jy0YQECeqJa4JciYHgTb23": {
+      "method": "email",
+      "status": "active",
+      "nickname": "testuser",
+      "updatedAt": "2026-03-25T17:53:05.115032+00:00",
+      "profileId": "rCRqZ1Jy0YQECeqJa4JciYHgTb23",
+      "email": "test@example.com",
+      "createdAt": "2026-03-25T17:53:05.115032+00:00",
+      "provider": "password",
+      "lastLoginAt": "2026-03-25T17:53:05.115032+00:00",
+      "id": "rCRqZ1Jy0YQECeqJa4JciYHgTb23",
+      "fullName": "Test User",
+      "emailVerified": true,
+      "emailLower": "test@example.com"
+    },
+    "user_001": {
+      "method": "email",
+      "status": "active",
+      "nickname": "esteban",
+      "updatedAt": {
+        "_seconds": 1773829800,
+        "_nanoseconds": 0
+      },
+      "profileId": "user_001",
+      "email": "estebangranados147@gmail.com",
+      "createdAt": {
+        "_seconds": 1773829800,
+        "_nanoseconds": 0
+      },
+      "provider": "password",
+      "lastLoginAt": "2026-03-18T10:30:00Z",
+      "id": "user_001",
+      "fullName": "Esteban Granados",
+      "emailVerified": true,
+      "emailLower": "estebangranados147@gmail.com"
+    },
+    "user_002": {
+      "method": "email",
+      "status": "active",
+      "nickname": "vale",
+      "updatedAt": {
+        "_seconds": 1773830100,
+        "_nanoseconds": 0
+      },
+      "profileId": "user_002",
+      "email": "valeria.soto@example.com",
+      "createdAt": {
+        "_seconds": 1773830100,
+        "_nanoseconds": 0
+      },
+      "provider": "password",
+      "lastLoginAt": "2026-03-18T10:35:00Z",
+      "id": "user_002",
+      "fullName": "Valeria Soto",
+      "emailVerified": true,
+      "emailLower": "valeria.soto@example.com"
+    }
+  },
+  "careHistory": {
+    "history_001": {
+      "createdAt": {
+        "_seconds": 1773821400,
+        "_nanoseconds": 0
+      },
+      "notes": "Riego completado segun schedule_002",
+      "scheduleId": "schedule_002",
+      "type": "watering",
+      "userId": "user_001",
+      "updatedAt": {
+        "_seconds": 1773821400,
+        "_nanoseconds": 0
+      },
+      "id": "history_001",
+      "plantId": "plant_002",
+      "completedAt": "2026-03-18T08:10:00Z"
+    }
+  },
+  "careSchedule": {
+    "schedule_001": {
+      "status": "pending",
+      "createdAt": {
+        "_seconds": 1773829800,
+        "_nanoseconds": 0
+      },
+      "type": "watering",
+      "scheduledFor": {
+        "_seconds": 1773907200,
+        "_nanoseconds": 0
+      },
+      "userId": "user_001",
+      "updatedAt": {
+        "_seconds": 1773829800,
+        "_nanoseconds": 0
+      },
+      "id": "schedule_001",
+      "plantId": "plant_001",
+      "completedAt": null
+    },
+    "schedule_002": {
+      "status": "completed",
+      "createdAt": {
+        "_seconds": 1773743400,
+        "_nanoseconds": 0
+      },
+      "type": "watering",
+      "scheduledFor": {
+        "_seconds": 1773820800,
+        "_nanoseconds": 0
+      },
+      "userId": "user_001",
+      "updatedAt": {
+        "_seconds": 1773821400,
+        "_nanoseconds": 0
+      },
+      "id": "schedule_002",
+      "plantId": "plant_002",
+      "completedAt": "2026-03-18T08:10:00Z"
+    }
+  },
+  "friendRequests": {
+    "fr_001": {
+      "fromUserId": "user_001",
+      "status": "accepted",
+      "toUserId": "user_002",
+      "acceptedAt": "2026-03-18T10:30:00Z",
+      "createdAt": {
+        "_seconds": 1773829800,
+        "_nanoseconds": 0
+      },
+      "toCode": "WXYZ99",
+      "updatedAt": {
+        "_seconds": 1773829800,
+        "_nanoseconds": 0
+      },
+      "id": "fr_001"
+    }
+  },
+  "friendships": {
+    "friendship_001": {
+      "participants": [
+        "user_001",
+        "user_002"
+      ],
+      "updatedAt": {
+        "_seconds": 1773829800,
+        "_nanoseconds": 0
+      },
+      "id": "friendship_001",
+      "createdAt": {
+        "_seconds": 1773829800,
+        "_nanoseconds": 0
+      }
+    }
+  },
+  "levelConfig": {
+    "level_1": {
+      "level": 1,
+      "badge": "seed",
+      "title": "Semilla",
+      "xpMax": 100,
+      "iconKey": "sprout",
+      "iconSet": "feather",
+      "createdAt": {
+        "_seconds": 1773829800,
+        "_nanoseconds": 0
+      },
+      "xpRequired": 0,
+      "updatedAt": {
+        "_seconds": 1773829800,
+        "_nanoseconds": 0
+      },
+      "id": "level_1"
+    },
+    "level_2": {
+      "level": 2,
+      "badge": "sprout",
+      "title": "Brote",
+      "xpMax": 250,
+      "iconKey": "trending-up",
+      "iconSet": "feather",
+      "createdAt": {
+        "_seconds": 1773829800,
+        "_nanoseconds": 0
+      },
+      "xpRequired": 100,
+      "updatedAt": {
+        "_seconds": 1773829800,
+        "_nanoseconds": 0
+      },
+      "id": "level_2"
+    }
+  },
+  "notifications": {
+    "notif_001": {
+      "read": false,
+      "title": "Hora de regar",
+      "createdAt": {
+        "_seconds": 1773829800,
+        "_nanoseconds": 0
+      },
+      "body": "Tu Monstera necesita agua hoy.",
+      "updatedAt": {
+        "_seconds": 1773829800,
+        "_nanoseconds": 0
+      },
+      "data": null,
+      "id": "notif_001",
+      "userId": "user_001",
+      "type": "watering_reminder"
+    }
+  },
+  "plantDetections": {
+    "det_001": {
+      "id": "det_001",
+      "userId": "user_001",
+      "plantId": "plant_001",
+      "imageUrl": "gs://myplantcenter/detections/user_001/det_001.jpg",
+      "imageHash": "sha256:demo_det_001",
+      "source": "camera",
+      "status": "confirmed",
+      "topPrediction": "Monstera deliciosa",
+      "confidence": 0.94,
+      "modelVersion": "vision-plants-v1",
+      "createdAt": {
+        "_seconds": 1774710000,
+        "_nanoseconds": 0
+      },
+      "updatedAt": {
+        "_seconds": 1774710000,
+        "_nanoseconds": 0
+      },
+      "predictions": [
+        {
+          "scientificName": "Monstera deliciosa",
+          "commonName": "Monstera",
+          "confidence": 0.94
+        },
+        {
+          "scientificName": "Philodendron hederaceum",
+          "commonName": "Philodendron",
+          "confidence": 0.04
+        },
+        {
+          "scientificName": "Epipremnum aureum",
+          "commonName": "Pothos",
+          "confidence": 0.02
+        }
+      ]
+    }
+  },
+  "plantIssues": {
+    "issue_001": {
+      "name": "Hojas caidas",
+      "severity": "low",
+      "status": "monitoring",
+      "resolvedAt": null,
+      "detectedAt": "2026-03-18T09:00:00Z",
+      "description": "Falta de riego en semana anterior",
+      "notes": "Aumentar recordatorio de riego",
+      "userId": "user_001",
+      "updatedAt": {
+        "_seconds": 1773829800,
+        "_nanoseconds": 0
+      },
+      "id": "issue_001",
+      "plantId": "plant_001",
+      "type": "underwatering"
+    },
+    "issue_002": {
+      "name": "Bordes secos",
+      "severity": "medium",
+      "status": "resolved",
+      "resolvedAt": "2026-03-18T18:00:00Z",
+      "detectedAt": "2026-03-18T08:30:00Z",
+      "description": "Exceso de sol directo al mediodia",
+      "notes": "Se movio la maceta a semisombra",
+      "userId": "user_001",
+      "updatedAt": {
+        "_seconds": 1773856800,
+        "_nanoseconds": 0
+      },
+      "id": "issue_002",
+      "plantId": "plant_002",
+      "type": "sunburn"
+    }
+  },
+  "plantTags": {
+    "tag_001": {
+      "value": "interior",
+      "order": 1,
+      "userId": "user_001",
+      "updatedAt": {
+        "_seconds": 1773829800,
+        "_nanoseconds": 0
+      },
+      "id": "tag_001",
+      "plantId": "plant_001",
+      "createdAt": {
+        "_seconds": 1773829800,
+        "_nanoseconds": 0
+      }
+    }
+  },
+  "plants": {
+    "plant_001": {
+      "name": "Monstera",
+      "nickname": "Mona",
+      "scientificName": "Monstera deliciosa",
+      "iconKey": "leaf",
+      "createdAt": {
+        "_seconds": 1773829800,
+        "_nanoseconds": 0
+      },
+      "userId": "user_001",
+      "updatedAt": {
+        "_seconds": 1773829800,
+        "_nanoseconds": 0
+      },
+      "healthStatus": 90,
+      "description": "En sala, luz indirecta.",
+      "favorite": true,
+      "categoryId": "cat_001",
+      "iconEmoji": "leaf",
+      "iconSet": "feather",
+      "order": 1,
+      "id": "plant_001",
+      "progress": 65,
+      "lastWatered": "2026-03-17T08:00:00Z",
+      "wateringFrequencyDays": 4
+    },
+    "plant_002": {
+      "name": "Lavanda",
+      "nickname": "Lavi",
+      "scientificName": "Lavandula angustifolia",
+      "iconKey": "flower",
+      "createdAt": {
+        "_seconds": 1773829860,
+        "_nanoseconds": 0
+      },
+      "userId": "user_001",
+      "updatedAt": {
+        "_seconds": 1773829860,
+        "_nanoseconds": 0
+      },
+      "healthStatus": 82,
+      "description": "Balcon con sol de manana.",
+      "favorite": false,
+      "categoryId": "cat_002",
+      "iconEmoji": "flower",
+      "iconSet": "feather",
+      "order": 2,
+      "id": "plant_002",
+      "progress": 48,
+      "lastWatered": "2026-03-18T07:30:00Z",
+      "wateringFrequencyDays": 4
+    },
+    "plant_003": {
+      "name": "Rosal",
+      "nickname": "Rosa",
+      "scientificName": "Rosa rubiginosa",
+      "iconKey": "rose",
+      "createdAt": {
+        "_seconds": 1773829920,
+        "_nanoseconds": 0
+      },
+      "userId": "user_001",
+      "updatedAt": {
+        "_seconds": 1773829920,
+        "_nanoseconds": 0
+      },
+      "healthStatus": 75,
+      "description": "Patio frontal.",
+      "favorite": false,
+      "categoryId": "cat_002",
+      "iconEmoji": "rose",
+      "iconSet": "feather",
+      "order": 3,
+      "id": "plant_003",
+      "progress": 35,
+      "lastWatered": "2026-03-18T06:30:00Z",
+      "wateringFrequencyDays": 2
+    }
+  },
+  "users": {
+    "hzowm26Ls9gRpA6JGhAh0TCd9N72": {
+      "name": "Esteban Javier Granados Sibaja",
+      "streakDays": 0,
+      "level": 1,
+      "nickname": "Esteban Javier Granados Sibaja",
+      "stats": {
+        "activeDays": 0,
+        "wateredToday": 0,
+        "friendsCount": 0,
+        "plantsCount": 0
+      },
+      "location": null,
+      "registeredAt": "2026-03-27T04:42:24.306880+00:00",
+      "authUserId": "hzowm26Ls9gRpA6JGhAh0TCd9N72",
+      "lastActivityDate": "2026-03-27T04:42:24.306880+00:00",
+      "privacy": {
+        "showBirthday": false,
+        "allowRequests": true,
+        "showStreak": true
+      },
+      "updatedAt": "2026-03-27T04:42:24.306880+00:00",
+      "birthday": null,
+      "bestStreak": 0,
+      "xp": 0,
+      "description": "",
+      "friendCode": "hzowm26Ls9gRpA6JGhAh0TCd9N72",
+      "visibility": "public",
+      "streakFrozenUntil": null,
+      "favoritePlantId": null,
+      "avatarUrl": null,
+      "notifications": {
+        "healthAlerts": true,
+        "wateringReminders": true,
+        "newFriends": true,
+        "achievementsUnlocked": true
+      }
+    },
+    "rCRqZ1Jy0YQECeqJa4JciYHgTb23": {
+      "name": "Esteban Granados Sibaja",
+      "streakDays": 0,
+      "level": 1,
+      "nickname": "Esteban Granados Sibaja",
+      "stats": {
+        "activeDays": 0,
+        "wateredToday": 0,
+        "friendsCount": 0,
+        "plantsCount": 0
+      },
+      "location": null,
+      "registeredAt": "2026-03-25T17:29:00.246195+00:00",
+      "authUserId": "rCRqZ1Jy0YQECeqJa4JciYHgTb23",
+      "lastActivityDate": "2026-03-25T17:29:00.246195+00:00",
+      "privacy": {
+        "showBirthday": false,
+        "allowRequests": true,
+        "showStreak": true
+      },
+      "updatedAt": "2026-03-25T17:29:00.246195+00:00",
+      "birthday": null,
+      "bestStreak": 0,
+      "xp": 0,
+      "description": "",
+      "friendCode": "rCRqZ1Jy0YQECeqJa4JciYHgTb23",
+      "visibility": "public",
+      "streakFrozenUntil": null,
+      "favoritePlantId": null,
+      "avatarUrl": null,
+      "notifications": {
+        "healthAlerts": true,
+        "wateringReminders": true,
+        "newFriends": true,
+        "achievementsUnlocked": true
+      }
+    },
+    "user_001": {
+      "name": "Esteban Granados",
+      "streakDays": 3,
+      "level": 2,
+      "nickname": "esteban",
+      "stats": {
+        "activeDays": 4,
+        "wateredToday": 0,
+        "friendsCount": 1,
+        "plantsCount": 3
+      },
+      "location": "Heredia",
+      "registeredAt": "2026-03-18T10:30:00Z",
+      "authUserId": "user_001",
+      "lastActivityDate": "2026-03-18T10:30:00Z",
+      "privacy": {
+        "showBirthday": false,
+        "allowRequests": true,
+        "showStreak": true
+      },
+      "updatedAt": {
+        "_seconds": 1773829800,
+        "_nanoseconds": 0
+      },
+      "birthday": null,
+      "bestStreak": 7,
+      "xp": 150,
+      "description": "Amante de las plantas",
+      "friendCode": "ABCD12",
+      "streakFrozenUntil": null,
+      "visibility": "public",
+      "favoritePlantId": "plant_001",
+      "id": "user_001",
+      "avatarUrl": null,
+      "notifications": {
+        "healthAlerts": true,
+        "wateringReminders": true,
+        "newFriends": true,
+        "achievementsUnlocked": true
+      },
+      "categories": {
+        "cat_001": {
+          "name": "Interior",
+          "count": 1,
+          "order": 1,
+          "iconKey": "plant",
+          "iconEmoji": "plant",
+          "iconSet": "feather",
+          "createdAt": {
+            "_seconds": 1773829800,
+            "_nanoseconds": 0
+          },
+          "color": "#4CAF50",
+          "id": "cat_001"
+        },
+        "cat_002": {
+          "name": "Exterior",
+          "count": 2,
+          "order": 2,
+          "iconKey": "sun",
+          "iconEmoji": "sun",
+          "iconSet": "feather",
+          "createdAt": {
+            "_seconds": 1773829860,
+            "_nanoseconds": 0
+          },
+          "color": "#FF9800",
+          "id": "cat_002"
+        }
+      }
+    },
+    "user_002": {
+      "name": "Valeria Soto",
+      "streakDays": 1,
+      "level": 1,
+      "nickname": "vale",
+      "stats": {
+        "activeDays": 2,
+        "wateredToday": 0,
+        "friendsCount": 1,
+        "plantsCount": 0
+      },
+      "location": "Cartago",
+      "registeredAt": "2026-03-18T10:35:00Z",
+      "authUserId": "user_002",
+      "lastActivityDate": "2026-03-18T10:35:00Z",
+      "privacy": {
+        "showBirthday": false,
+        "allowRequests": true,
+        "showStreak": true
+      },
+      "updatedAt": {
+        "_seconds": 1773830100,
+        "_nanoseconds": 0
+      },
+      "birthday": null,
+      "bestStreak": 2,
+      "xp": 45,
+      "description": "Coleccionista de suculentas",
+      "friendCode": "WXYZ99",
+      "streakFrozenUntil": null,
+      "visibility": "public",
+      "favoritePlantId": null,
+      "id": "user_002",
+      "avatarUrl": null,
+      "notifications": {
+        "healthAlerts": true,
+        "wateringReminders": true,
+        "newFriends": true,
+        "achievementsUnlocked": true
+      }
+    }
+  }
+}

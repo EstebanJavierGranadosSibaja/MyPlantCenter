@@ -35,8 +35,8 @@ yarn-error.*
 .env
 .env.*
 !.env.example
-!backend/.env.example
-!frontend/.env.example
+!apps/api/.env.example
+!apps/mobile/.env.example
 
 # typescript
 *.tsbuildinfo
@@ -45,19 +45,22 @@ app-example
 
 prompt-context.md
 
-utils/secrets/service-account.json
-utils/data/backup.json
+secrets/
+data/backup/backup.json
 
 # generated native folders
 /ios
 /android
 
 # backend python artifacts
-backend/.venv/
-backend/**/__pycache__/
-backend/.pytest_cache/
-backend/.mypy_cache/
-backend/.ruff_cache/
-backend/.env
-backend/serviceAccountKey.json
-frontend/.env
+apps/api/.venv/
+apps/api/**/__pycache__/
+apps/api/.pytest_cache/
+apps/api/.mypy_cache/
+apps/api/.ruff_cache/
+apps/api/.env
+apps/api/serviceAccountKey.json
+apps/mobile/.env
+
+# Archivos de trabajo
+prompt-*.md
