@@ -1,15 +1,15 @@
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useRef } from 'react';
-import { ActivityIndicator, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useForm } from 'react-hook-form';
+import { ActivityIndicator, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useAuth } from 'src/core/contexts/AuthContext';
+import { AuthStackParamList } from 'src/core/navigation/AppNavigator';
+import { RegisterFormValues, RegisterSchema } from 'src/features/auth/validators/auth.validators';
 import { useFormToast } from 'src/shared/components/feedback/FormToast/useFormToast';
 import { CustomSafeArea } from 'src/shared/components/layout/CustomSafeArea';
 import { FormInput } from 'src/shared/components/ui/FormInput/FormInput';
 import { useGoogleAuth } from 'src/shared/hooks/useAuth';
-import { AuthStackParamList } from 'src/core/navigation/AppNavigator';
-import { RegisterFormValues, RegisterSchema } from 'src/features/auth/validators/auth.validators';
 import { useRegisterTheme } from './Register.styles';
 
 type RegisterProps = NativeStackScreenProps<AuthStackParamList, 'Register'>;
@@ -207,7 +207,7 @@ export const Register: React.FC<RegisterProps> = ({ navigation }) => {
           >
             <View style={styles.googleIconWrap}>
               <Image
-                source={require('../../../assets/images/google-icon.webp')}
+                source={require('../../../../../assets/images/google-icon.webp')}
                 style={styles.googleIconImage}
                 resizeMode="contain"
               />

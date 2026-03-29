@@ -7,24 +7,50 @@ import firebase_admin
 from dotenv import load_dotenv
 from firebase_admin import credentials, firestore
 
-BASE_DIR = Path(__file__).resolve().parents[2]
-load_dotenv(BASE_DIR / ".env")
+API_DIR = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[3]
+load_dotenv(API_DIR / ".env")
 _firebase_init_lock = Lock()
+
+
+def _resolve_service_account_path(configured_path: str | None) -> Path:
+    raw_path = (configured_path or "serviceAccountKey.json").strip() or "serviceAccountKey.json"
+    path = Path(raw_path).expanduser()
+
+    if path.is_absolute():
+        if path.exists():
+            return path
+        raise FileNotFoundError(
+            "No se encontro el archivo de credenciales de Firebase en "
+            f"{path}"
+        )
+
+    # Relative paths are interpreted from apps/api to match .env location.
+    candidate_paths = [
+        (API_DIR / path).resolve(),
+        (REPO_ROOT / path).resolve(),
+    ]
+
+    # Legacy fallback for local setups that moved credentials under /secrets.
+    if raw_path == "serviceAccountKey.json":
+        candidate_paths.append((REPO_ROOT / "secrets" / "service-account.json").resolve())
+
+    for candidate in candidate_paths:
+        if candidate.exists():
+            return candidate
+
+    attempted_paths = "\n- ".join(str(candidate) for candidate in candidate_paths)
+    raise FileNotFoundError(
+        "No se encontro el archivo de credenciales de Firebase. Rutas intentadas:\n- "
+        f"{attempted_paths}"
+    )
 
 
 @lru_cache(maxsize=1)
 def get_firestore_client() -> firestore.Client:
-    configured_path = os.getenv("FIREBASE_SERVICE_ACCOUNT_PATH", "../serviceAccountKey.json")
-    service_account_path = Path(configured_path)
-
-    if not service_account_path.is_absolute():
-        service_account_path = (BASE_DIR / service_account_path).resolve()
-
-    if not service_account_path.exists():
-        raise FileNotFoundError(
-            "No se encontro el archivo de credenciales de Firebase en "
-            f"{service_account_path}"
-        )
+    service_account_path = _resolve_service_account_path(
+        os.getenv("FIREBASE_SERVICE_ACCOUNT_PATH")
+    )
 
     if not firebase_admin._apps:
         credential = credentials.Certificate(str(service_account_path))
