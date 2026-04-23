@@ -7,17 +7,18 @@ export const createTabBarOptions = (theme: AppTheme, bottomInset: number) => ({
     headerShown: false,
 
     tabBarStyle: {
-        backgroundColor: theme.colors.surface,
-        borderTopColor: theme.colors.border,
+        backgroundColor: theme.colors.cardBg,
+        borderTopColor: theme.colors.cardBorder,
         borderTopWidth: theme.borders.thin,
         borderWidth: theme.borders.thin,
-        borderColor: theme.colors.border,
+        borderColor: theme.colors.cardBorder,
         height: theme.layout.heroPaddingTop + Math.max(bottomInset, theme.spacing.md),
         borderRadius: theme.layout.tabBarRadius + theme.radius.xs,
         marginHorizontal: theme.layout.screenPaddingH,
         bottom: 0,
         position: 'absolute' as const,
-        paddingTop: theme.spacing.xs,
+        overflow: 'visible' as const,
+        paddingTop: theme.spacing.sm,
         paddingBottom: Math.max(bottomInset, theme.spacing.sm),
         shadowColor: theme.shadows.lg.color,
         shadowOffset: theme.shadows.lg.offset,
@@ -28,12 +29,25 @@ export const createTabBarOptions = (theme: AppTheme, bottomInset: number) => ({
         marginTop: theme.spacing.md,
     },
 
-    tabBarActiveTintColor: theme.colors.accent,
-    tabBarInactiveTintColor: theme.colors.textMuted,
+    tabBarItemStyle: {
+        marginHorizontal: theme.spacing['2xs'],
+        marginVertical: theme.spacing.xs,
+        borderRadius: theme.radius.full,
+    },
+
+    tabBarActiveBackgroundColor: 'transparent',
+
+    tabBarActiveTintColor: theme.colors.tabActive,
+    tabBarInactiveTintColor: theme.colors.tabInactive,
+
+    tabBarIconStyle: {
+        marginTop: theme.spacing['3xs'],
+    },
 
     tabBarLabelStyle: {
         fontFamily: theme.typography.family.bodySemiBold,
         fontSize: theme.typography.size.xs,
+        marginBottom: theme.spacing['3xs'],
     },
 
 });

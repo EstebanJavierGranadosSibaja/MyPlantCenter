@@ -34,7 +34,7 @@ export const createAppHeaderStyles = (theme: AppTheme) => StyleSheet.create({
   },
 
   backIcon: {
-    fontSize: theme.typography.size['4xl'],
+    fontSize: theme.typography.size['2xl'],
     color: theme.colors.heroAccent,
     lineHeight: theme.typography.lineHeight.normal,
     textAlign: 'center' as const,
@@ -47,7 +47,7 @@ export const createAppHeaderStyles = (theme: AppTheme) => StyleSheet.create({
 
   title: {
     fontFamily: theme.typography.family.displayBold,
-    fontSize: theme.typography.size['2xl'],
+    fontSize: theme.typography.size.xl,
     color: theme.colors.heroText,
     lineHeight: theme.typography.lineHeight.normal,
   },

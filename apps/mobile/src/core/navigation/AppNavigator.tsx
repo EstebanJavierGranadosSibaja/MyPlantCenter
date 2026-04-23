@@ -6,22 +6,22 @@ import React from 'react';
 import { ActivityIndicator, View } from 'react-native';
 
 import { useAuth } from 'src/core/contexts/AuthContext';
-import { FormToastProvider } from 'src/shared/components/feedback/FormToast/FormToast';
-import { CameraTabButton } from 'src/features/camera/components/CameraTabButton/CameraTabButton';
-import { useTabBarTheme } from 'src/core/navigation/AppTabBar.styles';
 import { useAppThemeContext } from 'src/core/contexts/ThemeContext';
+import { useTabBarTheme } from 'src/core/navigation/AppTabBar.styles';
+import { Login } from 'src/features/auth/screens/Login/Login';
+import { Register } from 'src/features/auth/screens/Register/Register';
+import { CameraTabButton } from 'src/features/camera/components/CameraTabButton/CameraTabButton';
 import { CameraScan } from 'src/features/camera/screens/CameraScan/CameraScan';
 import { Dashboard } from 'src/features/dashboard/screens/Dashboard/Dashboard';
 import { AddFriend } from 'src/features/friends/screens/AddFriend/AddFriend';
-import { FriendsHome } from 'src/features/friends/screens/FriendsHome/FriendsHome';
 import { FriendRequests } from 'src/features/friends/screens/FriendRequests/FriendRequests';
-import { Login } from 'src/features/auth/screens/Login/Login';
+import { FriendsHome } from 'src/features/friends/screens/FriendsHome/FriendsHome';
 import { AddPlant } from 'src/features/plants/screens/AddPlant/AddPlant';
 import { EditPlant } from 'src/features/plants/screens/EditPlant/EditPlant';
 import { PlantsHub } from 'src/features/plants/screens/PlantsHub/PlantsHub';
-import { ProfileView } from 'src/features/profile/screens/ProfileView/ProfileView';
 import { EditProfile } from 'src/features/profile/screens/EditProfile/EditProfile';
-import { Register } from 'src/features/auth/screens/Register/Register';
+import { ProfileView } from 'src/features/profile/screens/ProfileView/ProfileView';
+import { FormToastProvider } from 'src/shared/components/feedback/FormToast/FormToast';
 
 // Tipos 
 export type RootStackParamList = {
@@ -106,6 +106,38 @@ function FriendsNavigator() {
 // Tab Navigator
 function TabNavigator() {
   const { tabBarOptions } = useTabBarTheme();
+  const theme = useAppThemeContext();
+
+  const createTabIcon = (name: React.ComponentProps<typeof Feather>['name']) => {
+    const TabIcon = ({
+      focused,
+      color,
+      size,
+    }: {
+      focused: boolean;
+      color: string;
+      size: number;
+    }) => (
+      <View
+        style={{
+          minWidth: theme.spacing['4xl'],
+          paddingHorizontal: theme.spacing.sm + theme.spacing['3xs'],
+          paddingVertical: theme.spacing['3xs'],
+          borderRadius: theme.radius.full,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: focused
+            ? (theme.mode === 'light' ? '#E6EFE9' : '#1E382E')
+            : 'transparent',
+        }}
+      >
+        <Feather name={name} size={size} color={color} />
+      </View>
+    );
+
+    TabIcon.displayName = `TabIcon-${name}`;
+    return TabIcon;
+  };
 
   return (
     <Tab.Navigator screenOptions={tabBarOptions}>
@@ -114,9 +146,7 @@ function TabNavigator() {
         component={Dashboard}
         options={{
           tabBarLabel: 'Inicio',
-          tabBarIcon: ({ color, size }) => (
-            <Feather name="home" size={size} color={color} />
-          ),
+          tabBarIcon: createTabIcon('home'),
         }}
       />
       <Tab.Screen
@@ -124,9 +154,7 @@ function TabNavigator() {
         component={PlantsHub}
         options={{
           tabBarLabel: 'Plantas',
-          tabBarIcon: ({ color, size }) => (
-            <Feather name="feather" size={size} color={color} />
-          ),
+          tabBarIcon: createTabIcon('feather'),
         }}
       />
       <Tab.Screen
@@ -149,9 +177,7 @@ function TabNavigator() {
         component={FriendsNavigator}
         options={{
           tabBarLabel: 'Amigos',
-          tabBarIcon: ({ color, size }) => (
-            <Feather name="users" size={size} color={color} />
-          ),
+          tabBarIcon: createTabIcon('users'),
         }}
       />
       <Tab.Screen
@@ -159,9 +185,7 @@ function TabNavigator() {
         component={OwnProfileScreen}
         options={{
           tabBarLabel: 'Perfil',
-          tabBarIcon: ({ color, size }) => (
-            <Feather name="user" size={size} color={color} />
-          ),
+          tabBarIcon: createTabIcon('user'),
         }}
       />
     </Tab.Navigator>
