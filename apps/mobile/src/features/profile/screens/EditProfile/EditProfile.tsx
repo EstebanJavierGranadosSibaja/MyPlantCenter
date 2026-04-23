@@ -2,18 +2,18 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect } from 'react';
-import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import { useForm } from 'react-hook-form';
+import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
+import { RootStackParamList } from 'src/core/navigation/AppNavigator';
+import { normalizeDateInput } from 'src/features/plants/validators/date.validators';
+import { useUserProfile } from 'src/features/profile/hooks/useUserProfile';
+import { EditProfileDTO } from 'src/features/profile/types/user.types';
+import {
+    EditProfileFormValues,
+    EditProfileSchema,
+} from 'src/features/profile/validators/profile.validators';
 import { useFormToast } from 'src/shared/components/feedback/FormToast/useFormToast';
 import { FormInput } from 'src/shared/components/ui/FormInput/FormInput';
-import { useUserProfile } from 'src/features/profile/hooks/useUserProfile';
-import { RootStackParamList } from 'src/core/navigation/AppNavigator';
-import {
-  EditProfileFormValues,
-  EditProfileSchema,
-} from 'src/features/profile/validators/profile.validators';
-import { normalizeDateInput } from 'src/features/plants/validators/date.validators';
-import { EditProfileDTO } from 'src/features/profile/types/user.types';
 import { useEditProfileTheme } from './EditProfile.styles';
 
 interface EditProfileProps {
@@ -189,7 +189,7 @@ export const EditProfile: React.FC<EditProfileProps> = ({ userId, onSaved }) => 
           accessibilityState={{ disabled: !isDirty || isSubmitting }}
         >
           {isSubmitting ? (
-            <ActivityIndicator color={theme.colors.accentSoft} />
+            <ActivityIndicator color={theme.colors.textInverse} />
           ) : null}
           <Text style={styles.saveButtonText}>
             {isSubmitting ? 'Guardando...' : 'Guardar cambios'}

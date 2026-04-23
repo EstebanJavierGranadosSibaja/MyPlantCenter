@@ -44,7 +44,7 @@ export const createEditProfileStyles = (theme: AppTheme) =>
     saveButtonText: {
       fontFamily: theme.typography.family.bodySemiBold,
       fontSize: theme.typography.size.lg,
-      color: theme.colors.accentSoft,
+      color: theme.colors.textInverse,
       letterSpacing: theme.spacing['4xs'],
     },
   });
