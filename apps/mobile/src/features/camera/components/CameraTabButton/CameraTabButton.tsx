@@ -2,7 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native';
 import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
 import { useAppThemeContext } from 'src/core/contexts/ThemeContext';
 
 export const CameraTabButton: React.FC<BottomTabBarButtonProps> = ({ accessibilityState }) => {
@@ -11,17 +11,17 @@ export const CameraTabButton: React.FC<BottomTabBarButtonProps> = ({ accessibili
   const focused = Boolean(accessibilityState?.selected);
 
   return (
-    <View style={{ alignItems: 'center', justifyContent: 'center', marginTop: -theme.spacing['2xl'] }}>
+    <View style={{ alignItems: 'center', justifyContent: 'center', marginTop: -theme.spacing['2xl'] - theme.spacing['2xs'] }}>
       <TouchableOpacity
         onPress={() => navigation.getParent()?.navigate('CameraScan' as never)}
         activeOpacity={0.85}
         accessibilityRole="button"
         accessibilityLabel="Escanear con cámara"
         style={{
-          width: theme.spacing['5xl'] + theme.spacing.md,
-          height: theme.spacing['5xl'] + theme.spacing.md,
+          width: theme.spacing['5xl'] + theme.spacing.sm,
+          height: theme.spacing['5xl'] + theme.spacing.sm,
           borderRadius: theme.radius.full,
-          backgroundColor: theme.colors.accent,
+          backgroundColor: focused ? '#33B07A' : theme.colors.accent,
           borderWidth: theme.borders.bold,
           borderColor: theme.colors.surface,
           alignItems: 'center',
@@ -33,19 +33,8 @@ export const CameraTabButton: React.FC<BottomTabBarButtonProps> = ({ accessibili
           elevation: theme.shadows.lg.elevation,
         }}
       >
-        <Feather name="camera" size={theme.typography.size['3xl']} color={theme.colors.textInverse} />
+        <Feather name="camera" size={theme.typography.size['2xl']} color={theme.colors.textInverse} />
       </TouchableOpacity>
-
-      <Text
-        style={{
-          marginTop: theme.spacing.xs,
-          color: focused ? theme.colors.accent : theme.colors.textMuted,
-          fontFamily: theme.typography.family.bodySemiBold,
-          fontSize: theme.typography.size.xs,
-        }}
-      >
-        IA
-      </Text>
     </View>
   );
 };
