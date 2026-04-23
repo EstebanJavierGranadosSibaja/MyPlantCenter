@@ -1,18 +1,16 @@
-import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
-import { View, Text } from 'react-native';
+import { Text, View } from 'react-native';
 import { XPBar } from 'src/shared/components/ui/ProgressBar/ProgressBar';
 
-import { HeroBackground } from './components/HeroBackground';
-import { HeroAvatar } from './components/HeroAvatar';
-import { HeroIdentity } from './components/HeroIdentity';
-import { HeroBio } from './components/HeroBio';
-import { HeroStats } from './components/HeroStats';
-import { HeroHighlights } from './components/HeroHighlights';
 import { HeroActions } from './components/HeroActions';
+import { HeroAvatar } from './components/HeroAvatar';
+import { HeroBackground } from './components/HeroBackground';
+import { HeroBio } from './components/HeroBio';
+import { HeroIdentity } from './components/HeroIdentity';
+import { HeroStats } from './components/HeroStats';
 
-import { useProfileHeroTheme } from './ProfileHero.styles';
 import { UserProfile } from 'src/features/profile/types/user.types';
+import { useProfileHeroTheme } from './ProfileHero.styles';
 
 // Props
 export interface ProfileHeroProps {
@@ -33,7 +31,7 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
   onSave,
   isOwner,
 }) => {
-  const { styles, theme } = useProfileHeroTheme();
+  const { styles } = useProfileHeroTheme();
 
   return (
     <View style={styles.root}>
@@ -41,50 +39,43 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({
       {/* Fondo con blur y patrón */}
       <View style={styles.heroTopSection}>
         <HeroBackground />
-        <LinearGradient
-          colors={['transparent', theme.colors.background]}
-          start={{ x: 0.5, y: 0 }}
-          end={{ x: 0.5, y: 1 }}
-          style={styles.heroBottomFade}
-          pointerEvents="none"
-        />
         <HeroAvatar
           avatarUrl={profile.avatarUrl}
           level={profile.level}
         />
       </View>
 
-      {/* Identidad — nombre y apodo */}
-      <HeroIdentity
-        profile={profile}
-      />
-
-      {/* XP bar */}
-      <View style={styles.xpSection}>
-        <View style={styles.xpRow}>
-          <Text style={styles.xpLabel}>Experiencia</Text>
-          <Text style={styles.xpValue}>
-            {profile.level.xp}/{profile.level.xpMax} XP
-          </Text>
-        </View>
-        <XPBar
-          xp={profile.level.xp}
-          xpMax={profile.level.xpMax}
+      <View style={styles.summaryShell}>
+        {/* Identidad — nombre y apodo */}
+        <HeroIdentity
+          profile={profile}
         />
+
+        {/* XP bar */}
+        <View style={styles.xpSection}>
+          <View style={styles.xpRow}>
+            <Text style={styles.xpLabel}>Experiencia</Text>
+            <Text style={styles.xpValue}>
+              {profile.level.xp}/{profile.level.xpMax} XP
+            </Text>
+          </View>
+          <XPBar
+            xp={profile.level.xp}
+            xpMax={profile.level.xpMax}
+          />
+        </View>
+
+        {!editMode && (
+          <HeroBio
+            description={profile.description}
+          />
+        )}
       </View>
 
       {!editMode && (
         <>
-          {/* Bio */}
-          <HeroBio
-            description={profile.description}
-          />
-
           {/* Stats */}
           <HeroStats stats={profile.stats} />
-
-          {/* Highlights de categorías */}
-          <HeroHighlights categories={profile.categories} />
         </>
       )}
 

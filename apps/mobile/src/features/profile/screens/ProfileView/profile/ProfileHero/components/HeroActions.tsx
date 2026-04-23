@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import React from 'react';
+import { Pressable, Text, View } from 'react-native';
 import { useProfileHeroTheme } from '../ProfileHero.styles';
 
 interface HeroActionsProps {
@@ -27,10 +27,13 @@ export const HeroActions: React.FC<HeroActionsProps> = ({
         <View style={styles.actionsSection}>
 
             {/* Botón principal */}
-            <TouchableOpacity
-                style={styles.actionButtonPrimary}
+            <Pressable
+                style={({ pressed }) => [
+                    styles.actionButtonPrimary,
+                    pressed && !saving && styles.actionButtonPrimaryPressed,
+                    saving && { opacity: theme.opacity.disabled },
+                ]}
                 onPress={editMode ? onSave : onEdit}
-                activeOpacity={0.8}
                 disabled={saving}
                 accessibilityLabel={editMode ? 'Cancelar edicion de perfil' : 'Editar perfil'}
                 accessibilityRole="button"
@@ -38,18 +41,20 @@ export const HeroActions: React.FC<HeroActionsProps> = ({
                 <Feather
                     name={editMode ? 'x' : 'edit-2'}
                     size={theme.typography.size.md}
-                    color={theme.colors.accentSoft}
+                    color={theme.colors.textInverse}
                 />
                 <Text style={styles.actionButtonTextPrimary}>
                     {saving ? 'Guardando...' : editMode ? 'Cancelar' : 'Editar perfil'}
                 </Text>
-            </TouchableOpacity>
+            </Pressable>
 
             {/* Botón secundario — compartir */}
             {!editMode && (
-                <TouchableOpacity
-                    style={styles.actionButtonSecondary}
-                    activeOpacity={0.8}
+                <Pressable
+                    style={({ pressed }) => [
+                        styles.actionButtonSecondary,
+                        pressed && styles.actionButtonSecondaryPressed,
+                    ]}
                     accessibilityLabel="Compartir perfil"
                     accessibilityRole="button"
                 >
@@ -61,7 +66,7 @@ export const HeroActions: React.FC<HeroActionsProps> = ({
                     <Text style={styles.actionButtonTextSecondary}>
                         Compartir
                     </Text>
-                </TouchableOpacity>
+                </Pressable>
             )}
 
         </View>

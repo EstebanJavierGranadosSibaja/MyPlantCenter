@@ -16,6 +16,7 @@ export const createProfileHeroStyles = (theme: AppTheme) => StyleSheet.create({
   // Fondo hero 
   heroTopSection: {
     position: 'relative',
+    marginBottom: theme.spacing.xs,
   },
 
   heroBackground: {
@@ -23,29 +24,42 @@ export const createProfileHeroStyles = (theme: AppTheme) => StyleSheet.create({
     height: SCREEN_WIDTH * 0.42,
     overflow: 'hidden',
     position: 'relative',
-    borderBottomWidth: theme.borders.thin,
-    borderBottomColor: theme.colors.heroInputBorderSubtle,
+    backgroundColor: theme.colors.heroBg,
   },
 
-  heroBgGradient: {
+  heroBase: {
     ...StyleSheet.absoluteFillObject,
+    backgroundColor: theme.colors.heroBg,
   },
 
-  heroBgPattern: {
-    ...StyleSheet.absoluteFillObject,
-    opacity: theme.opacity.medium,
+  heroHighlightPrimary: {
+    position: 'absolute',
+    width: SCREEN_WIDTH * 0.88,
+    height: SCREEN_WIDTH * 0.88,
+    borderRadius: theme.radius.full,
+    top: -SCREEN_WIDTH * 0.56,
+    right: -SCREEN_WIDTH * 0.12,
   },
 
-  heroBgBlur: {
-    ...StyleSheet.absoluteFillObject,
+  heroHighlightSecondary: {
+    position: 'absolute',
+    width: SCREEN_WIDTH * 0.72,
+    height: SCREEN_WIDTH * 0.72,
+    borderRadius: theme.radius.full,
+    top: -SCREEN_WIDTH * 0.34,
+    left: -SCREEN_WIDTH * 0.18,
   },
 
-  heroBottomFade: {
+  heroBottomLayer: {
     position: 'absolute',
     left: 0,
     right: 0,
-    bottom: 0,
-    height: '58%',
+    bottom: -theme.spacing.sm,
+    height: SCREEN_WIDTH * 0.20,
+    borderTopLeftRadius: theme.radius.xl + theme.radius.md,
+    borderTopRightRadius: theme.radius.xl + theme.radius.md,
+    borderTopWidth: theme.borders.thin,
+    borderTopColor: theme.colors.heroInputBorder,
   },
 
   // Avatar, flota sobre el fondo 
@@ -64,7 +78,7 @@ export const createProfileHeroStyles = (theme: AppTheme) => StyleSheet.create({
   avatarRingActive: {
     borderWidth: theme.spacing.xs,
     borderColor: theme.colors.accent,
-    backgroundColor: theme.colors.heroInputBgSubtle,
+    backgroundColor: theme.colors.elevated,
   },
 
   levelPill: {
@@ -91,49 +105,69 @@ export const createProfileHeroStyles = (theme: AppTheme) => StyleSheet.create({
   levelText: {
     fontFamily: theme.typography.family.bodySemiBold,
     fontSize: theme.typography.size.xs - 1,
-    color: theme.colors.accentSoft,
+    color: theme.colors.textInverse,
     letterSpacing: theme.spacing['4xs'],
+  },
+
+  summaryShell: {
+    marginHorizontal: theme.layout.screenPaddingH,
+    backgroundColor: theme.mode === 'light' ? theme.colors.surface : theme.colors.elevated,
+    borderRadius: theme.radius.lg,
+    borderWidth: theme.borders.thin,
+    borderColor: theme.colors.cardBorder,
+    paddingHorizontal: theme.spacing.lg,
+    paddingBottom: theme.spacing.lg,
+    shadowColor: theme.shadows.md.color,
+    shadowOffset: theme.shadows.md.offset,
+    shadowOpacity: theme.shadows.md.opacity,
+    shadowRadius: theme.shadows.md.radius,
+    elevation: theme.shadows.md.elevation,
   },
 
   // Identidad
   identitySection: {
-    paddingHorizontal: theme.layout.screenPaddingH,
-    paddingTop: theme.layout.avatarLg * 0.38 + (IS_COMPACT_SCREEN ? theme.spacing.md : theme.spacing.lg),
+    paddingTop: theme.layout.avatarLg * 0.42 + (IS_COMPACT_SCREEN ? theme.spacing.sm : theme.spacing.md),
     gap: IS_COMPACT_SCREEN ? theme.spacing['2xs'] : theme.spacing.xs,
   },
 
   displayName: {
     fontFamily: theme.typography.family.displayBold,
-    fontSize: IS_COMPACT_SCREEN ? theme.typography.size['3xl'] : theme.typography.size['4xl'],
+    fontSize: IS_COMPACT_SCREEN ? theme.typography.size['2xl'] : theme.typography.size['3xl'],
     color: theme.colors.textPrimary,
-    lineHeight: IS_COMPACT_SCREEN ? theme.typography.lineHeight.normal : theme.typography.lineHeight.relaxed,
+    lineHeight: IS_COMPACT_SCREEN ? theme.typography.lineHeight.snug : theme.typography.lineHeight.normal,
   },
 
   nickname: {
     fontFamily: theme.typography.family.bodyRegular,
-    fontSize: IS_COMPACT_SCREEN ? theme.typography.size.base : theme.typography.size.lg,
+    fontSize: IS_COMPACT_SCREEN ? theme.typography.size.sm : theme.typography.size.md,
     color: theme.colors.textMuted,
   },
 
   levelTitle: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.xs,
+    gap: theme.spacing.xs - 1,
     marginTop: IS_COMPACT_SCREEN ? theme.spacing['4xs'] : theme.spacing.xs - 2,
+    alignSelf: 'flex-start',
+    backgroundColor: theme.colors.favPlantIconBg,
+    borderWidth: theme.borders.thin,
+    borderColor: theme.colors.cardBorder,
+    borderRadius: theme.radius.full,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: theme.spacing['3xs'],
   },
 
   levelTitleText: {
     fontFamily: theme.typography.family.bodySemiBold,
-    fontSize: theme.typography.size.base,
-    color: theme.colors.accent,
+    fontSize: theme.typography.size.sm,
+    color: theme.colors.secondary,
     letterSpacing: theme.spacing['4xs'],
   },
 
   // XP bar
   xpSection: {
-    paddingHorizontal: theme.layout.screenPaddingH,
-    marginTop: IS_COMPACT_SCREEN ? theme.spacing.xs : theme.spacing.sm,
-    gap: theme.spacing.xs - 2,
+    marginTop: IS_COMPACT_SCREEN ? theme.spacing.sm : theme.spacing.md,
+    gap: theme.spacing['2xs'],
   },
 
   xpRow: {
@@ -145,7 +179,7 @@ export const createProfileHeroStyles = (theme: AppTheme) => StyleSheet.create({
   xpLabel: {
     fontFamily: theme.typography.family.bodySemiBold,
     fontSize: theme.typography.size.xs,
-    color: theme.colors.textMuted,
+    color: theme.colors.textSecondary,
     letterSpacing: theme.spacing['4xs'],
     textTransform: 'uppercase' as const,
   },
@@ -153,25 +187,24 @@ export const createProfileHeroStyles = (theme: AppTheme) => StyleSheet.create({
   xpValue: {
     fontFamily: theme.typography.family.bodySemiBold,
     fontSize: theme.typography.size.xs,
-    color: theme.colors.accent,
+    color: theme.colors.secondary,
   },
 
   // Bio 
   bioSection: {
-    paddingHorizontal: theme.layout.screenPaddingH,
     marginTop: IS_COMPACT_SCREEN ? theme.spacing.sm : theme.spacing.md,
   },
 
   bioText: {
     fontFamily: theme.typography.family.bodyRegular,
-    fontSize: IS_COMPACT_SCREEN ? theme.typography.size.base : theme.typography.size.lg,
+    fontSize: IS_COMPACT_SCREEN ? theme.typography.size.sm : theme.typography.size.base,
     color: theme.colors.textSecondary,
-    lineHeight: theme.typography.lineHeight.relaxed,
+    lineHeight: theme.typography.lineHeight.snug,
   },
 
   bioInput: {
     fontFamily: theme.typography.family.bodyRegular,
-    fontSize: theme.typography.size.lg,
+    fontSize: theme.typography.size.base,
     color: theme.colors.textPrimary,
     backgroundColor: theme.colors.cardBg,
     borderWidth: theme.borders.thick,
@@ -179,7 +212,7 @@ export const createProfileHeroStyles = (theme: AppTheme) => StyleSheet.create({
     borderRadius: theme.radius.md,
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.sm,
-    lineHeight: theme.typography.lineHeight.relaxed,
+    lineHeight: theme.typography.lineHeight.normal,
     textAlignVertical: 'top' as const,
     minHeight: theme.layout.avatarMd,
   },
@@ -189,23 +222,28 @@ export const createProfileHeroStyles = (theme: AppTheme) => StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: theme.layout.screenPaddingH,
     marginTop: IS_COMPACT_SCREEN ? theme.spacing.md : theme.spacing.lg,
-    gap: theme.spacing.xs,
+    gap: theme.spacing.sm,
   },
 
   statItem: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: theme.spacing.md,
-    backgroundColor: theme.colors.cardBg,
-    borderRadius: theme.radius.md,
-    borderWidth: theme.borders.thick,
-    borderColor: theme.colors.border,
+    paddingVertical: theme.spacing.md + 2,
+    backgroundColor: theme.mode === 'light' ? theme.colors.surface : theme.colors.elevated,
+    borderRadius: theme.radius.lg,
+    borderWidth: theme.borders.thin,
+    borderColor: theme.colors.cardBorder,
+    shadowColor: theme.shadows.sm.color,
+    shadowOffset: theme.shadows.sm.offset,
+    shadowOpacity: theme.shadows.sm.opacity,
+    shadowRadius: theme.shadows.sm.radius,
+    elevation: theme.shadows.sm.elevation,
     gap: theme.spacing.xs - 2,
   },
 
   statValue: {
     fontFamily: theme.typography.family.displayBold,
-    fontSize: IS_COMPACT_SCREEN ? theme.typography.size['3xl'] : theme.typography.size['4xl'],
+    fontSize: IS_COMPACT_SCREEN ? theme.typography.size['2xl'] : theme.typography.size['3xl'],
     color: theme.colors.textPrimary,
     lineHeight: theme.typography.lineHeight.normal,
   },
@@ -220,32 +258,50 @@ export const createProfileHeroStyles = (theme: AppTheme) => StyleSheet.create({
 
   // Highlights 
   highlightsSection: {
-    paddingHorizontal: theme.layout.screenPaddingH,
+    marginHorizontal: theme.layout.screenPaddingH,
     marginTop: IS_COMPACT_SCREEN ? theme.spacing.md : theme.spacing.lg,
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.lg,
+    borderRadius: theme.radius.lg,
+    borderWidth: theme.borders.thin,
+    borderColor: theme.colors.cardBorder,
+    backgroundColor: theme.colors.elevated,
+    shadowColor: theme.shadows.sm.color,
+    shadowOffset: theme.shadows.sm.offset,
+    shadowOpacity: theme.shadows.sm.opacity,
+    shadowRadius: theme.shadows.sm.radius,
+    elevation: theme.shadows.sm.elevation,
     gap: theme.spacing.sm,
   },
 
   highlightsSectionTitle: {
     fontFamily: theme.typography.family.bodySemiBold,
     fontSize: theme.typography.size.xs,
-    color: theme.colors.textMuted,
+    color: theme.colors.textSecondary,
     letterSpacing: theme.spacing['4xs'],
     textTransform: 'uppercase' as const,
   },
 
   highlightsList: {
     flexDirection: 'row',
-    gap: theme.spacing.md,
+    gap: theme.spacing.sm,
   },
 
   highlightItem: {
+    width: theme.layout.avatarMd + theme.spacing['2xl'],
     alignItems: 'center',
     gap: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.xs,
+    paddingVertical: theme.spacing.sm,
+    borderRadius: theme.radius.md,
+    borderWidth: theme.borders.thin,
+    borderColor: theme.colors.cardBorder,
+    backgroundColor: theme.colors.surface,
   },
 
   highlightRing: {
-    width: theme.layout.avatarMd + theme.spacing.xs,
-    height: theme.layout.avatarMd + theme.spacing.xs,
+    width: theme.layout.avatarMd,
+    height: theme.layout.avatarMd,
     borderRadius: theme.radius.full,
     alignItems: 'center',
     justifyContent: 'center',
@@ -253,7 +309,7 @@ export const createProfileHeroStyles = (theme: AppTheme) => StyleSheet.create({
   },
 
   highlightEmoji: {
-    fontSize: theme.typography.size['3xl'],
+    fontSize: theme.typography.size['2xl'],
     lineHeight: theme.typography.lineHeight.normal,
   },
 
@@ -262,14 +318,14 @@ export const createProfileHeroStyles = (theme: AppTheme) => StyleSheet.create({
     fontSize: theme.typography.size.xs - 1,
     color: theme.colors.textMuted,
     textAlign: 'center' as const,
-    maxWidth: theme.layout.avatarMd + theme.spacing.xs,
+    maxWidth: theme.layout.avatarMd + theme.spacing.md,
   },
 
   // Acciones 
   actionsSection: {
     paddingHorizontal: theme.layout.screenPaddingH,
-    marginTop: theme.spacing.lg,
-    marginBottom: theme.spacing.lg,
+    marginTop: theme.spacing.md,
+    marginBottom: theme.spacing.md,
     flexDirection: 'row',
     gap: theme.spacing.sm,
   },
@@ -282,9 +338,19 @@ export const createProfileHeroStyles = (theme: AppTheme) => StyleSheet.create({
     gap: theme.spacing.xs,
     backgroundColor: theme.colors.primary,
     borderRadius: theme.radius.md,
-    paddingVertical: theme.spacing.md,
-    borderWidth: theme.borders.thick,
+    paddingVertical: theme.spacing.md + 2,
+    borderWidth: theme.borders.base,
     borderColor: theme.colors.primary,
+    shadowColor: theme.shadows.sm.color,
+    shadowOffset: theme.shadows.sm.offset,
+    shadowOpacity: theme.shadows.sm.opacity,
+    shadowRadius: theme.shadows.sm.radius,
+    elevation: theme.shadows.sm.elevation,
+  },
+
+  actionButtonPrimaryPressed: {
+    backgroundColor: '#12563B',
+    borderColor: '#12563B',
   },
 
   actionButtonSecondary: {
@@ -293,30 +359,39 @@ export const createProfileHeroStyles = (theme: AppTheme) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: theme.spacing.xs,
-    backgroundColor: theme.colors.cardBg,
+    backgroundColor: theme.colors.surface,
     borderRadius: theme.radius.md,
-    paddingVertical: theme.spacing.md,
-    borderWidth: theme.borders.thick,
-    borderColor: theme.colors.border,
+    paddingVertical: theme.spacing.md + 2,
+    borderWidth: theme.borders.thin,
+    borderColor: theme.colors.cardBorder,
+    shadowColor: theme.shadows.sm.color,
+    shadowOffset: theme.shadows.sm.offset,
+    shadowOpacity: theme.shadows.sm.opacity,
+    shadowRadius: theme.shadows.sm.radius,
+    elevation: theme.shadows.sm.elevation,
+  },
+
+  actionButtonSecondaryPressed: {
+    backgroundColor: theme.colors.elevated,
   },
 
   actionButtonTextPrimary: {
     fontFamily: theme.typography.family.bodySemiBold,
-    fontSize: theme.typography.size.md,
-    color: theme.colors.accentSoft,
+    fontSize: theme.typography.size.base,
+    color: theme.colors.textInverse,
   },
 
   actionButtonTextSecondary: {
     fontFamily: theme.typography.family.bodySemiBold,
-    fontSize: theme.typography.size.md,
-    color: theme.colors.textSecondary,
+    fontSize: theme.typography.size.base,
+    color: theme.colors.textPrimary,
   },
 
   // Divider 
   divider: {
     height: theme.borders.base,
     backgroundColor: theme.colors.border,
-    marginTop: theme.spacing.sm,
+    marginTop: theme.spacing.md,
   },
 
 });

@@ -1,9 +1,9 @@
-import React from 'react';
-import { View, Text } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import React from 'react';
+import { Text, View } from 'react-native';
+import { UserLevel } from 'src/features/profile/types/user.types';
 import { Avatar } from 'src/shared/components/ui/Avatar/Avatar';
 import { useProfileHeroTheme } from '../ProfileHero.styles';
-import { UserLevel } from 'src/features/profile/types/user.types';
 
 interface HeroAvatarProps {
     avatarUrl?: string;
@@ -31,7 +31,7 @@ export const HeroAvatar: React.FC<HeroAvatarProps> = ({ avatarUrl, level }) => {
                     <Feather
                         name="star"
                         size={theme.typography.size.xs - 1}
-                        color={theme.colors.accentSoft}
+                        color={theme.colors.textInverse}
                     />
                     <Text style={styles.levelText}>Nv {level.level}</Text>
                 </View>
