@@ -1,15 +1,22 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
-
-# dependencies
+# =========================
+# DEPENDENCIAS
+# =========================
 node_modules/
 
-# Expo
+# =========================
+# EXPO / REACT NATIVE
+# =========================
 .expo/
+.expo-shared/
 dist/
 web-build/
 expo-env.d.ts
+/ios
+/android
 
-# Native
+# =========================
+# NATIVO / CERTIFICADOS
+# =========================
 .kotlin/
 *.orig.*
 *.jks
@@ -18,49 +25,84 @@ expo-env.d.ts
 *.key
 *.mobileprovision
 
-# Metro
+# =========================
+# METRO / DEBUG
+# =========================
 .metro-health-check*
-
-# debug
 npm-debug.*
 yarn-debug.*
 yarn-error.*
 
-# macOS
-.DS_Store
-*.pem
+# =========================
+# CACHE / TEMP
+# =========================
+.cache/
+.tmp/
+.temp/
+*.log
+logs/
 
-# local env files
-.env*.local
+# =========================
+# OPENCODE / GSD
+# =========================
+.opencode/
+.opencode-cache/
+.opencode-temp/
+gsd-cache/
+gsd-output/
+gsd-temp/
+
+# =========================
+# VARIABLES DE ENTORNO
+# =========================
 .env
 .env.*
 !.env.example
 !apps/api/.env.example
 !apps/mobile/.env.example
 
-# typescript
-*.tsbuildinfo
-
-app-example
-
-prompt-context.md
-
-secrets/
-data/backup/backup.json
-
-# generated native folders
-/ios
-/android
-
-# backend python artifacts
+# =========================
+# PYTHON
+# =========================
 apps/api/.venv/
 apps/api/**/__pycache__/
 apps/api/.pytest_cache/
 apps/api/.mypy_cache/
 apps/api/.ruff_cache/
-apps/api/.env
-apps/api/serviceAccountKey.json
-apps/mobile/.env
+*.pyc
+*.pyo
+*.pyd
 
-# Archivos de trabajo
+# =========================
+# SECRETS / DATA
+# =========================
+secrets/
+data/backup/
+
+# =========================
+# IA / GENERADOS
+# =========================
 prompt-*.md
+prompt-context.md
+*.gen.*
+generated/
+ai-output/
+
+# =========================
+# IDE / OS
+# =========================
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.pem
+
+# =========================
+# TYPESCRIPT
+# =========================
+*.tsbuildinfo
+
+# =========================
+# OTROS
+# =========================
+app-example
