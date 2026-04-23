@@ -37,7 +37,7 @@ export const createEmptyStateStyles = (theme: AppTheme) =>
       fontFamily: theme.typography.family.bodyRegular,
       fontSize: theme.typography.size.md,
       lineHeight: theme.typography.lineHeight.snug,
-      color: theme.colors.textMuted,
+      color: theme.colors.textSecondary,
       textAlign: 'center',
       maxWidth: '92%',
     },
@@ -58,7 +58,7 @@ export const createEmptyStateStyles = (theme: AppTheme) =>
       fontFamily: theme.typography.family.bodySemiBold,
       fontSize: theme.typography.size.lg,
       lineHeight: theme.typography.lineHeight.snug,
-      color: theme.colors.accentSoft,
+      color: theme.colors.textInverse,
       letterSpacing: 0.4,
     },
   });

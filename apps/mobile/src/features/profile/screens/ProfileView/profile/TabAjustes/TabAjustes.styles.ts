@@ -13,18 +13,18 @@ export const createTabAjustesStyles = (theme: AppTheme) => StyleSheet.create({
 
   sectionTitle: {
     fontFamily: theme.typography.family.bodySemiBold,
-    fontSize: theme.typography.size.xs,
-    color: theme.colors.textMuted,
+    fontSize: theme.typography.size.sm,
+    color: theme.colors.textSecondary,
     letterSpacing: 1.4,
     textTransform: 'uppercase' as const,
     marginBottom: theme.spacing.sm,
   },
 
   group: {
-    backgroundColor: theme.colors.cardBg,
-    borderRadius: theme.radius.md,
+    backgroundColor: theme.colors.elevated,
+    borderRadius: theme.radius.lg,
     borderWidth: theme.borders.thin,
-    borderColor: theme.colors.border,
+    borderColor: theme.colors.cardBorder,
     overflow: 'hidden',
     shadowColor: theme.shadows.sm.color,
     shadowOffset: theme.shadows.sm.offset,
@@ -55,10 +55,10 @@ export const createTabAjustesStyles = (theme: AppTheme) => StyleSheet.create({
     justifyContent: 'center',
     gap: theme.spacing.xs,
     paddingVertical: theme.spacing.md,
-    borderRadius: theme.radius.sm,
+    borderRadius: theme.radius.md,
     borderWidth: theme.borders.thin,
-    borderColor: theme.colors.border,
-    backgroundColor: theme.colors.cardBg,
+    borderColor: theme.colors.cardBorder,
+    backgroundColor: theme.colors.surface,
     shadowColor: theme.shadows.none.color,
     shadowOffset: theme.shadows.none.offset,
     shadowOpacity: theme.shadows.none.opacity,
@@ -68,7 +68,7 @@ export const createTabAjustesStyles = (theme: AppTheme) => StyleSheet.create({
 
   themeOptionActive: {
     borderColor: theme.colors.accent,
-    backgroundColor: theme.colors.favPlantIconBg,
+    backgroundColor: theme.mode === 'light' ? '#E8F6EE' : '#204434',
     shadowColor: theme.shadows.sm.color,
     shadowOffset: theme.shadows.sm.offset,
     shadowOpacity: theme.shadows.sm.opacity,
@@ -83,8 +83,8 @@ export const createTabAjustesStyles = (theme: AppTheme) => StyleSheet.create({
 
   themeOptionLabel: {
     fontFamily: theme.typography.family.bodySemiBold,
-    fontSize: theme.typography.size.xs,
-    color: theme.colors.textMuted,
+    fontSize: theme.typography.size.sm,
+    color: theme.colors.textSecondary,
   },
 
   themeOptionLabelActive: {
@@ -95,16 +95,20 @@ export const createTabAjustesStyles = (theme: AppTheme) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: theme.spacing.md,
-    backgroundColor: theme.colors.cardBg,
+    backgroundColor: theme.colors.elevated,
     borderWidth: theme.borders.thin,
-    borderColor: theme.colors.border,
-    borderRadius: theme.radius.md,
+    borderColor: theme.colors.cardBorder,
+    borderRadius: theme.radius.lg,
     padding: theme.spacing.md + 2,
     shadowColor: theme.shadows.sm.color,
     shadowOffset: theme.shadows.sm.offset,
     shadowOpacity: theme.shadows.sm.opacity,
     shadowRadius: theme.shadows.sm.radius,
     elevation: theme.shadows.sm.elevation,
+  },
+
+  actionButtonPressed: {
+    backgroundColor: theme.colors.surface,
   },
 
   actionIcon: {
@@ -114,13 +118,14 @@ export const createTabAjustesStyles = (theme: AppTheme) => StyleSheet.create({
 
   actionLabel: {
     fontFamily: theme.typography.family.bodyMedium,
-    fontSize: theme.typography.size.md,
+    fontSize: theme.typography.size.base,
+    color: theme.colors.textPrimary,
     flex: 1,
   },
 
   actionChevron: {
     fontFamily: theme.typography.family.bodyRegular,
-    fontSize: theme.typography.size['2xl'],
+    fontSize: theme.typography.size.xl,
     color: theme.colors.textMuted,
   },
 

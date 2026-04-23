@@ -59,7 +59,7 @@ export const Avatar: React.FC<AvatarProps> = ({
             resizeMode="cover"
           />
         ) : (
-          <Feather name={iconName} size={iconSize} color={theme.colors.accentSoft} />
+          <Feather name={iconName} size={iconSize} color={theme.colors.textInverse} />
         )}
       </View>
 

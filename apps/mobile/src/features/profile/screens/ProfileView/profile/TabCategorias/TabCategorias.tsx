@@ -1,8 +1,8 @@
 import React from 'react';
 import { Text, View } from 'react-native';
-import { EmptyState } from 'src/shared/components/feedback/EmptyState/EmptyState';
 import { CategoryBadge } from 'src/features/profile/components/CategoryBadge/CategoryBadge';
 import { UserProfile } from 'src/features/profile/types/user.types';
+import { EmptyState } from 'src/shared/components/feedback/EmptyState/EmptyState';
 import { useTabCategoriasTheme } from './TabCategorias.styles';
 
 interface TabCategoriasProps {
@@ -32,15 +32,17 @@ export const TabCategorias: React.FC<TabCategoriasProps> = ({ profile }) => {
       {/* ── Lista de categorías ── */}
       <View>
         <Text style={styles.sectionTitle}>Mis categorías</Text>
-        <View style={styles.list}>
-          {profile.categories.map((cat, index) => (
-            <CategoryBadge
-              key={cat.id}
-              category={cat}
-              maxAmount={maxAmount}
-              index={index}
-            />
-          ))}
+        <View style={styles.listCard}>
+          <View style={styles.list}>
+            {profile.categories.map((cat, index) => (
+              <CategoryBadge
+                key={cat.id}
+                category={cat}
+                maxAmount={maxAmount}
+                index={index}
+              />
+            ))}
+          </View>
         </View>
       </View>
 

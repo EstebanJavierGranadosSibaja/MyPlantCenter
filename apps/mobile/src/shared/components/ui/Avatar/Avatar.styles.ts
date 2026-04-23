@@ -36,7 +36,7 @@ export const createAvatarStyles = (theme: AppTheme) => StyleSheet.create({
   levelText: {
     fontFamily: theme.typography.family.bodyBold,
     fontSize: theme.typography.size.xs,
-    color: theme.colors.accentSoft,
+    color: theme.colors.textInverse,
     letterSpacing: 0.4,
   },
 

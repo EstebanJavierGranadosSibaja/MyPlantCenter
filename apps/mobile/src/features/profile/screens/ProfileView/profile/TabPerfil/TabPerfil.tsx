@@ -34,7 +34,7 @@ export const TabPerfil: React.FC<TabPerfilProps> = ({
 
       {/* ── Planta favorita ── */}
       {profile.favoritePlant && (
-        <View>
+        <View style={styles.sectionBlock}>
           <Text style={styles.sectionTitle}>Planta favorita</Text>
           <View style={styles.favPlantCard}>
             <View style={styles.favPlantIcon}>
@@ -63,7 +63,7 @@ export const TabPerfil: React.FC<TabPerfilProps> = ({
 
       {/* ── Cumpleaños ── */}
       {profile.birthday && (
-        <View>
+        <View style={styles.sectionBlock}>
           <Text style={styles.sectionTitle}>Cumpleaños</Text>
           <View style={styles.birthdayRow}>
             <Feather
@@ -80,35 +80,39 @@ export const TabPerfil: React.FC<TabPerfilProps> = ({
       )}
 
       {/* ── Logros ── */}
-      <View>
+      <View style={styles.sectionBlock}>
         <Text style={styles.sectionTitle}>Logros</Text>
         {profile.achievements.length === 0 ? (
-          <EmptyState
-            iconName="award"
-            title="Sin logros aún"
-            subtitle="Completa acciones para desbloquear logros"
-          />
+          <View style={styles.sectionCard}>
+            <EmptyState
+              iconName="award"
+              title="Sin logros aún"
+              subtitle="Completa acciones para desbloquear logros"
+            />
+          </View>
         ) : (
-          <View style={styles.logrosRow}>
-            {profile.achievements.map(logro => (
-              <View
-                key={logro.id}
-                style={[
-                  styles.logroItem,
-                  {
-                    backgroundColor: logro.unlocked
-                      ? theme.colors.logroActiveBg
-                      : theme.colors.cardBg,
-                    borderColor: logro.unlocked
-                      ? theme.colors.logroActiveBorder
-                      : theme.colors.border,
-                    opacity: logro.unlocked ? 1 : theme.opacity.disabled,
-                  },
-                ]}
-              >
-                <Text style={styles.logroEmoji}>{logro.emoji}</Text>
-              </View>
-            ))}
+          <View style={styles.logrosPanel}>
+            <View style={styles.logrosRow}>
+              {profile.achievements.map(logro => (
+                <View
+                  key={logro.id}
+                  style={[
+                    styles.logroItem,
+                    {
+                      backgroundColor: logro.unlocked
+                        ? theme.colors.logroActiveBg
+                        : theme.colors.cardBg,
+                      borderColor: logro.unlocked
+                        ? theme.colors.logroActiveBorder
+                        : theme.colors.border,
+                      opacity: logro.unlocked ? 1 : theme.opacity.disabled,
+                    },
+                  ]}
+                >
+                  <Text style={styles.logroEmoji}>{logro.emoji}</Text>
+                </View>
+              ))}
+            </View>
           </View>
         )}
       </View>
