@@ -8,11 +8,11 @@ export const createCategoryBadgeStyles = (theme: AppTheme) => StyleSheet.create(
     flexDirection: 'row',
     alignItems: 'center',
     gap: theme.spacing.md,
-    backgroundColor: theme.colors.cardBg,
-    borderRadius: theme.radius.md,
-    borderWidth: theme.borders.thick,
-    borderColor: theme.colors.border,
-    padding: theme.spacing.md,
+    backgroundColor: theme.colors.elevated,
+    borderRadius: theme.radius.lg,
+    borderWidth: theme.borders.thin,
+    borderColor: theme.colors.cardBorder,
+    padding: theme.spacing.lg,
     shadowColor: theme.shadows.sm.color,
     shadowOffset: theme.shadows.sm.offset,
     shadowOpacity: theme.shadows.sm.opacity,
@@ -23,7 +23,7 @@ export const createCategoryBadgeStyles = (theme: AppTheme) => StyleSheet.create(
   iconContainer: {
     width: theme.layout.categoryIconSize,
     height: theme.layout.categoryIconSize,
-    borderRadius: theme.radius.sm,
+    borderRadius: theme.radius.full,
     borderWidth: theme.borders.thick,
     backgroundColor: theme.colors.backgroundAlt,
     alignItems: 'center',
@@ -43,7 +43,7 @@ export const createCategoryBadgeStyles = (theme: AppTheme) => StyleSheet.create(
 
   name: {
     fontFamily: theme.typography.family.displayBold,
-    fontSize: theme.typography.size.md,
+    fontSize: theme.typography.size.base,
     color: theme.colors.textPrimary,
     lineHeight: theme.typography.lineHeight.tight,
   },
@@ -63,9 +63,21 @@ export const createCategoryBadgeStyles = (theme: AppTheme) => StyleSheet.create(
     borderRadius: theme.radius.xs,
   },
 
+  countPill: {
+    minWidth: theme.spacing['3xl'],
+    paddingHorizontal: theme.spacing.xs,
+    paddingVertical: theme.spacing['3xs'],
+    borderRadius: theme.radius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: theme.borders.thin,
+    borderColor: theme.colors.cardBorder,
+    backgroundColor: theme.colors.surface,
+  },
+
   count: {
     fontFamily: theme.typography.family.displayBold,
-    fontSize: theme.typography.size['4xl'],
+    fontSize: theme.typography.size.xl,
     flexShrink: 0,
     lineHeight: theme.typography.lineHeight.normal,
   },

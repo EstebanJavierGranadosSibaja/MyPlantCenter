@@ -74,9 +74,11 @@ export const CategoryBadge: React.FC<CategoryBadgeProps> = ({
         </View>
       </View>
 
-      <Text style={[styles.count, { color: category.color }]}>
-        {category.amount}
-      </Text>
+      <View style={styles.countPill}>
+        <Text style={[styles.count, { color: category.color }]}>
+          {category.amount}
+        </Text>
+      </View>
 
     </View>
   );
