@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useRef } from 'react';
 import { useForm } from 'react-hook-form';
-import { ActivityIndicator, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, Text, TextInput, View } from 'react-native';
 import { useAuth } from 'src/core/contexts/AuthContext';
 import { AuthStackParamList } from 'src/core/navigation/AppNavigator';
 import { RegisterFormValues, RegisterSchema } from 'src/features/auth/validators/auth.validators';
@@ -179,8 +179,12 @@ export const Register: React.FC<RegisterProps> = ({ navigation }) => {
             onSubmitEditing={handleRegister}
           />
 
-          <TouchableOpacity
-            style={[styles.button, isButtonDisabled && styles.buttonDisabled]}
+          <Pressable
+            style={({ pressed }) => [
+              styles.button,
+              pressed && !isButtonDisabled && styles.buttonPressed,
+              isButtonDisabled && styles.buttonDisabled,
+            ]}
             onPress={handleRegister}
             disabled={isButtonDisabled}
             accessibilityRole="button"
@@ -189,7 +193,7 @@ export const Register: React.FC<RegisterProps> = ({ navigation }) => {
           >
             {isSubmitting ? <ActivityIndicator color="white" /> : null}
             <Text style={styles.buttonText}>{isSubmitting ? 'Creando...' : 'Crear cuenta'}</Text>
-          </TouchableOpacity>
+          </Pressable>
 
           <View style={styles.socialDivider}>
             <View style={styles.socialLine} />
@@ -197,8 +201,12 @@ export const Register: React.FC<RegisterProps> = ({ navigation }) => {
             <View style={styles.socialLine} />
           </View>
 
-          <TouchableOpacity
-            style={[styles.googleButton, (loading || googleLoading) && styles.buttonDisabled]}
+          <Pressable
+            style={({ pressed }) => [
+              styles.googleButton,
+              pressed && !(loading || googleLoading) && styles.googleButtonPressed,
+              (loading || googleLoading) && styles.buttonDisabled,
+            ]}
             onPress={handleGoogleRegister}
             disabled={loading || googleLoading}
             accessibilityRole="button"
@@ -213,17 +221,20 @@ export const Register: React.FC<RegisterProps> = ({ navigation }) => {
               />
             </View>
             <Text style={styles.googleButtonText}>{googleLoading ? 'Conectando con Google...' : 'Crear cuenta con Google'}</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
 
-        <TouchableOpacity
-          style={styles.secondaryButton}
+        <Pressable
+          style={({ pressed }) => [
+            styles.secondaryButton,
+            pressed && styles.secondaryButtonPressed,
+          ]}
           onPress={() => navigation.goBack()}
           accessibilityRole="button"
           accessibilityLabel="Volver al login"
         >
           <Text style={styles.secondaryText}>Ya tengo cuenta</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </CustomSafeArea>
   );

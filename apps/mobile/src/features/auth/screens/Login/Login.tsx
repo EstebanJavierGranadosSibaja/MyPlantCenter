@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useRef } from 'react';
 import { useForm } from 'react-hook-form';
-import { ActivityIndicator, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, Text, TextInput, View } from 'react-native';
 import { useAuth as useAuthContext } from 'src/core/contexts/AuthContext';
 import { AuthStackParamList } from 'src/core/navigation/AppNavigator';
 import { LoginFormValues, LoginSchema } from 'src/features/auth/validators/auth.validators';
@@ -112,8 +112,12 @@ export const Login: React.FC<LoginProps> = ({ navigation }) => {
                         onSubmitEditing={handleLogin}
                     />
 
-                    <TouchableOpacity
-                        style={[styles.button, isButtonDisabled && styles.buttonDisabled]}
+                    <Pressable
+                        style={({ pressed }) => [
+                            styles.button,
+                            pressed && !isButtonDisabled && styles.buttonPressed,
+                            isButtonDisabled && styles.buttonDisabled,
+                        ]}
                         onPress={handleLogin}
                         disabled={isButtonDisabled}
                         accessibilityRole="button"
@@ -122,7 +126,7 @@ export const Login: React.FC<LoginProps> = ({ navigation }) => {
                     >
                         {isSubmitting ? <ActivityIndicator color="white" /> : null}
                         <Text style={styles.buttonText}>{isSubmitting ? 'Ingresando...' : 'Ingresar'}</Text>
-                    </TouchableOpacity>
+                    </Pressable>
 
                     <View style={styles.socialDivider}>
                         <View style={styles.socialLine} />
@@ -130,8 +134,12 @@ export const Login: React.FC<LoginProps> = ({ navigation }) => {
                         <View style={styles.socialLine} />
                     </View>
 
-                    <TouchableOpacity
-                        style={[styles.googleButton, (loading || googleLoading) && styles.buttonDisabled]}
+                    <Pressable
+                        style={({ pressed }) => [
+                            styles.googleButton,
+                            pressed && !(loading || googleLoading) && styles.googleButtonPressed,
+                            (loading || googleLoading) && styles.buttonDisabled,
+                        ]}
                         onPress={handleGoogleLogin}
                         disabled={loading || googleLoading}
                         accessibilityRole="button"
@@ -146,17 +154,20 @@ export const Login: React.FC<LoginProps> = ({ navigation }) => {
                             />
                         </View>
                         <Text style={styles.googleButtonText}>{googleLoading ? 'Conectando con Google...' : 'Ingresar con Google'}</Text>
-                    </TouchableOpacity>
+                    </Pressable>
                 </View>
 
-                <TouchableOpacity
-                    style={styles.secondaryButton}
+                <Pressable
+                    style={({ pressed }) => [
+                        styles.secondaryButton,
+                        pressed && styles.secondaryButtonPressed,
+                    ]}
                     onPress={() => navigation.navigate('Register')}
                     accessibilityRole="button"
                     accessibilityLabel="Crear cuenta"
                 >
                     <Text style={styles.secondaryText}>Crear cuenta</Text>
-                </TouchableOpacity>
+                </Pressable>
             </View>
         </CustomSafeArea>
     );
