@@ -1,17 +1,17 @@
-import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { Feather } from '@expo/vector-icons';
+import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import React, { useMemo, useState } from 'react';
 import { Control, FieldPath, FieldValues, useController } from 'react-hook-form';
 import {
-  Platform,
-  StyleProp,
-  Text,
-  TextInput,
-  TextInputProps,
-  TextStyle,
-  TouchableOpacity,
-  View,
-  ViewStyle,
+    Platform,
+    StyleProp,
+    Text,
+    TextInput,
+    TextInputProps,
+    TextStyle,
+    TouchableOpacity,
+    View,
+    ViewStyle,
 } from 'react-native';
 import { FeatherIconName } from 'src/features/profile/types/user.types';
 import { useFormInputTheme } from './FormInput.styles';
@@ -139,7 +139,7 @@ export function FormInput<T extends FieldValues>({
       >
         <Feather
           name={showPassword ? 'eye-off' : 'eye'}
-          size={theme.typography.size['2xl']}
+          size={theme.typography.size.xl}
           color={theme.colors.textMuted}
         />
       </TouchableOpacity>
@@ -212,7 +212,7 @@ export function FormInput<T extends FieldValues>({
           {iconName ? (
             <Feather
               name={iconName}
-              size={theme.typography.size['2xl']}
+              size={theme.typography.size.xl}
               color={theme.colors.textMuted}
             />
           ) : null}
@@ -242,7 +242,7 @@ export function FormInput<T extends FieldValues>({
           {iconName ? (
             <Feather
               name={iconName}
-              size={theme.typography.size['2xl']}
+              size={theme.typography.size.xl}
               color={theme.colors.textMuted}
             />
           ) : null}

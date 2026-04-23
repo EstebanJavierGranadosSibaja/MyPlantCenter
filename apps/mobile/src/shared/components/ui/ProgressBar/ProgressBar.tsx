@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
 import { Text, View } from 'react-native';
 import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withDelay,
-  withTiming,
+    Easing,
+    useAnimatedStyle,
+    useSharedValue,
+    withDelay,
+    withTiming,
 } from 'react-native-reanimated';
 import { useProgressBarTheme } from './ProgressBar.styles';
 
@@ -74,7 +74,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
         style={[
           styles.track,
           {
-            height,
+            height: barHeight,
             backgroundColor: trackCol,
             borderRadius: barHeight,
           },
@@ -85,7 +85,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
             styles.fill,
             fillStyle,
             {
-              height,
+              height: barHeight,
               borderRadius: barHeight,
               backgroundColor: fillColor,
             },
@@ -110,7 +110,7 @@ export const XPBar: React.FC<{
       value={xp}
       max={xpMax}
       height={theme.spacing.xs + 2}
-      color={theme.colors.accentSoft}
+      color={theme.colors.accent}
       trackColor={theme.colors.trackColor}
       animDuration={1400}
       animDelay={delay}

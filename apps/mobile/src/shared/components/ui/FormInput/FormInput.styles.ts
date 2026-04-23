@@ -24,16 +24,22 @@ export const createFormInputStyles = (theme: AppTheme) => StyleSheet.create({
   fieldRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.cardBg,
+    backgroundColor: theme.colors.surface,
     borderRadius: theme.radius.md,
-    borderWidth: theme.borders.thick,
-    borderColor: theme.colors.border,
+    borderWidth: theme.borders.base,
+    borderColor: theme.colors.cardBorder,
     paddingHorizontal: theme.spacing.md,
+    minHeight: theme.spacing['3xl'] + theme.spacing.xs,
     gap: theme.spacing.sm,
   },
 
   fieldRowFocused: {
-    borderColor: theme.colors.primary,
+    borderColor: theme.colors.accent,
+    shadowColor: theme.colors.accent,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.16,
+    shadowRadius: 8,
+    elevation: theme.shadows.sm.elevation,
   },
 
   fieldRowError: {
@@ -41,15 +47,15 @@ export const createFormInputStyles = (theme: AppTheme) => StyleSheet.create({
   },
 
   fieldRowDisabled: {
-    backgroundColor: theme.colors.backgroundAlt,
+    backgroundColor: theme.colors.elevated,
   },
 
   input: {
     flex: 1,
     fontFamily: theme.typography.family.bodyRegular,
-    fontSize: theme.typography.size.lg,
+    fontSize: theme.typography.size.base,
     color: theme.colors.textPrimary,
-    paddingVertical: theme.spacing.md,
+    paddingVertical: theme.spacing.sm + 2,
   },
 
   errorRow: {
