@@ -12,7 +12,7 @@ const OWNER_TABS = ['perfil', 'categorias', 'ajustes'] as const;
 const VISITOR_TABS = ['perfil', 'categorias'] as const;
 
 const TAB_LABELS: Record<ProfileTab, string> = {
-    perfil: 'Perfil',
+    perfil: 'Resumen',
     categorias: 'Categorías',
     ajustes: 'Ajustes',
 };

@@ -1,6 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import React from 'react';
-import { Text, TouchableOpacity } from 'react-native';
+import { Pressable, Text } from 'react-native';
 import { useTabAjustesTheme } from '../TabAjustes.styles';
 
 interface AccountActionItemProps {
@@ -19,9 +19,12 @@ export const AccountActionItem: React.FC<AccountActionItemProps> = ({
   const { theme, styles } = useTabAjustesTheme();
 
   return (
-    <TouchableOpacity
-      style={[styles.actionButton, { marginBottom: theme.spacing.sm }]}
-      activeOpacity={0.8}
+    <Pressable
+      style={({ pressed }) => [
+        styles.actionButton,
+        { marginBottom: theme.spacing.sm },
+        pressed && styles.actionButtonPressed,
+      ]}
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={label}
@@ -29,6 +32,6 @@ export const AccountActionItem: React.FC<AccountActionItemProps> = ({
       <Feather name={iconName} size={theme.typography.size.lg} color={color} />
       <Text style={[styles.actionLabel, { color }]}>{label}</Text>
       <Feather name="chevron-right" size={theme.typography.size.lg} color={theme.colors.textMuted} />
-    </TouchableOpacity>
+    </Pressable>
   );
 };

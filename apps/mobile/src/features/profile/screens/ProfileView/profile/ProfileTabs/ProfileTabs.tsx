@@ -1,12 +1,12 @@
 import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { useProfileTabsTheme } from './ProfileTabs.styles';
 
 // Tipos
 export type ProfileTab = 'perfil' | 'categorias' | 'ajustes';
 
 export const TABS: { key: ProfileTab; label: string }[] = [
-  { key: 'perfil', label: 'Perfil' },
+  { key: 'perfil', label: 'Resumen' },
   { key: 'categorias', label: 'Categorías' },
   { key: 'ajustes', label: 'Ajustes' },
 ];
@@ -30,11 +30,14 @@ export const ProfileTabs: React.FC<ProfileTabsProps> = ({
     <View style={styles.wrapper}>
       <View style={styles.container}>
         {tabs.map(tab => (
-          <TouchableOpacity
+          <Pressable
             key={tab.key}
-            style={[styles.tab, active === tab.key && styles.tabActive]}
+            style={({ pressed }) => [
+              styles.tab,
+              pressed && styles.tabPressed,
+              active === tab.key && styles.tabActive,
+            ]}
             onPress={() => onChange(tab.key)}
-            activeOpacity={0.8}
             accessibilityLabel={tab.label}
             accessibilityRole="tab"
           >
@@ -44,7 +47,7 @@ export const ProfileTabs: React.FC<ProfileTabsProps> = ({
             ]}>
               {tab.label}
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         ))}
       </View>
     </View>

@@ -6,30 +6,41 @@ export const createProfileTabsStyles = (theme: ReturnType<typeof useAppThemeCont
 
   wrapper: {
     paddingHorizontal: theme.layout.screenPaddingH,
-    paddingTop:        theme.spacing.lg,
+    paddingTop:        theme.spacing.md,
     paddingBottom:     theme.spacing.sm,
   },
 
   container: {
     flexDirection:   'row',
-    backgroundColor: theme.colors.tabBg,
-    borderRadius:    theme.radius.md,
+    backgroundColor: theme.colors.elevated,
+    borderRadius:    theme.radius.lg,
     padding:         theme.spacing.xs,
-    gap:             theme.spacing.xs - 2,
+    gap:             theme.spacing.xs,
     borderWidth:     theme.borders.thin,
-    borderColor:     theme.colors.border,
+    borderColor:     theme.colors.cardBorder,
+    shadowColor:     theme.shadows.sm.color,
+    shadowOffset:    theme.shadows.sm.offset,
+    shadowOpacity:   theme.shadows.sm.opacity,
+    shadowRadius:    theme.shadows.sm.radius,
+    elevation:       theme.shadows.sm.elevation,
   },
 
   tab: {
     flex:            1,
-    borderRadius:    theme.radius.sm,
-    paddingVertical: theme.spacing.sm + 1,
+    borderRadius:    theme.radius.full,
+    paddingVertical: theme.spacing.sm,
     alignItems:      'center',
     justifyContent:  'center',
   },
 
+  tabPressed: {
+    opacity: 0.82,
+  },
+
   tabActive: {
-    backgroundColor: theme.colors.tabActive,
+    backgroundColor: theme.mode === 'light' ? theme.colors.heroInputBgSubtle : theme.colors.heroInputBg,
+    borderWidth: theme.borders.thin,
+    borderColor: theme.colors.cardBorder,
     shadowColor:     theme.shadows.sm.color,
     shadowOffset:    theme.shadows.sm.offset,
     shadowOpacity:   theme.shadows.sm.opacity,
@@ -40,12 +51,12 @@ export const createProfileTabsStyles = (theme: ReturnType<typeof useAppThemeCont
   tabText: {
     fontFamily: theme.typography.family.bodySemiBold,
     fontSize:   theme.typography.size.sm,
-    color:      theme.colors.tabInactive,
+    color:      theme.colors.textSecondary,
     letterSpacing: theme.spacing['4xs'],
   },
 
   tabTextActive: {
-    color: theme.colors.textInverse,
+    color: theme.colors.tabActive,
   },
 
 });
