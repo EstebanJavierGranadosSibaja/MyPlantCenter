@@ -6,7 +6,7 @@ from uuid import uuid4
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
-from apps.api.routers import register_routers
+from routers import register_routers
 
 
 logger = logging.getLogger("myplantcenter.api")
