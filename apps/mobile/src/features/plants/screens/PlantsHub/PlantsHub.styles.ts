@@ -4,13 +4,13 @@ import { useAppThemeContext } from 'src/core/contexts/ThemeContext';
 export const createPlantsHubStyles = (theme: ReturnType<typeof useAppThemeContext>) => StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: theme.colors.backgroundAlt,
+    backgroundColor: theme.colors.background,
   },
 
   content: {
     flex: 1,
     paddingHorizontal: theme.layout.screenPaddingH,
-    paddingTop: theme.spacing.md,
+    paddingTop: theme.spacing.sm,
     paddingBottom: theme.spacing['6xl'],
     gap: theme.spacing.md,
   },
@@ -19,19 +19,19 @@ export const createPlantsHubStyles = (theme: ReturnType<typeof useAppThemeContex
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: theme.colors.heroInputBgSubtle,
-    borderColor: theme.colors.heroInputBorderSubtle,
+    borderColor: theme.colors.cardBorder,
     borderWidth: theme.borders.base,
     borderRadius: theme.radius.lg,
     paddingHorizontal: theme.spacing.md,
     gap: theme.spacing.sm,
-    minHeight: theme.spacing['4xl'] + theme.spacing.sm,
+    minHeight: theme.spacing['3xl'] + theme.spacing.xs,
   },
 
   searchInput: {
     flex: 1,
     color: theme.colors.textPrimary,
     fontFamily: theme.typography.family.bodyRegular,
-    fontSize: theme.typography.size['2xl'],
+    fontSize: theme.typography.size.md,
   },
 
   filtersBlock: {
@@ -46,7 +46,7 @@ export const createPlantsHubStyles = (theme: ReturnType<typeof useAppThemeContex
   filterChip: {
     borderRadius: theme.radius.full,
     borderWidth: theme.borders.base,
-    borderColor: theme.colors.border,
+    borderColor: theme.colors.cardBorder,
     backgroundColor: theme.colors.cardBg,
     paddingVertical: theme.spacing.xs,
     paddingHorizontal: theme.spacing.sm,
@@ -60,7 +60,7 @@ export const createPlantsHubStyles = (theme: ReturnType<typeof useAppThemeContex
   filterChipText: {
     color: theme.colors.textSecondary,
     fontFamily: theme.typography.family.bodyMedium,
-    fontSize: theme.typography.size.base,
+    fontSize: theme.typography.size.sm,
   },
 
   filterChipTextActive: {
@@ -75,7 +75,7 @@ export const createPlantsHubStyles = (theme: ReturnType<typeof useAppThemeContex
   sortChip: {
     borderRadius: theme.radius.md,
     borderWidth: theme.borders.base,
-    borderColor: theme.colors.border,
+    borderColor: theme.colors.cardBorder,
     backgroundColor: theme.colors.surface,
     paddingVertical: theme.spacing.xs,
     paddingHorizontal: theme.spacing.sm,
@@ -87,9 +87,9 @@ export const createPlantsHubStyles = (theme: ReturnType<typeof useAppThemeContex
   },
 
   sortChipText: {
-    color: theme.colors.textMuted,
+    color: theme.colors.textSecondary,
     fontFamily: theme.typography.family.bodySemiBold,
-    fontSize: theme.typography.size.base,
+    fontSize: theme.typography.size.sm,
   },
 
   sortChipTextActive: {
@@ -103,7 +103,7 @@ export const createPlantsHubStyles = (theme: ReturnType<typeof useAppThemeContex
   },
 
   summaryText: {
-    color: theme.colors.textSecondary,
+    color: theme.colors.textPrimary,
     fontFamily: theme.typography.family.bodyMedium,
     fontSize: theme.typography.size.lg,
   },
@@ -116,12 +116,19 @@ export const createPlantsHubStyles = (theme: ReturnType<typeof useAppThemeContex
     borderRadius: theme.radius.full,
     paddingVertical: theme.spacing.xs,
     paddingHorizontal: theme.spacing.md,
+    borderWidth: theme.borders.base,
+    borderColor: theme.colors.accent,
+  },
+
+  addButtonPressed: {
+    backgroundColor: '#33B07A',
+    borderColor: '#33B07A',
   },
 
   addButtonText: {
     color: theme.colors.textInverse,
     fontFamily: theme.typography.family.bodySemiBold,
-    fontSize: theme.typography.size.lg,
+    fontSize: theme.typography.size.base,
   },
 
   listContent: {
@@ -134,8 +141,13 @@ export const createPlantsHubStyles = (theme: ReturnType<typeof useAppThemeContex
     borderColor: theme.colors.cardBorder,
     borderWidth: theme.borders.thin,
     borderRadius: theme.radius.md,
-    padding: theme.spacing.md,
+    padding: theme.spacing.lg,
     gap: theme.spacing.sm,
+    shadowColor: theme.shadows.md.color,
+    shadowOffset: theme.shadows.md.offset,
+    shadowOpacity: theme.shadows.md.opacity,
+    shadowRadius: theme.shadows.md.radius,
+    elevation: theme.shadows.md.elevation,
   },
 
   cardHead: {
@@ -163,13 +175,13 @@ export const createPlantsHubStyles = (theme: ReturnType<typeof useAppThemeContex
   cardTitle: {
     color: theme.colors.textPrimary,
     fontFamily: theme.typography.family.bodySemiBold,
-    fontSize: theme.typography.size['3xl'],
+    fontSize: theme.typography.size['2xl'],
   },
 
   cardSubtitle: {
-    color: theme.colors.textMuted,
+    color: theme.colors.textSecondary,
     fontFamily: theme.typography.family.bodyRegular,
-    fontSize: theme.typography.size.lg,
+    fontSize: theme.typography.size.base,
   },
 
   metaRow: {
@@ -183,7 +195,7 @@ export const createPlantsHubStyles = (theme: ReturnType<typeof useAppThemeContex
     alignItems: 'center',
     gap: theme.spacing.xs,
     borderRadius: theme.radius.full,
-    borderColor: theme.colors.border,
+    borderColor: theme.colors.cardBorder,
     borderWidth: theme.borders.thin,
     backgroundColor: theme.colors.heroInputBgSubtle,
     paddingVertical: theme.spacing.xs,
@@ -193,13 +205,13 @@ export const createPlantsHubStyles = (theme: ReturnType<typeof useAppThemeContex
   metaText: {
     color: theme.colors.textSecondary,
     fontFamily: theme.typography.family.bodyMedium,
-    fontSize: theme.typography.size.base,
+    fontSize: theme.typography.size.sm,
   },
 
   cardNotes: {
     color: theme.colors.textSecondary,
     fontFamily: theme.typography.family.bodyRegular,
-    fontSize: theme.typography.size.lg,
+    fontSize: theme.typography.size.base,
   },
 
   cardActions: {
@@ -211,7 +223,7 @@ export const createPlantsHubStyles = (theme: ReturnType<typeof useAppThemeContex
     flex: 1,
     borderRadius: theme.radius.md,
     borderWidth: theme.borders.base,
-    borderColor: theme.colors.border,
+    borderColor: theme.colors.cardBorder,
     backgroundColor: theme.colors.surface,
     paddingVertical: theme.spacing.sm,
     alignItems: 'center',
@@ -220,21 +232,30 @@ export const createPlantsHubStyles = (theme: ReturnType<typeof useAppThemeContex
     gap: theme.spacing.xs,
   },
 
+  cardActionButtonPressed: {
+    backgroundColor: theme.colors.elevated,
+  },
+
   cardActionPrimary: {
     backgroundColor: theme.colors.accent,
     borderColor: theme.colors.accent,
   },
 
+  cardActionPrimaryPressed: {
+    backgroundColor: '#33B07A',
+    borderColor: '#33B07A',
+  },
+
   cardActionText: {
     color: theme.colors.textPrimary,
     fontFamily: theme.typography.family.bodySemiBold,
-    fontSize: theme.typography.size.lg,
+    fontSize: theme.typography.size.base,
   },
 
   cardActionPrimaryText: {
     color: theme.colors.textInverse,
     fontFamily: theme.typography.family.bodySemiBold,
-    fontSize: theme.typography.size.lg,
+    fontSize: theme.typography.size.base,
   },
 
   loadingWrap: {
@@ -242,9 +263,9 @@ export const createPlantsHubStyles = (theme: ReturnType<typeof useAppThemeContex
   },
 
   loadingText: {
-    color: theme.colors.textMuted,
+    color: theme.colors.textSecondary,
     fontFamily: theme.typography.family.bodyRegular,
-    fontSize: theme.typography.size.xl,
+    fontSize: theme.typography.size.lg,
   },
 });
 

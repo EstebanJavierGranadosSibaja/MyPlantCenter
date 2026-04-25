@@ -1,6 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { Plant } from 'src/features/plants/types/plant.types';
 import { usePlantsHubTheme } from '../PlantsHub.styles';
 
@@ -69,23 +69,28 @@ export const PlantCard: React.FC<PlantCardProps> = ({
       )}
 
       <View style={styles.cardActions}>
-        <TouchableOpacity
-          style={[styles.cardActionButton, styles.cardActionPrimary]}
+        <Pressable
+          style={({ pressed }) => [
+            styles.cardActionButton,
+            styles.cardActionPrimary,
+            pressed && styles.cardActionPrimaryPressed,
+          ]}
           onPress={() => onEdit(plant.id)}
-          activeOpacity={0.85}
         >
           <Feather name="edit-2" size={theme.typography.size.base} color={theme.colors.textInverse} />
           <Text style={styles.cardActionPrimaryText}>Editar</Text>
-        </TouchableOpacity>
+        </Pressable>
 
-        <TouchableOpacity
-          style={styles.cardActionButton}
+        <Pressable
+          style={({ pressed }) => [
+            styles.cardActionButton,
+            pressed && styles.cardActionButtonPressed,
+          ]}
           onPress={() => onDelete(plant.id)}
-          activeOpacity={0.85}
         >
           <Feather name="trash-2" size={theme.typography.size.base} color={theme.colors.textPrimary} />
           <Text style={styles.cardActionText}>Eliminar</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </View>
   );

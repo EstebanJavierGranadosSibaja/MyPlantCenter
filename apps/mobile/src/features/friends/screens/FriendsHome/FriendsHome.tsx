@@ -1,17 +1,17 @@
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
+import { AppHeader } from 'src/components/navigation/AppHeader/AppHeader';
 import { useAuth } from 'src/core/contexts/AuthContext';
+import httpClient from 'src/core/http/client';
+import { FriendsStackParamList } from 'src/core/navigation/AppNavigator';
+import { socialService } from 'src/features/friends/services/friends.service';
+import { FriendRequest, Friendship } from 'src/features/friends/types/friends.types';
+import { userService } from 'src/features/profile/services/user.service';
+import { ApiResponse } from 'src/features/profile/types/user.types';
 import { EmptyState } from 'src/shared/components/feedback/EmptyState/EmptyState';
 import { CustomSafeArea } from 'src/shared/components/layout/CustomSafeArea';
-import { AppHeader } from 'src/components/navigation/AppHeader/AppHeader';
-import { FriendsStackParamList } from 'src/core/navigation/AppNavigator';
-import httpClient from 'src/core/http/client';
-import { socialService } from 'src/features/friends/services/friends.service';
-import { userService } from 'src/features/profile/services/user.service';
-import { FriendRequest, Friendship } from 'src/features/friends/types/friends.types';
-import { ApiResponse } from 'src/features/profile/types/user.types';
 import { useFriendsHomeTheme } from './FriendsHome.styles';
 
 type FriendsNavigation = NativeStackNavigationProp<FriendsStackParamList>;
@@ -121,21 +121,26 @@ export const FriendsHome: React.FC = () => {
             <Text style={styles.codeText}>{friendCode}</Text>
             <Text style={styles.codeHint}>Compártelo tal cual para que te encuentren rápido</Text>
             <View style={styles.navRow}>
-              <TouchableOpacity
-                style={[styles.navButton, styles.navButtonPrimary]}
+              <Pressable
+                style={({ pressed }) => [
+                  styles.navButton,
+                  styles.navButtonPrimary,
+                  pressed && styles.navButtonPrimaryPressed,
+                ]}
                 onPress={() => navigation.navigate('AddFriend')}
-                activeOpacity={0.85}
               >
                 <Text style={[styles.navButtonText, styles.navButtonTextPrimary]}>Agregar por código</Text>
-              </TouchableOpacity>
+              </Pressable>
 
-              <TouchableOpacity
-                style={styles.navButton}
+              <Pressable
+                style={({ pressed }) => [
+                  styles.navButton,
+                  pressed && styles.navButtonPressed,
+                ]}
                 onPress={() => navigation.navigate('FriendRequests')}
-                activeOpacity={0.85}
               >
                 <Text style={styles.navButtonText}>Ver solicitudes</Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
           </View>
 
@@ -168,13 +173,15 @@ export const FriendsHome: React.FC = () => {
                   <Text style={styles.requestTitle}>Solicitud de {getRequestLabel(request)}</Text>
                   <Text style={styles.requestMeta}>Pendiente de respuesta</Text>
 
-                  <TouchableOpacity
-                    style={styles.requestAction}
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.requestAction,
+                      pressed && styles.requestActionPressed,
+                    ]}
                     onPress={() => navigation.navigate('FriendRequests')}
-                    activeOpacity={0.85}
                   >
                     <Text style={styles.requestActionText}>Gestionar solicitud</Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 </View>
               ))
             )}

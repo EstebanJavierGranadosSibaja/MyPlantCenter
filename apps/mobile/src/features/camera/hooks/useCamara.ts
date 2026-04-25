@@ -1,125 +1,108 @@
-//useCamera
-import { useRef, useState, useCallback, useEffect } from 'react';
-import { CameraView, CameraType, FlashMode } from 'expo-camera';
+import { CameraType, CameraView, FlashMode } from 'expo-camera';
+import { useCallback, useEffect, useRef, useState } from 'react';
+
+import PermissionService, {
+    AppPermissions,
+} from 'src/shared/services/permission.service';
 
 import CameraService, {
-  PhotoResult,
-  CaptureOptions,
+    CaptureOptions,
+    PhotoResult,
 } from '../services/camara.service';
-import PermissionService, { AppPermissions } from 'src/shared/services/permission.service';
 
-interface UseCameraOptions {
-  requestOnMount?: boolean;  
-}
+export function useCamera() {
+    const cameraRef = useRef<CameraView>(null);
 
-interface UseCameraReturn {
+    const [permissions, setPermissions] =
+        useState<AppPermissions | null>(null);
+    const [isLoadingPermissions, setIsLoadingPermissions] =
+        useState(false);
 
-  cameraRef: React.RefObject<CameraView|null>;
-  permissions: AppPermissions | null;
-  isPermissionGranted: boolean;
-  isLoadingPermissions: boolean;
-  facing: CameraType;
-  flashMode: FlashMode;
-  requestPermissions: () => Promise<void>;
-  takePhoto: (options?: CaptureOptions) => Promise<PhotoResult | null>;
-  toggleFacing: () => void;
-  toggleFlash: () => void;
-  saveToGallery: (uri: string) => Promise<void>;
-  lastPhoto: PhotoResult | null;
-  error: string | null;
-}
+    const [facing, setFacing] = useState<CameraType>('back');
+    const [flashMode, setFlashMode] = useState<FlashMode>('off');
+    const [lastPhoto, setLastPhoto] =
+        useState<PhotoResult | null>(null);
 
-export function useCamera(options: UseCameraOptions = {}): UseCameraReturn {
-  const { requestOnMount = true } = options;
+    const [error, setError] = useState<string | null>(null);
 
-  const cameraRef = useRef<CameraView>(null);
+    const isPermissionGranted =
+        !!permissions &&
+        PermissionService.isGranted(permissions.camera) &&
+        PermissionService.isGranted(permissions.mediaLibrary);
 
-  const [permissions, setPermissions] = useState<AppPermissions | null>(null);
-  const [isLoadingPermissions, setIsLoadingPermissions] = useState(false);
-  const [facing, setFacing] = useState<CameraType>('back');
-  const [flashMode, setFlashMode] = useState<FlashMode>('off');
-  const [lastPhoto, setLastPhoto] = useState<PhotoResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
+    const isPermanentlyDenied =
+        permissions &&
+        permissions.camera === 'denied' &&
+        permissions.mediaLibrary === 'denied';
 
+    const requestPermissions = useCallback(async () => {
+        setIsLoadingPermissions(true);
+        setError(null);
+        try {
+            const result =
+                await PermissionService.requestAllPermissions();
+            setPermissions(result);
+        } catch {
+            setError('Error al solicitar permisos');
+        } finally {
+            setIsLoadingPermissions(false);
+        }
+    }, []);
 
-  const isPermissionGranted =
-    !!permissions &&
-    PermissionService.isGranted(permissions.camera) &&
-    PermissionService.isGranted(permissions.mediaLibrary);
+    useEffect(() => {
+        requestPermissions();
+    }, [requestPermissions]);
 
-  const requestPermissions = useCallback(async () => {
-    setIsLoadingPermissions(true);
-    setError(null);
-    try {
-      const result = await PermissionService.requestAllPermissions();
-      setPermissions(result);
-    } catch (err) {
-      setError('Error al solicitar permisos');
-    } finally {
-      setIsLoadingPermissions(false);
-    }
-  }, []);
+    const takePhoto = useCallback(async (options?: CaptureOptions) => {
+        try {
+            const photo = await CameraService.takePhoto(
+                cameraRef,
+                options
+            );
+            setLastPhoto(photo);
+            return photo;
+        } catch (err) {
+            setError(
+                err instanceof Error ? err.message : 'Error al capturar'
+            );
+            return null;
+        }
+    }, []);
 
- 
-  useEffect(() => {
-    if (requestOnMount) {
-      requestPermissions();
-    }
-  }, [requestOnMount]);
+    const toggleFacing = () =>
+        setFacing((p) => CameraService.toggleFacing(p));
 
-  const takePhoto = useCallback(
-    async (options: CaptureOptions = {}): Promise<PhotoResult | null> => {
-      setError(null);
-      if(cameraRef.current === null){
-         throw new Error("No se ha detectado ninguna camára")
-      }
-      try {
-        const photo = await CameraService.takePhoto(
-        cameraRef as React.RefObject<CameraView>,
-        options
-      );
+    const toggleFlash = () =>
+        setFlashMode((p) => CameraService.cycleFlashMode(p));
+
+    const saveToGallery = async (uri: string) => {
+        try {
+            await CameraService.saveToGallery(uri);
+        } catch {
+            setError('Error al guardar en galería');
+        }
+    };
+
+    const setExternalPhoto = (photo: PhotoResult) =>
         setLastPhoto(photo);
-        return photo;
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'Error al capturar foto';
-        setError(message);
-        return null;
-      }
-    },
-    []
-  );
 
+    const clearPhoto = () => setLastPhoto(null);
 
-  const toggleFacing = useCallback(() => {
-    setFacing((prev) => CameraService.toggleFacing(prev));
-  }, []);
-
-  const toggleFlash = useCallback(() => {
-    setFlashMode((prev) => CameraService.cycleFlashMode(prev));
-  }, []);
-
-  const saveToGallery = useCallback(async (uri: string) => {
-    setError(null);
-    try {
-      await CameraService.saveToGallery(uri);
-    } catch {
-      setError('Error al guardar en galería');
-    }
-  }, []);
-
-  return {
-    cameraRef,
-    permissions,
-    isPermissionGranted,
-    isLoadingPermissions,
-    facing,
-    flashMode,
-    requestPermissions,
-    takePhoto,
-    toggleFacing,
-    toggleFlash,
-    saveToGallery,
-    lastPhoto,
-    error,
-  };
+    return {
+        cameraRef,
+        isPermissionGranted,
+        isPermanentlyDenied,
+        isLoadingPermissions,
+        requestPermissions,
+        takePhoto,
+        toggleFacing,
+        toggleFlash,
+        saveToGallery,
+        lastPhoto,
+        setExternalPhoto,
+        clearPhoto,
+        error,
+        facing,
+        flashMode,
+    };
 }

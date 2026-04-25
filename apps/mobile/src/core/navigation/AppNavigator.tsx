@@ -8,6 +8,7 @@ import { ActivityIndicator, View } from 'react-native';
 import { useAuth } from 'src/core/contexts/AuthContext';
 import { useAppThemeContext } from 'src/core/contexts/ThemeContext';
 import { useTabBarTheme } from 'src/core/navigation/AppTabBar.styles';
+import { backgroundSyncService } from 'src/features/camera/services/backgroundSync.service';
 import { Login } from 'src/features/auth/screens/Login/Login';
 import { Register } from 'src/features/auth/screens/Register/Register';
 import { CameraTabButton } from 'src/features/camera/components/CameraTabButton/CameraTabButton';
@@ -219,6 +220,16 @@ function AuthNavigator() {
 export function AppNavigator() {
   const { isAuthenticated, loading } = useAuth();
   const theme = useAppThemeContext();
+
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      backgroundSyncService.startListening();
+    }
+
+    return () => {
+      backgroundSyncService.stopListening();
+    };
+  }, [isAuthenticated]);
 
   if (loading) {
     return (

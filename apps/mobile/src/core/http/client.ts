@@ -74,10 +74,13 @@ httpClient.interceptors.response.use(
     const status = isAxiosError(error) ? (error.response?.status ?? 'NETWORK') : 'ERROR';
     console.error(`[HTTP][ERR][${traceId ?? 'no-trace'}] ${status} ${method} ${url} -> ${normalizeErrorMessage(error)}`);
 
+    const isNetworkError = isAxiosError(error) && !error.response;
+
     const normalized: ApiResponse<never> = {
       success: false,
       error: normalizeErrorMessage(error),
       data: undefined as never,
+      isNetworkError,
     };
 
     const safeConfig = (

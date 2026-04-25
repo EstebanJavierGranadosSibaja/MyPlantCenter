@@ -1,26 +1,62 @@
 import { Feather } from '@expo/vector-icons';
-import { useFocusEffect } from '@react-navigation/native';
-import React, { useEffect, useMemo, useState } from 'react';
-import { Text, View } from 'react-native';
-import { useAuth } from 'src/core/contexts/AuthContext';
-import { EmptyState } from 'src/shared/components/feedback/EmptyState/EmptyState';
-import { CustomSafeArea } from 'src/shared/components/layout/CustomSafeArea';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import React, { useMemo, useState } from 'react';
+import { Pressable, Text, View } from 'react-native';
 import { AppHeader } from 'src/components/navigation/AppHeader/AppHeader';
+import { useAuth } from 'src/core/contexts/AuthContext';
+import { RootStackParamList } from 'src/core/navigation/AppNavigator';
 import { plantService } from 'src/features/plants/services/plant.service';
+import { CustomSafeArea } from 'src/shared/components/layout/CustomSafeArea';
 import { useDashboardTheme } from './Dashboard.styles';
 
+type RootNavigation = NativeStackNavigationProp<RootStackParamList>;
+
 // Saludo, varia según la hora
-function getGreeting(): { text: string; icon: string } {
+function getGreeting(): { text: string; icon: React.ComponentProps<typeof Feather>['name'] } {
   const hour = new Date().getHours();
   if (hour < 12) return { text: 'Buenos días', icon: 'sunrise' };
   if (hour < 18) return { text: 'Buenas tardes', icon: 'cloud' };
   return { text: 'Buenas noches', icon: 'moon' };
 }
 
+function getCollectionStatus(plantsCount: number, loading: boolean): string {
+  if (loading) {
+    return 'Sync';
+  }
+
+  if (plantsCount === 0) {
+    return 'Vacia';
+  }
+
+  if (plantsCount < 4) {
+    return 'Crece';
+  }
+
+  return 'Activa';
+}
+
+function getSummaryHint(plantsCount: number, loading: boolean): string {
+  if (loading) {
+    return 'Actualizando tu resumen general.';
+  }
+
+  if (plantsCount === 0) {
+    return 'Agrega tu primera planta para comenzar a registrar riego y salud.';
+  }
+
+  if (plantsCount === 1) {
+    return 'Buen comienzo, mantén el seguimiento para no perder el ritmo.';
+  }
+
+  return 'Tu jardin va en crecimiento, revisa plantas y amistades desde las otras pestañas.';
+}
+
 // Componente 
 export const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const { theme, styles } = useDashboardTheme();
+  const navigation = useNavigation<RootNavigation>();
   const greeting = getGreeting();
   const [loading, setLoading] = useState(true);
   const [plantsCount, setPlantsCount] = useState(0);
@@ -53,45 +89,89 @@ export const Dashboard: React.FC = () => {
     return name;
   }, [user?.fullName]);
 
-  useEffect(() => {
-    loadPlantsCount();
-  }, [loadPlantsCount]);
-
   useFocusEffect(
     React.useCallback(() => {
       loadPlantsCount();
     }, [loadPlantsCount]),
   );
 
+  const plantsLabel = plantsCount === 1 ? 'planta' : 'plantas';
+  const collectionStatus = getCollectionStatus(plantsCount, loading);
+  const summaryHint = getSummaryHint(plantsCount, loading);
+
+  const handleAddPlant = () => {
+    navigation.navigate('AddPlant');
+  };
+
   return (
-    <CustomSafeArea>
+    <CustomSafeArea
+      scroll
+      scrollBottomInset={theme.layout.heroPaddingBottom + theme.spacing['4xl']}
+    >
       <View style={styles.root}>
         <AppHeader
-          title="MyPlantCenter"
-          subtitle="BIENVENIDO"
+          title="Inicio"
+          subtitle="TU PANEL DIARIO"
           showBack={false}
         />
-        {!loading && plantsCount === 0 ? (
-          <EmptyState
-            iconName="sun"
-            title="Todo listo"
-            subtitle="Agrega plantas para ver tu resumen"
-          />
-        ) : (
-          <View style={styles.greetingSection}>
-            <Feather
-              name={greeting.icon as any}
-              size={theme.typography.size['6xl']}
-              color={theme.colors.accent}
-            />
-            <Text style={styles.greetingTitle}>
-              {greeting.text}, {firstName}
-            </Text>
+        <View style={styles.content}>
+          <View style={styles.heroCard}>
+            <View style={styles.greetingRow}>
+              <View style={styles.greetingIconWrap}>
+                <Feather
+                  name={greeting.icon}
+                  size={theme.typography.size.lg}
+                  color={theme.colors.accent}
+                />
+              </View>
+
+              <View style={styles.greetingCopy}>
+                <Text style={styles.greetingEyebrow}>{greeting.text}</Text>
+                <Text style={styles.greetingTitle}>{firstName}</Text>
+              </View>
+            </View>
+
             <Text style={styles.greetingSubtitle}>
-              Tienes {plantsCount} planta{plantsCount === 1 ? '' : 's'} registradas
+              {loading ? 'Actualizando tu resumen...' : `Tienes ${plantsCount} ${plantsLabel} registradas.`}
             </Text>
           </View>
-        )}
+
+          <View style={styles.metricsRow}>
+            <View style={styles.metricCard}>
+              <Text style={styles.metricLabel}>Plantas</Text>
+              <Text style={styles.metricValue}>{loading ? '--' : String(plantsCount)}</Text>
+            </View>
+
+            <View style={styles.metricCard}>
+              <Text style={styles.metricLabel}>Coleccion</Text>
+              <Text style={styles.metricValue}>{collectionStatus}</Text>
+            </View>
+          </View>
+
+          <View style={styles.summaryCard}>
+            <Text style={styles.summaryTitle}>Resumen rapido</Text>
+            <Text style={styles.summaryText}>{summaryHint}</Text>
+
+            <Pressable
+              style={({ pressed }) => [
+                styles.actionButton,
+                pressed && styles.actionButtonPressed,
+              ]}
+              onPress={handleAddPlant}
+              accessibilityRole="button"
+              accessibilityLabel="Agregar planta"
+            >
+              <Feather
+                name="plus"
+                size={theme.typography.size.base}
+                color={theme.colors.textInverse}
+              />
+              <Text style={styles.actionButtonText}>
+                {plantsCount === 0 ? 'Agregar primera planta' : 'Agregar otra planta'}
+              </Text>
+            </Pressable>
+          </View>
+        </View>
       </View>
     </CustomSafeArea>
   );

@@ -1,20 +1,65 @@
 import { Feather } from '@expo/vector-icons';
 import { useCamera } from '@features/camera/hooks/useCamara';
 import { CameraView } from 'expo-camera';
+import * as ImagePicker from 'expo-image-picker';
 import React from 'react';
-import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Linking, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+
 import { AppHeader } from 'src/components/navigation/AppHeader/AppHeader';
+import { useAuth } from 'src/core/contexts/AuthContext';
+import { detectionHistoryService } from 'src/features/camera/services/detectionHistory.service';
+import { cameraSyncQueueService } from 'src/features/camera/services/cameraSyncQueue.service';
+import {
+    PlantDetectionResult,
+    plantDetectionService,
+} from 'src/features/camera/services/plantDetection.service';
 import { showToast } from 'src/shared/components/feedback/FormToast/FormToast';
 import { CustomSafeArea } from 'src/shared/components/layout/CustomSafeArea';
 import { useCameraScanTheme } from './CameraScan.styles';
 
+const CONNECTIVITY_ERROR_REGEX = /network|timed?\s*out|timeout|conex|fetch|enotfound|econn/i;
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return 'No se pudo completar la operación.';
+}
+
+function isIgnoredWarning(error: unknown): boolean {
+  const message = String(error?.message || error);
+  return message.toLowerCase().includes('deprecated');
+}
+
+function handleServiceError(error: unknown, fallbackMessage: string): { isOffline: boolean; shouldShowError: boolean; message: string } {
+  const message = getErrorMessage(error);
+  const looksOffline = CONNECTIVITY_ERROR_REGEX.test(message);
+
+  if (isIgnoredWarning(error)) {
+    console.warn('[IGNORED WARNING]', message);
+    return { isOffline: false, shouldShowError: false, message };
+  }
+
+  return { isOffline: looksOffline, shouldShowError: true, message: looksOffline ? message : fallbackMessage };
+}
+
 export const CameraScan: React.FC = () => {
   const { theme, styles } = useCameraScanTheme();
+  const { user } = useAuth();
+
   const [isCapturing, setIsCapturing] = React.useState(false);
+  const [isAnalyzing, setIsAnalyzing] = React.useState(false);
+  const [isSyncing, setIsSyncing] = React.useState(false);
+  const [captureSource, setCaptureSource] = React.useState<'camera' | 'gallery'>('camera');
+  const [analysisResult, setAnalysisResult] = React.useState<PlantDetectionResult | null>(null);
+  const [pendingDetectionsCount, setPendingDetectionsCount] = React.useState(0);
+  const [syncMessage, setSyncMessage] = React.useState<string | null>(null);
 
   const {
     cameraRef,
     isPermissionGranted,
+    isPermanentlyDenied,
     isLoadingPermissions,
     requestPermissions,
     takePhoto,
@@ -22,92 +67,337 @@ export const CameraScan: React.FC = () => {
     toggleFlash,
     saveToGallery,
     lastPhoto,
+    setExternalPhoto,
+    clearPhoto,
     error,
     facing,
     flashMode,
   } = useCamera();
 
-  // 🔔 errores del hook
-  React.useEffect(() => {
-    if (error) {
-      showToast({ type: 'error', title: error });
+  const currentUserId = user?.id ?? null;
+
+  const refreshPendingCount = React.useCallback(async () => {
+    const queue = await cameraSyncQueueService.getQueue();
+
+    if (!currentUserId) {
+      setPendingDetectionsCount(queue.length);
+      return;
     }
+
+    setPendingDetectionsCount(
+      queue.filter((item) => item.userId === currentUserId).length,
+    );
+  }, [currentUserId]);
+
+  React.useEffect(() => {
+    void refreshPendingCount();
+  }, [refreshPendingCount]);
+
+  React.useEffect(() => {
+    if (!error) {
+      return;
+    }
+
+    showToast({
+      type: 'error',
+      title: error,
+    });
   }, [error]);
 
-  // 📸 captura con bloqueo + guardado opcional
+  const syncPendingDetections = React.useCallback(async () => {
+    if (!currentUserId || isSyncing) {
+      return;
+    }
+
+    setIsSyncing(true);
+    setSyncMessage(null);
+
+    const queue = (await cameraSyncQueueService.getQueue()).filter(
+      (item) => item.userId === currentUserId,
+    );
+
+    if (queue.length === 0) {
+      setIsSyncing(false);
+      setSyncMessage('No hay análisis pendientes de sincronización.');
+      return;
+    }
+
+    let synced = 0;
+
+    for (const item of queue) {
+      try {
+        await plantDetectionService.analyze(item.userId, item.payload);
+        await cameraSyncQueueService.remove(item.id);
+        synced += 1;
+      } catch {
+        await cameraSyncQueueService.incrementAttempts(item.id);
+      }
+    }
+
+    await refreshPendingCount();
+    const remainingQueue = (await cameraSyncQueueService.getQueue()).filter(
+      (item) => item.userId === currentUserId,
+    );
+
+    if (synced > 0) {
+      showToast({
+        type: 'success',
+        title: 'Sincronización completada',
+        subtitle: `Se sincronizaron ${synced} análisis pendientes.`,
+      });
+    }
+
+    if (remainingQueue.length > 0) {
+      setSyncMessage(`Quedan ${remainingQueue.length} análisis pendientes.`);
+      showToast({
+        type: 'warning',
+        title: 'Sincronización parcial',
+        subtitle: 'Algunos análisis siguen pendientes. Intenta de nuevo.',
+      });
+    } else {
+      setSyncMessage('Sincronización al día.');
+    }
+
+    setIsSyncing(false);
+  }, [currentUserId, isSyncing, refreshPendingCount]);
+
   const onCapture = async () => {
     if (isCapturing) return;
 
     setIsCapturing(true);
-    const photo = await takePhoto({ quality: 0.7 });
+    setCaptureSource('camera');
+    setAnalysisResult(null);
+    setSyncMessage(null);
+
+    const photo = await takePhoto({ quality: 0.7, base64: true });
+
     setIsCapturing(false);
 
-    if (!photo) {
-      showToast({ type: 'error', title: 'No se pudo tomar la foto' });
-      return;
-    }
+    if (!photo) return;
 
-    // opcional: guardar automáticamente
-    try {
-      await saveToGallery(photo.uri);
-      showToast({ type: 'success', title: 'Foto guardada en galería' });
-    } catch {
-      showToast({ type: 'error', title: 'No se pudo guardar en galería' });
-    }
+     try {
+       await saveToGallery(photo.uri);
+       showToast({ type: 'success', title: 'Foto guardada' });
+     } catch (error) {
+       showToast({
+         type: 'error',
+         title: 'No se pudo guardar la foto',
+         subtitle: getErrorMessage(error),
+       });
+     }
   };
 
-  // 🤖 punto de integración con IA
-  const onUseForAi = () => {
-    if (!lastPhoto) return;
+  const onPickFromGallery = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.8,
+      base64: true,
+    });
 
-    showToast({
-      type: 'success',
-      title: 'Imagen lista para IA',
-      subtitle: 'Aquí conectas tu modelo o endpoint.',
+    if (result.canceled) return;
+
+    const selected = result.assets[0];
+
+    setCaptureSource('gallery');
+    setAnalysisResult(null);
+    setSyncMessage(null);
+
+    setExternalPhoto({
+      uri: selected.uri,
+      width: selected.width,
+      height: selected.height,
+      base64: selected.base64 ?? undefined,
+      mimeType: selected.mimeType ?? 'image/jpeg',
     });
   };
 
-  // 🔄 permitir nueva captura (sin tocar el hook)
-  const onRetake = () => {
-    // truco simple: “ocultar” preview dejando que la cámara vuelva a ser protagonista
-    // si quieres reset real, puedes extender el hook con setLastPhoto(null)
-    showToast({ type: 'success', title: 'Listo para nueva captura' });
+  const onAnalyzeWithAI = async () => {
+    if (isAnalyzing || !lastPhoto) {
+      return;
+    }
+
+    if (!currentUserId) {
+      showToast({
+        type: 'error',
+        title: 'Sesión inválida',
+        subtitle: 'Inicia sesión otra vez para usar el análisis IA.',
+      });
+      return;
+    }
+
+    if (!lastPhoto.base64) {
+      showToast({
+        type: 'warning',
+        title: 'Imagen no compatible',
+        subtitle: 'Toma otra foto o elige una imagen válida desde galería.',
+      });
+      return;
+    }
+
+    const payload = {
+      imageUri: lastPhoto.uri,
+      imageBase64: lastPhoto.base64,
+      imageMimeType: lastPhoto.mimeType ?? 'image/jpeg',
+      source: captureSource,
+    };
+
+    setIsAnalyzing(true);
+    setSyncMessage(null);
+
+    try {
+      const result = await plantDetectionService.analyze(currentUserId, payload);
+      setAnalysisResult(result);
+
+      showToast({
+        type: 'success',
+        title: 'Análisis IA completado',
+        subtitle: 'La detección se guardó en la base de datos.',
+      });
+    } catch (error) {
+      const { isOffline, shouldShowError, message } = handleServiceError(error, 'No se pudo analizar la planta');
+
+      if (!shouldShowError) {
+        setIsAnalyzing(false);
+        return;
+      }
+
+      if (isOffline) {
+          const historyRecord = await detectionHistoryService.addPending(payload.imageUri);
+          await cameraSyncQueueService.addToQueue(historyRecord.id, currentUserId, payload);
+          await refreshPendingCount();
+
+        setSyncMessage('Sin conexión. Guardamos este análisis para sincronizarlo luego.');
+        showToast({
+          type: 'warning',
+          title: 'Sin conexión',
+          subtitle: 'Tu análisis quedó en cola y se puede reintentar.',
+        });
+      } else {
+        showToast({
+          type: 'error',
+          title: 'No se pudo analizar la planta',
+          subtitle: message,
+        });
+      }
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   if (isLoadingPermissions) {
+    return <Text style={{ padding: 20 }}>Cargando permisos...</Text>;
+  }
+
+  if (!isPermissionGranted) {
     return (
       <CustomSafeArea>
-        <View style={styles.root}>
-          <AppHeader title="Escáner IA" subtitle="BÚSQUEDA VISUAL" showBack />
-          <View style={styles.content}>
-            <Text style={styles.subtitle}>Cargando permisos...</Text>
+        <AppHeader title="Escáner IA" subtitle="BÚSQUEDA VISUAL" showBack />
+
+        <View style={styles.permissionContainer}>
+          <View style={styles.permissionBox}>
+            <Text style={styles.title}>Permisos requeridos</Text>
+
+            <Text style={styles.subtitle}>
+              Necesitamos cámara y galería para análisis automático. Puedes
+              habilitarlas ahora o usar modo limitado sin escaneo.
+            </Text>
+
+            {!isPermanentlyDenied ? (
+              <TouchableOpacity style={styles.actionButton} onPress={requestPermissions}>
+                <Text style={styles.actionText}>Conceder permisos</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={() => Linking.openSettings()}
+              >
+                <Text style={styles.actionText}>Ir a ajustes</Text>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
       </CustomSafeArea>
     );
   }
 
-  if (!isPermissionGranted) {
+  if (lastPhoto) {
     return (
       <CustomSafeArea>
-        <View style={styles.root}>
-          <AppHeader title="Escáner IA" subtitle="BÚSQUEDA VISUAL" showBack />
-          <View style={styles.content}>
-            <View style={styles.frame}>
-              <Text style={styles.title}>Permiso requerido</Text>
-              <Text style={styles.subtitle}>
-                Necesitamos acceso a la cámara para escanear plantas.
+        <AppHeader title="Escáner IA" subtitle="BÚSQUEDA VISUAL" showBack />
+
+        <ScrollView
+          style={styles.previewContainer}
+          contentContainerStyle={styles.previewContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <Image source={{ uri: lastPhoto.uri }} style={styles.previewImage} />
+
+          {pendingDetectionsCount > 0 ? (
+            <View style={styles.syncCard}>
+              <Text style={styles.syncTitle}>Sincronización pendiente</Text>
+              <Text style={styles.syncSubtitle}>
+                Tienes {pendingDetectionsCount} análisis en cola por falta de conexión.
               </Text>
+
               <TouchableOpacity
-                style={styles.actionButton}
-                onPress={requestPermissions}
-                activeOpacity={0.85}
+                style={styles.secondaryButton}
+                onPress={syncPendingDetections}
+                disabled={isSyncing}
               >
-                <Text style={styles.actionButtonText}>Conceder permisos</Text>
+                <Text style={styles.secondaryText}>
+                  {isSyncing ? 'Sincronizando...' : 'Reintentar sincronización'}
+                </Text>
               </TouchableOpacity>
             </View>
+          ) : null}
+
+          {syncMessage ? (
+            <View style={styles.messageCard}>
+              <Text style={styles.messageText}>{syncMessage}</Text>
+            </View>
+          ) : null}
+
+          {analysisResult ? (
+            <View style={styles.resultCard}>
+              <Text style={styles.resultTitle}>Resultado IA</Text>
+              <Text style={styles.resultName}>{analysisResult.scientificName}</Text>
+              {analysisResult.commonName ? (
+                <Text style={styles.resultSubtitle}>{analysisResult.commonName}</Text>
+              ) : null}
+
+              <Text style={styles.resultMeta}>
+                Confianza: {Math.round(analysisResult.confidence * 100)}% ·
+                Proveedor: {analysisResult.provider}
+              </Text>
+
+              <Text style={styles.summaryText}>{analysisResult.summary}</Text>
+
+              <View style={styles.careList}>
+                <Text style={styles.careItem}>Riego: {analysisResult.care.watering}</Text>
+                <Text style={styles.careItem}>Luz: {analysisResult.care.light}</Text>
+                <Text style={styles.careItem}>Suelo: {analysisResult.care.soil}</Text>
+                <Text style={styles.careItem}>Temperatura: {analysisResult.care.temperature}</Text>
+                <Text style={styles.careItem}>Humedad: {analysisResult.care.humidity}</Text>
+              </View>
+            </View>
+          ) : null}
+
+          <View style={styles.previewActions}>
+            <TouchableOpacity style={styles.secondaryButton} onPress={clearPhoto}>
+              <Text style={styles.secondaryText}>Reintentar</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.previewPrimaryButton}
+              onPress={onAnalyzeWithAI}
+              disabled={isAnalyzing}
+            >
+              <Text style={styles.actionText}>
+                {isAnalyzing ? 'Analizando...' : 'Usar para IA'}
+              </Text>
+            </TouchableOpacity>
           </View>
-        </View>
+        </ScrollView>
       </CustomSafeArea>
     );
   }
@@ -117,102 +407,49 @@ export const CameraScan: React.FC = () => {
       <View style={styles.root}>
         <AppHeader title="Escáner IA" subtitle="BÚSQUEDA VISUAL" showBack />
 
-        <View style={styles.content}>
-          {/* 📷 cámara (se mantiene visible; puedes ocultarla si prefieres full preview) */}
-          <View style={styles.cameraWrap}>
-            <CameraView
-              ref={cameraRef}
-              style={styles.camera}
-              facing={facing}
-              flash={flashMode}
-            />
-          </View>
+        <View style={styles.cameraContainer}>
+          <CameraView
+            ref={cameraRef}
+            style={styles.camera}
+            facing={facing}
+            flash={flashMode}
+          />
 
-          {/* 🎛 acciones */}
-          <View style={styles.actionsRow}>
-            <TouchableOpacity
-              style={styles.secondaryButton}
-              onPress={toggleFacing}
-              activeOpacity={0.85}
-            >
-              <Feather
-                name="refresh-ccw"
-                size={theme.typography.size.base}
-                color={theme.colors.textPrimary}
-              />
-              <Text style={styles.secondaryButtonText}>Girar</Text>
-            </TouchableOpacity>
+          <View style={styles.overlayBottom}>
+            <View style={styles.actionsRow}>
+              <TouchableOpacity style={styles.sideButton} onPress={toggleFacing}>
+                <Feather name="refresh-ccw" size={20} color={theme.colors.textPrimary} />
+              </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.captureButton}
-              onPress={onCapture}
-              activeOpacity={0.85}
-              disabled={isCapturing}
-            >
-              <Feather
-                name="camera"
-                size={theme.typography.size['2xl']}
-                color={theme.colors.textInverse}
-              />
-              <Text style={styles.captureButtonText}>
-                {isCapturing ? 'Capturando...' : 'Capturar'}
-              </Text>
-            </TouchableOpacity>
+              <TouchableOpacity style={styles.captureButton} onPress={onCapture}>
+                <View style={styles.captureInner} />
+              </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.secondaryButton}
-              onPress={toggleFlash}
-              activeOpacity={0.85}
-            >
-              <Feather
-                name="zap"
-                size={theme.typography.size.base}
-                color={theme.colors.textPrimary}
-              />
-              <Text style={styles.secondaryButtonText}>Flash</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* 🖼 preview + acciones */}
-          {lastPhoto && (
-            <View style={styles.previewWrap}>
-              <Image
-                source={{ uri: lastPhoto.uri }}
-                style={styles.previewImage}
-              />
-
-              <View style={styles.actionsRow}>
-                <TouchableOpacity
-                  style={styles.secondaryButton}
-                  onPress={onRetake}
-                  activeOpacity={0.85}
-                >
-                  <Feather
-                    name="rotate-ccw"
-                    size={theme.typography.size.base}
-                    color={theme.colors.textPrimary}
-                  />
-                  <Text style={styles.secondaryButtonText}>Reintentar</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  onPress={onUseForAi}
-                  activeOpacity={0.85}
-                >
-                  <Text style={styles.actionButtonText}>
-                    Usar imagen para IA
-                  </Text>
-                </TouchableOpacity>
-              </View>
+              <TouchableOpacity style={styles.sideButton} onPress={toggleFlash}>
+                <Text style={styles.flashText}>{flashMode.toUpperCase()}</Text>
+              </TouchableOpacity>
             </View>
-          )}
 
-          <View style={styles.frame}>
-            <Text style={styles.subtitle}>
-              Captura una planta y usa la imagen para inferencia IA en el
-              siguiente paso.
-            </Text>
+            <TouchableOpacity
+              style={styles.secondaryButton}
+              onPress={onPickFromGallery}
+            >
+              <Text style={styles.secondaryText}>Abrir galería</Text>
+            </TouchableOpacity>
+
+            {pendingDetectionsCount > 0 ? (
+              <TouchableOpacity
+                style={styles.secondaryButton}
+                onPress={syncPendingDetections}
+                disabled={isSyncing}
+              >
+                <Text style={styles.secondaryText}>
+                  {isSyncing
+                    ? 'Sincronizando análisis pendientes...'
+                    : `Reintentar pendientes (${pendingDetectionsCount})`}
+                </Text>
+              </TouchableOpacity>
+            ) : null}
           </View>
         </View>
       </View>

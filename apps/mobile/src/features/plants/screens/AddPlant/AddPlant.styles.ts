@@ -36,7 +36,7 @@ export const createAddPlantStyles = (theme: AppTheme) => StyleSheet.create({
   categoryLabel: {
     fontFamily: theme.typography.family.bodySemiBold,
     fontSize: theme.typography.size.base,
-    color: theme.colors.textSecondary,
+    color: theme.colors.textPrimary,
   },
 
   chipsRow: {
@@ -72,7 +72,7 @@ export const createAddPlantStyles = (theme: AppTheme) => StyleSheet.create({
   emptyCategoriesText: {
     fontFamily: theme.typography.family.bodyRegular,
     fontSize: theme.typography.size.sm,
-    color: theme.colors.textMuted,
+    color: theme.colors.textSecondary,
   },
 
   errorRow: {
@@ -108,7 +108,7 @@ export const createAddPlantStyles = (theme: AppTheme) => StyleSheet.create({
   saveButtonText: {
     fontFamily: theme.typography.family.bodySemiBold,
     fontSize: theme.typography.size.lg,
-    color: theme.colors.accentSoft,
+    color: theme.colors.textInverse,
     letterSpacing: theme.spacing['4xs'],
   },
 });

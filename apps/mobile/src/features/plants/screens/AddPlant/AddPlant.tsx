@@ -2,19 +2,19 @@ import { Feather } from '@expo/vector-icons';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useEffect, useMemo } from 'react';
-import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { Controller, useForm } from 'react-hook-form';
-import { useAuth } from 'src/core/contexts/AuthContext';
-import { useFormToast } from 'src/shared/components/feedback/FormToast/useFormToast';
-import { CustomSafeArea } from 'src/shared/components/layout/CustomSafeArea';
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { AppHeader } from 'src/components/navigation/AppHeader/AppHeader';
-import { FormInput } from 'src/shared/components/ui/FormInput/FormInput';
-import { useUserProfile } from 'src/features/profile/hooks/useUserProfile';
+import { useAuth } from 'src/core/contexts/AuthContext';
 import { RootStackParamList } from 'src/core/navigation/AppNavigator';
 import { plantService } from 'src/features/plants/services/plant.service';
+import { EditPlantDTO } from 'src/features/plants/types/plant.types';
 import { normalizeDateInput } from 'src/features/plants/validators/date.validators';
 import { EditPlantFormValues, EditPlantSchema } from 'src/features/plants/validators/plant.validators';
-import { EditPlantDTO } from 'src/features/plants/types/plant.types';
+import { useUserProfile } from 'src/features/profile/hooks/useUserProfile';
+import { useFormToast } from 'src/shared/components/feedback/FormToast/useFormToast';
+import { CustomSafeArea } from 'src/shared/components/layout/CustomSafeArea';
+import { FormInput } from 'src/shared/components/ui/FormInput/FormInput';
 import { useAddPlantTheme } from './AddPlant.styles';
 
 type AddPlantProps = NativeStackScreenProps<RootStackParamList, 'AddPlant'>;
@@ -260,7 +260,7 @@ export const AddPlant: React.FC<AddPlantProps> = ({ navigation }) => {
             accessibilityLabel="Guardar planta"
             accessibilityState={{ disabled: isSubmitting }}
           >
-            {isSubmitting ? <ActivityIndicator color={theme.colors.accentSoft} /> : null}
+            {isSubmitting ? <ActivityIndicator color={theme.colors.textInverse} /> : null}
             <Text style={styles.saveButtonText}>
               {isSubmitting ? 'Guardando...' : 'Crear planta'}
             </Text>

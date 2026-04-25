@@ -2,16 +2,16 @@ import { Feather } from '@expo/vector-icons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React from 'react';
-import { FlatList, Text, TouchableOpacity, View } from 'react-native';
-import { useAuth } from 'src/core/contexts/AuthContext';
-import { ConfirmActionModal } from 'src/shared/components/feedback/ConfirmActionModal/ConfirmActionModal';
-import { showToast } from 'src/shared/components/feedback/FormToast/FormToast';
-import { EmptyState } from 'src/shared/components/feedback/EmptyState/EmptyState';
-import { CustomSafeArea } from 'src/shared/components/layout/CustomSafeArea';
+import { FlatList, Pressable, Text, View } from 'react-native';
 import { AppHeader } from 'src/components/navigation/AppHeader/AppHeader';
-import { useUserProfile } from 'src/features/profile/hooks/useUserProfile';
+import { useAuth } from 'src/core/contexts/AuthContext';
 import { RootStackParamList } from 'src/core/navigation/AppNavigator';
 import { plantService } from 'src/features/plants/services/plant.service';
+import { useUserProfile } from 'src/features/profile/hooks/useUserProfile';
+import { ConfirmActionModal } from 'src/shared/components/feedback/ConfirmActionModal/ConfirmActionModal';
+import { EmptyState } from 'src/shared/components/feedback/EmptyState/EmptyState';
+import { showToast } from 'src/shared/components/feedback/FormToast/FormToast';
+import { CustomSafeArea } from 'src/shared/components/layout/CustomSafeArea';
 import { PlantCard } from './components/PlantCard';
 import { PlantsFilterChips } from './components/PlantsFilterChips';
 import { PlantsSearchBar } from './components/PlantsSearchBar';
@@ -110,29 +110,23 @@ export const PlantsHub: React.FC = () => {
               {state.filteredPlants.length} planta{state.filteredPlants.length === 1 ? '' : 's'}
             </Text>
 
-            <TouchableOpacity style={styles.addButton} onPress={handleAddPlant} activeOpacity={0.85}>
+            <Pressable
+              style={({ pressed }) => [
+                styles.addButton,
+                pressed && styles.addButtonPressed,
+              ]}
+              onPress={handleAddPlant}
+            >
               <Feather name="plus" size={theme.typography.size.base} color={theme.colors.textInverse} />
               <Text style={styles.addButtonText}>Agregar</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
 
           {state.loading ? (
             <View style={styles.loadingWrap}>
               <Text style={styles.loadingText}>Cargando plantas...</Text>
             </View>
-          ) : state.error ? (
-            <EmptyState
-              iconName="alert-circle"
-              title="No se pudieron cargar"
-              subtitle={state.error}
-            />
-          ) : state.filteredPlants.length === 0 ? (
-            <EmptyState
-              iconName="search"
-              title="Sin resultados"
-              subtitle="Prueba otro filtro o término de búsqueda"
-            />
-          ) : (
+          ) : state.filteredPlants.length > 0 ? (
             <FlatList
               data={state.filteredPlants}
               keyExtractor={item => item.id}
@@ -146,6 +140,18 @@ export const PlantsHub: React.FC = () => {
               )}
               contentContainerStyle={styles.listContent}
               showsVerticalScrollIndicator={false}
+            />
+          ) : state.error ? (
+            <EmptyState
+              iconName="alert-circle"
+              title="Sin conexión"
+              subtitle={state.error}
+            />
+          ) : (
+            <EmptyState
+              iconName="search"
+              title="No tienes plantas aún"
+              subtitle="Agrega tu primera planta o usa el escáner IA"
             />
           )}
         </View>

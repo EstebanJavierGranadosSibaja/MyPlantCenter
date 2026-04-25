@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { plantService } from 'src/features/plants/services/plant.service';
 import { Plant } from 'src/features/plants/types/plant.types';
+import { detectionHistoryService, DetectionRecord } from 'src/features/camera/services/detectionHistory.service';
 
 export type PlantSort = 'updated' | 'name' | 'watering';
 
@@ -27,6 +28,73 @@ function toCategoryLabel(rawId: string): string {
     .replace(/\b\w/g, match => match.toUpperCase());
 }
 
+function mapDetectionToPlant(record: DetectionRecord, userId: string): Plant {
+  const wateringInfo = record.careInfo?.watering ?? '';
+  let wateringDays = 7;
+  if (wateringInfo) {
+    const parsed = parseInt(wateringInfo.replace(/\D/g, ''), 10);
+    if (!isNaN(parsed) && parsed > 0) {
+      wateringDays = parsed;
+    }
+  }
+
+  return {
+    id: record.id,
+    name: record.plantName || 'Planta detectada',
+    species: record.scientificName || '',
+    categoryId: '',
+    wateringFrequencyDays: wateringDays,
+    notes: record.careInfo
+      ? `Riego: ${wateringInfo || 'N/A'} | Luz: ${record.careInfo.light || 'N/A'} | Suelo: ${record.careInfo.soil || 'N/A'}`
+      : '',
+    acquiredAt: record.timestamp,
+    ownerId: userId,
+    createdAt: record.timestamp,
+    updatedAt: record.timestamp,
+  };
+}
+
+function mergePlants(remotePlants: Plant[], localDetections: DetectionRecord[], userId: string): Plant[] {
+  const plantsMap = new Map<string, Plant>();
+
+  for (const remote of remotePlants) {
+    plantsMap.set(remote.id, remote);
+  }
+
+  const localAddedUris = new Set<string>();
+  for (const [, plant] of plantsMap) {
+    if (plant.notes) {
+      localAddedUris.add(plant.notes);
+    }
+  }
+
+  for (const local of localDetections) {
+    const isPending = local.status === 'pending';
+    const isSyncedFailed = local.status === 'synced' || local.status === 'failed';
+
+    if (isSyncedFailed) {
+      if (localAddedUris.has(local.imageUri)) {
+        continue;
+      }
+    }
+
+    const mapped = mapDetectionToPlant(local, userId);
+
+    if (!isPending && local.imageUri) {
+      localAddedUris.add(local.imageUri);
+    }
+
+    const key = `local-${local.id}`;
+    plantsMap.set(key, mapped);
+  }
+
+  return Array.from(plantsMap.values()).sort((a, b) => {
+    const dateA = new Date(a.updatedAt).getTime();
+    const dateB = new Date(b.updatedAt).getTime();
+    return dateB - dateA;
+  });
+}
+
 export function usePlantsHub(userId?: string) {
   const [plants, setPlants] = useState<Plant[]>([]);
   const [query, setQuery] = useState('');
@@ -44,15 +112,33 @@ export function usePlantsHub(userId?: string) {
 
     setLoading(true);
     setError(null);
+
+    let remotePlants: Plant[] = [];
+    let localDetections: DetectionRecord[] = [];
+
     try {
-      const response = await plantService.getByUser(userId);
-      setPlants(response);
+      remotePlants = await plantService.getByUser(userId);
     } catch {
-      setPlants([]);
-      setError('No se pudieron cargar las plantas.');
-    } finally {
-      setLoading(false);
+      console.warn('[PlantsHub] Backend unavailable, using local data only');
     }
+
+    try {
+      localDetections = await detectionHistoryService.getAll();
+    } catch {
+      console.warn('[PlantsHub] Local detection history unavailable');
+    }
+
+    const merged = mergePlants(remotePlants, localDetections, userId);
+
+    if (merged.length > 0) {
+      setPlants(merged);
+      setError(null);
+    } else {
+      setPlants([]);
+      setError('No tienes plantas aún');
+    }
+
+    setLoading(false);
   }, [userId]);
 
   useEffect(() => {

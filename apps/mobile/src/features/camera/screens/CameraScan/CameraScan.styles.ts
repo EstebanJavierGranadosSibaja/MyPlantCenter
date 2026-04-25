@@ -1,128 +1,254 @@
 import { StyleSheet } from 'react-native';
 import { useAppThemeContext } from 'src/core/contexts/ThemeContext';
 
-export const createCameraScanStyles = (theme: ReturnType<typeof useAppThemeContext>) => StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: theme.colors.backgroundAlt,
-  },
+export const createCameraScanStyles = (theme: ReturnType<typeof useAppThemeContext>) =>
+  StyleSheet.create({
+    root: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
 
-  content: {
-    flex: 1,
-    paddingHorizontal: theme.layout.screenPaddingH,
-    justifyContent: 'flex-start',
-    gap: theme.spacing.lg,
-    paddingTop: theme.spacing.lg,
-    paddingBottom: theme.spacing['2xl'],
-  },
+    cameraContainer: {
+      flex: 1,
+    },
 
-  cameraWrap: {
-    width: '100%',
-    height: 300,
-    borderRadius: theme.radius.lg,
-    overflow: 'hidden',
-    borderWidth: theme.borders.base,
-    borderColor: theme.colors.border,
-  },
+    camera: {
+      flex: 1,
+    },
 
-  camera: {
-    flex: 1,
-  },
+    overlayBottom: {
+      position: 'absolute',
+      bottom: theme.spacing['2xl'],
+      left: theme.spacing.lg,
+      right: theme.spacing.lg,
+      gap: theme.spacing.md,
+    },
 
-  actionsRow: {
-    flexDirection: 'row',
-    gap: theme.spacing.sm,
-  },
+    actionsRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
 
-  secondaryButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: theme.spacing.xs,
-    borderWidth: theme.borders.base,
-    borderColor: theme.colors.border,
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.md,
-    paddingVertical: theme.spacing.sm,
-  },
+    sideButton: {
+      width: 52,
+      height: 52,
+      borderRadius: theme.radius.full,
+      backgroundColor: theme.colors.surface,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: theme.borders.base,
+      borderColor: theme.colors.border,
+    },
 
-  secondaryButtonText: {
-    color: theme.colors.textPrimary,
-    fontFamily: theme.typography.family.bodySemiBold,
-    fontSize: theme.typography.size.lg,
-  },
+    captureButton: {
+      width: 74,
+      height: 74,
+      borderRadius: theme.radius.full,
+      backgroundColor: theme.colors.accent,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
 
-  captureButton: {
-    flex: 2,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: theme.spacing.xs,
-    borderRadius: theme.radius.md,
-    backgroundColor: theme.colors.accent,
-    borderWidth: theme.borders.base,
-    borderColor: theme.colors.accent,
-    paddingVertical: theme.spacing.sm,
-  },
+    captureInner: {
+      width: 58,
+      height: 58,
+      borderRadius: theme.radius.full,
+      backgroundColor: theme.colors.surface,
+    },
 
-  captureButtonText: {
-    color: theme.colors.textInverse,
-    fontFamily: theme.typography.family.bodySemiBold,
-    fontSize: theme.typography.size.lg,
-  },
+    flashText: {
+      color: theme.colors.textPrimary,
+      fontFamily: theme.typography.family.bodySemiBold,
+      fontSize: theme.typography.size.sm,
+    },
 
-  previewWrap: {
-    gap: theme.spacing.sm,
-  },
+    previewContainer: {
+      flex: 1,
+      paddingHorizontal: theme.spacing.lg,
+    },
 
-  previewImage: {
-    width: '100%',
-    height: 220,
-    borderRadius: theme.radius.md,
-    borderWidth: theme.borders.base,
-    borderColor: theme.colors.border,
-  },
+    previewContent: {
+      paddingTop: theme.spacing.lg,
+      paddingBottom: theme.spacing['2xl'],
+      gap: theme.spacing.lg,
+    },
 
-  actionButton: {
-    borderRadius: theme.radius.md,
-    backgroundColor: theme.colors.accent,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: theme.spacing.sm,
-  },
+    previewImage: {
+      width: '100%',
+      height: 320,
+      borderRadius: theme.radius.lg,
+      borderWidth: theme.borders.base,
+      borderColor: theme.colors.border,
+    },
 
-  actionButtonText: {
-    color: theme.colors.textInverse,
-    fontFamily: theme.typography.family.bodySemiBold,
-    fontSize: theme.typography.size.lg,
-  },
+    previewActions: {
+      flexDirection: 'row',
+      gap: theme.spacing.sm,
+    },
 
-  frame: {
-    width: '100%',
-    borderRadius: theme.radius.lg,
-    borderWidth: theme.borders.base,
-    borderColor: theme.colors.border,
-    backgroundColor: theme.colors.cardBg,
-    padding: theme.spacing.lg,
-    alignItems: 'center',
-    gap: theme.spacing.md,
-  },
+    previewPrimaryButton: {
+      flex: 1,
+      minHeight: 50,
+      borderRadius: theme.radius.md,
+      backgroundColor: theme.colors.accent,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: theme.spacing.sm,
+    },
 
-  title: {
-    color: theme.colors.textPrimary,
-    fontFamily: theme.typography.family.displayBold,
-    fontSize: theme.typography.size['4xl'],
-    textAlign: 'center',
-  },
+    actionButton: {
+      width: '100%',  
+      minHeight: 50,
+      borderRadius: theme.radius.md,
+      backgroundColor: theme.colors.accent,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: theme.spacing.sm,
+    },
 
-  subtitle: {
-    color: theme.colors.textMuted,
-    fontFamily: theme.typography.family.bodyRegular,
-    fontSize: theme.typography.size.xl,
-    textAlign: 'center',
-  },
-});
+    secondaryButton: {
+      flex: 1,
+      borderRadius: theme.radius.md,
+      backgroundColor: theme.colors.surface,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: theme.spacing.md,
+      borderWidth: theme.borders.base,
+      borderColor: theme.colors.border,
+    },
+
+    actionText: {
+      color: theme.colors.textInverse,
+      fontSize: theme.typography.size.lg,
+      fontWeight: '600',
+      textAlign: 'center',
+      includeFontPadding: false, // 🔥 Android fix
+    },
+
+    secondaryText: {
+      color: theme.colors.textPrimary,
+      fontSize: theme.typography.size.lg,
+      fontWeight: '600',
+    },
+
+    syncCard: {
+      padding: theme.spacing.md,
+      borderRadius: theme.radius.md,
+      backgroundColor: theme.colors.accentSoft,
+      borderWidth: theme.borders.base,
+      borderColor: theme.colors.border,
+      gap: theme.spacing.sm,
+    },
+
+    syncTitle: {
+      color: theme.colors.textPrimary,
+      fontSize: theme.typography.size.xl,
+      fontFamily: theme.typography.family.bodyBold,
+    },
+
+    syncSubtitle: {
+      color: theme.colors.textSecondary,
+      fontSize: theme.typography.size.base,
+      fontFamily: theme.typography.family.bodyRegular,
+    },
+
+    messageCard: {
+      padding: theme.spacing.md,
+      borderRadius: theme.radius.md,
+      borderWidth: theme.borders.base,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.cardBg,
+    },
+
+    messageText: {
+      color: theme.colors.textSecondary,
+      fontSize: theme.typography.size.base,
+      fontFamily: theme.typography.family.bodyMedium,
+    },
+
+    resultCard: {
+      padding: theme.spacing.md,
+      borderRadius: theme.radius.md,
+      borderWidth: theme.borders.base,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.surface,
+      gap: theme.spacing.sm,
+    },
+
+    resultTitle: {
+      color: theme.colors.textSecondary,
+      fontSize: theme.typography.size.base,
+      fontFamily: theme.typography.family.bodySemiBold,
+      textTransform: 'uppercase',
+      letterSpacing: 0.6,
+    },
+
+    resultName: {
+      color: theme.colors.textPrimary,
+      fontSize: theme.typography.size['2xl'],
+      fontFamily: theme.typography.family.displayBold,
+    },
+
+    resultSubtitle: {
+      color: theme.colors.textSecondary,
+      fontSize: theme.typography.size.lg,
+      fontFamily: theme.typography.family.bodyMedium,
+    },
+
+    resultMeta: {
+      color: theme.colors.textMuted,
+      fontSize: theme.typography.size.base,
+      fontFamily: theme.typography.family.bodyRegular,
+    },
+
+    summaryText: {
+      color: theme.colors.textSecondary,
+      fontSize: theme.typography.size.base,
+      fontFamily: theme.typography.family.bodyRegular,
+      lineHeight: theme.typography.lineHeight.snug,
+    },
+
+    careList: {
+      gap: theme.spacing.xs,
+    },
+
+    careItem: {
+      color: theme.colors.textPrimary,
+      fontSize: theme.typography.size.base,
+      fontFamily: theme.typography.family.bodyMedium,
+    },
+
+    permissionContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      paddingHorizontal: theme.layout.screenPaddingH,
+    },
+
+    permissionBox: {
+      padding: theme.spacing.xl,
+      borderRadius: theme.radius.lg,
+      backgroundColor: theme.colors.cardBg,
+      borderWidth: theme.borders.base,
+      borderColor: theme.colors.border,
+      gap: theme.spacing.md,
+      alignItems: 'stretch',
+    },
+
+    title: {
+      fontSize: theme.typography.size['3xl'],
+      color: theme.colors.textPrimary,
+      fontFamily: theme.typography.family.displayBold,
+      textAlign: 'center',
+    },
+
+    subtitle: {
+      fontSize: theme.typography.size.lg,
+      color: theme.colors.textMuted,
+      textAlign: 'center',
+      fontFamily: theme.typography.family.bodyRegular,
+    },
+  });
 
 export function useCameraScanTheme() {
   const theme = useAppThemeContext();
