@@ -78,6 +78,7 @@ apps/api/.ruff_cache/
 # =========================
 secrets/
 data/backup/
+apps/api/serviceAccountKey.json
 
 # =========================
 # IA / GENERADOS

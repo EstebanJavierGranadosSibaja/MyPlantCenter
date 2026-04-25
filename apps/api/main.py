@@ -25,9 +25,9 @@ app = FastAPI(
     description="API en FastAPI sobre Firebase Firestore para la app de plantas.",
 )
 
-@app.get("/ping")
-def ping():
-    return {"source": "REAL_API"}
+@app.get("/")
+def root():
+    return {"status": "MAIN_ACTUAL_V2"}
 
 
 app.add_middleware(
