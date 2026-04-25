@@ -8,6 +8,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from routers import register_routers
 
+@app.get("/ping")
+def ping():
+    return {"source": "REAL_API"}
 
 logger = logging.getLogger("myplantcenter.api")
 if not logger.handlers:
