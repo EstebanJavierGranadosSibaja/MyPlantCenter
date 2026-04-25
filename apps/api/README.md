@@ -1,89 +1,100 @@
-# Backend API
+# Backend API (FastAPI + Firestore)
 
-API utilizando  FastAPI .
+API de MyPlantCenter construida con FastAPI y Firebase Admin sobre Firestore.
 
 ## Estructura
 
-- `main.py`: inicializacion de FastAPI y registro de routers
-- `config/firebase.py`: inicializacion singleton de Firestore
-- `routers/`: un router por entidad
-- `services/`: logica de negocio y consultas Firestore
-- `models/`: contratos Pydantic v2 por entidad
-- `utils/response.py`: serializacion y manejo de errores HTTP
-- `main.py`: entrypoint compatible para `uvicorn main:app`
+```text
+apps/api/
+|-- main.py                  # App FastAPI y middlewares (CORS + tracing)
+|-- config/
+|   `-- firebase.py          # Inicializacion singleton de Firestore
+|-- routers/                 # Endpoints por dominio
+|-- services/                # Logica de negocio y consultas
+|-- models/                  # Contratos Pydantic
+|-- utils/                   # Utilidades compartidas
+|-- requirements.txt
+`-- .env.example
+```
 
-## Variables de entorno
+## Variables De Entorno
 
-Copia `.env.example` a `.env` dentro de esta carpeta (`MyPlantCenter/apps/api`) y ajusta:
+Copia `.env.example` a `.env` dentro de `apps/api` y ajusta:
 
 ```env
-API_HOST=127.0.0.1
+API_HOST=0.0.0.0
 API_PORT=8000
 API_ENV=development
 FIREBASE_SERVICE_ACCOUNT_PATH=serviceAccountKey.json
 CORS_ORIGINS=http://localhost:8081,http://localhost:19006
+GEMINI_API_KEY=
+GEMINI_MODEL=gemini-2.0-flash
 ```
+
+Notas:
+
+- Si `FIREBASE_SERVICE_ACCOUNT_PATH` es relativo, se resuelve desde `apps/api` y tambien desde la raiz del repo.
+- Si no se encuentra `serviceAccountKey.json`, existe un fallback legacy a `secrets/service-account.json`.
+- `GEMINI_API_KEY` habilita la identificacion de plantas por imagen usando el tier gratuito de Gemini.
 
 ## Instalacion
-Dentro de nuestro ambiente de python
-```powershell
-pip install -r .\requirements.txt
+
+Desde la raiz del repo:
+
+```bash
+npm run backend:install
 ```
 
-Si ya tienes otro entorno virtual para backend, puedes usarlo sin problema.
+Alternativa dentro de `apps/api`:
+
+```bash
+pip install -r requirements.txt
+```
 
 ## Ejecutar
 
-Desde la raiz del proyecto:
+Desde la raiz del repo:
 
-```powershell
+```bash
 npm run backend:start
 ```
 
-Tambien puedes ejecutar directamente:
+Solo localhost:
 
-```powershell
-uvicorn main:app --reload --host 127.0.0.1 --port 8000
+```bash
+npm run backend:start:local
 ```
 
-## Endpoints principales
+Directo dentro de `apps/api`:
+
+```bash
+python -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
+```
+
+## Endpoints Utiles
 
 - `GET /health`
-- `GET /api/users/{userId}`
-- `GET /api/users/{userId}/profile`
-- `GET /api/users/{userId}/plants`
-- `GET /api/plants/{plantId}`
-- `GET /api/users/{userId}/categories`
-- `GET /api/users/{userId}/plant-tags`
-- `GET /api/users/{userId}/care-schedule`
-- `GET /api/users/{userId}/care-history`
-- `GET /api/users/{userId}/stats`
-- `GET /api/users/{userId}/info-tiles`
-- `GET /api/collections/{collectionName}`
+- `GET /api/collections/{collection_path}`
+- `POST /api/users/{user_id}/plant-detections/analyze`
 
-## Notas
+Routers de dominio activos:
 
-- Usa Firebase Admin, asi que consulta Firestore del lado servidor.
-- Si la service account no tiene permisos, la API devolvera errores al consultar Firestore.
-- El endpoint `GET /api/collections/{collectionName}` es util para desarrollo interno; cuando saques esta API del proyecto conviene restringirlo o eliminarlo.
+- auth_users, users, plants, plant_tags, plant_issues, categories
+- care_schedule, care_history, achievements, achievement_templates
+- level_config, friend_requests, friendships, notifications
 
-## Notas de normalizacion de datos
+## Scripts De Mantenimiento (Desde La Raiz)
 
-- Las categorias normalizadas viven en `categories` (coleccion global) y se filtran por `userId`.
-- `GET /api/users/{userId}/stats` se alimenta desde `users.stats`, no desde una coleccion separada.
-- `GET /api/users/{userId}/info-tiles` se calcula a partir de datos del usuario y stats embebidos.
+Validacion de contrato Firestore:
 
-## Migracion de frecuencia de riego (por dias)
+```bash
+npm run backend:check:firestore-contract
+```
 
-Para migrar plantas legacy que aun tengan `careFrequencyPerWeek` hacia `wateringFrequencyDays`:
+Migracion de frecuencia de riego (legacy `careFrequencyPerWeek` -> `wateringFrequencyDays`):
 
-```powershell
-# Dry-run (no escribe cambios)
-python .\scripts\migrations\migrate_watering_frequency.py
-
-# Aplicar cambios
-python .\scripts\migrations\migrate_watering_frequency.py --apply
-
-# Aplicar solo a un usuario
-python .\scripts\migrations\migrate_watering_frequency.py --apply --user-id user_001
+```bash
+python scripts/migrations/migrate_watering_frequency.py
+python scripts/migrations/migrate_watering_frequency.py --apply
+python scripts/migrations/migrate_watering_frequency.py --apply --user-id user_001
 ```

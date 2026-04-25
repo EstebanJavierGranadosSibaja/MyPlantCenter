@@ -12,6 +12,7 @@ from .friendships import router as friendships_router
 from .health import router as health_router
 from .level_config import router as level_config_router
 from .notifications import router as notifications_router
+from .plant_detections import router as plant_detections_router
 from .plant_issues import router as plant_issues_router
 from .plant_tags import router as plant_tags_router
 from .plants import router as plants_router
@@ -34,4 +35,5 @@ def register_routers(app: FastAPI) -> None:
     app.include_router(friend_requests_router)
     app.include_router(friendships_router)
     app.include_router(notifications_router)
+    app.include_router(plant_detections_router)
     app.include_router(collections_router)
