@@ -8,9 +8,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from routers import register_routers
 
-@app.get("/ping")
-def ping():
-    return {"source": "REAL_API"}
 
 logger = logging.getLogger("myplantcenter.api")
 if not logger.handlers:
@@ -27,6 +24,11 @@ app = FastAPI(
     version="1.0.0",
     description="API en FastAPI sobre Firebase Firestore para la app de plantas.",
 )
+
+@app.get("/ping")
+def ping():
+    return {"source": "REAL_API"}
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -56,5 +58,6 @@ async def tracing_middleware(request: Request, call_next):
     )
 
     return response
+
 
 register_routers(app)
