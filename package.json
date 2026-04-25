@@ -22,6 +22,7 @@
     "data:check:firestore-freshness": "node scripts/firestore/check-freshness.js"
   },
   "dependencies": {
-    "firebase-admin": "^8.13.0"
+    "firebase-admin": "^8.13.0",
+    "tree-cli": "^0.6.7"
   }
 }
