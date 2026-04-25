@@ -258,6 +258,22 @@ export const createPlantsHubStyles = (theme: ReturnType<typeof useAppThemeContex
     fontSize: theme.typography.size.base,
   },
 
+  retryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.md,
+    borderRadius: theme.radius.md,
+    backgroundColor: theme.colors.warning,
+    gap: theme.spacing.xs,
+  },
+
+  retryText: {
+    color: theme.colors.textInverse,
+    fontFamily: theme.typography.family.bodySemiBold,
+    fontSize: theme.typography.size.sm,
+  },
+
   loadingWrap: {
     paddingTop: theme.spacing['2xl'],
   },

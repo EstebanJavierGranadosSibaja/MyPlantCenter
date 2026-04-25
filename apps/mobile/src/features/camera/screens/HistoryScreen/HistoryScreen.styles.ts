@@ -118,6 +118,82 @@ export const createHistoryScreenStyles = (theme: ReturnType<typeof useAppThemeCo
       fontSize: theme.typography.size.base,
       color: theme.colors.textMuted,
     },
+
+    sectionHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: theme.spacing.lg,
+      paddingVertical: theme.spacing.sm,
+      marginTop: theme.spacing.md,
+    },
+
+    sectionTitle: {
+      fontSize: theme.typography.size.lg,
+      fontWeight: '700',
+      color: theme.colors.textPrimary,
+    },
+
+    sectionBadge: {
+      paddingHorizontal: theme.spacing.sm,
+      paddingVertical: 2,
+      borderRadius: theme.radius.sm,
+    },
+
+    sectionCount: {
+      fontSize: theme.typography.size.sm,
+      fontWeight: '700',
+    },
+
+    jobCard: {
+      flexDirection: 'row',
+      backgroundColor: theme.colors.surface,
+      marginHorizontal: theme.spacing.lg,
+      marginVertical: theme.spacing.xs,
+      padding: theme.spacing.md,
+      borderRadius: theme.radius.md,
+      borderWidth: theme.borders.base,
+      borderColor: theme.colors.border,
+    },
+
+    jobImage: {
+      width: 60,
+      height: 60,
+      borderRadius: theme.radius.xs,
+    },
+
+    jobActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginTop: theme.spacing.sm,
+      gap: theme.spacing.sm,
+    },
+
+    retryButton: {
+      backgroundColor: theme.colors.primary,
+      paddingHorizontal: theme.spacing.md,
+      paddingVertical: theme.spacing.xs,
+      borderRadius: theme.radius.sm,
+    },
+
+    retryText: {
+      color: theme.colors.white,
+      fontSize: theme.typography.size.sm,
+      fontWeight: '600',
+    },
+
+    deleteButton: {
+      backgroundColor: theme.colors.error + '20',
+      paddingHorizontal: theme.spacing.md,
+      paddingVertical: theme.spacing.xs,
+      borderRadius: theme.radius.sm,
+    },
+
+    deleteText: {
+      color: theme.colors.error,
+      fontSize: theme.typography.size.sm,
+      fontWeight: '600',
+    },
   });
 
 export function useHistoryScreenTheme() {

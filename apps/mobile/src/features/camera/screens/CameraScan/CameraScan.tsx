@@ -7,8 +7,7 @@ import { Image, Linking, ScrollView, Text, TouchableOpacity, View } from 'react-
 
 import { AppHeader } from 'src/components/navigation/AppHeader/AppHeader';
 import { useAuth } from 'src/core/contexts/AuthContext';
-import { detectionHistoryService } from 'src/features/camera/services/detectionHistory.service';
-import { cameraSyncQueueService } from 'src/features/camera/services/cameraSyncQueue.service';
+import { plantJobService } from 'src/features/plants/services/plantJob.service';
 import {
     PlantDetectionResult,
     plantDetectionService,
@@ -77,16 +76,14 @@ export const CameraScan: React.FC = () => {
   const currentUserId = user?.id ?? null;
 
   const refreshPendingCount = React.useCallback(async () => {
-    const queue = await cameraSyncQueueService.getQueue();
+    const pending = await plantJobService.getPendingAndFailedJobs();
 
     if (!currentUserId) {
-      setPendingDetectionsCount(queue.length);
+      setPendingDetectionsCount(pending.length);
       return;
     }
 
-    setPendingDetectionsCount(
-      queue.filter((item) => item.userId === currentUserId).length,
-    );
+    setPendingDetectionsCount(pending.length);
   }, [currentUserId]);
 
   React.useEffect(() => {
@@ -112,11 +109,9 @@ export const CameraScan: React.FC = () => {
     setIsSyncing(true);
     setSyncMessage(null);
 
-    const queue = (await cameraSyncQueueService.getQueue()).filter(
-      (item) => item.userId === currentUserId,
-    );
+    const pending = await plantJobService.getPendingAndFailedJobs();
 
-    if (queue.length === 0) {
+    if (pending.length === 0) {
       setIsSyncing(false);
       setSyncMessage('No hay análisis pendientes de sincronización.');
       return;
@@ -124,20 +119,23 @@ export const CameraScan: React.FC = () => {
 
     let synced = 0;
 
-    for (const item of queue) {
+    for (const job of pending) {
       try {
-        await plantDetectionService.analyze(item.userId, item.payload);
-        await cameraSyncQueueService.remove(item.id);
+        await plantDetectionService.analyze(job.id, {
+          imageUri: job.imageUri,
+          imageBase64: undefined,
+          source: 'camera-manual-sync',
+        });
+        await plantJobService.removeJob(job.id);
         synced += 1;
-      } catch {
-        await cameraSyncQueueService.incrementAttempts(item.id);
+      } catch (error) {
+        console.warn('[CameraScan] Sync pending item failed:', error);
+        await plantJobService.updateJobStatus(job.id, 'failed', error instanceof Error ? error.message : 'Unknown error');
       }
     }
 
     await refreshPendingCount();
-    const remainingQueue = (await cameraSyncQueueService.getQueue()).filter(
-      (item) => item.userId === currentUserId,
-    );
+    const remaining = await plantJobService.getPendingAndFailedJobs();
 
     if (synced > 0) {
       showToast({
@@ -147,8 +145,8 @@ export const CameraScan: React.FC = () => {
       });
     }
 
-    if (remainingQueue.length > 0) {
-      setSyncMessage(`Quedan ${remainingQueue.length} análisis pendientes.`);
+    if (remaining.length > 0) {
+      setSyncMessage(`Quedan ${remaining.length} análisis pendientes.`);
       showToast({
         type: 'warning',
         title: 'Sincronización parcial',
@@ -161,7 +159,7 @@ export const CameraScan: React.FC = () => {
     setIsSyncing(false);
   }, [currentUserId, isSyncing, refreshPendingCount]);
 
-  const onCapture = async () => {
+const onCapture = async () => {
     if (isCapturing) return;
 
     setIsCapturing(true);
@@ -175,16 +173,19 @@ export const CameraScan: React.FC = () => {
 
     if (!photo) return;
 
-     try {
-       await saveToGallery(photo.uri);
-       showToast({ type: 'success', title: 'Foto guardada' });
-     } catch (error) {
-       showToast({
-         type: 'error',
-         title: 'No se pudo guardar la foto',
-         subtitle: getErrorMessage(error),
-       });
-     }
+    try {
+      await plantJobService.createJob(photo.uri);
+      await refreshPendingCount();
+      showToast({ type: 'info', title: 'Foto capturada', subtitle: 'Visible en historial' });
+    } catch {
+      console.warn('[CameraScan] Failed to save to local history');
+    }
+
+    try {
+      await saveToGallery(photo.uri);
+    } catch (error) {
+      console.warn('[CameraScan] Failed to save to gallery:', error);
+    }
   };
 
   const onPickFromGallery = async () => {
@@ -209,14 +210,25 @@ export const CameraScan: React.FC = () => {
       base64: selected.base64 ?? undefined,
       mimeType: selected.mimeType ?? 'image/jpeg',
     });
+
+    try {
+      await plantJobService.createJob(selected.uri);
+      showToast({ type: 'info', title: 'Imagen seleccionada', subtitle: 'Visible en historial' });
+    } catch {
+      console.warn('[CameraScan] Failed to save gallery selection to history');
+    }
   };
 
   const onAnalyzeWithAI = async () => {
+    console.log('[CameraScan] onAnalyzeWithAI called, isAnalyzing:', isAnalyzing, 'lastPhoto:', !!lastPhoto);
+
     if (isAnalyzing || !lastPhoto) {
+      console.log('[CameraScan] Early return: isAnalyzing or no lastPhoto');
       return;
     }
 
     if (!currentUserId) {
+      console.log('[CameraScan] Early return: no userId');
       showToast({
         type: 'error',
         title: 'Sesión inválida',
@@ -226,6 +238,7 @@ export const CameraScan: React.FC = () => {
     }
 
     if (!lastPhoto.base64) {
+      console.log('[CameraScan] Early return: no base64');
       showToast({
         type: 'warning',
         title: 'Imagen no compatible',
@@ -241,11 +254,15 @@ export const CameraScan: React.FC = () => {
       source: captureSource,
     };
 
+    console.log('[CameraScan] Payload prepared:', JSON.stringify(payload).slice(0, 100));
+
     setIsAnalyzing(true);
     setSyncMessage(null);
 
     try {
+      console.log('[CameraScan] Calling plantDetectionService.analyze...');
       const result = await plantDetectionService.analyze(currentUserId, payload);
+      console.log('[CameraScan] Analysis result received:', result);
       setAnalysisResult(result);
 
       showToast({
@@ -254,7 +271,9 @@ export const CameraScan: React.FC = () => {
         subtitle: 'La detección se guardó en la base de datos.',
       });
     } catch (error) {
+      console.log('[CameraScan] Catch error:', error);
       const { isOffline, shouldShowError, message } = handleServiceError(error, 'No se pudo analizar la planta');
+      console.log('[CameraScan] Error handling result:', { isOffline, shouldShowError, message });
 
       if (!shouldShowError) {
         setIsAnalyzing(false);
@@ -262,9 +281,10 @@ export const CameraScan: React.FC = () => {
       }
 
       if (isOffline) {
-          const historyRecord = await detectionHistoryService.addPending(payload.imageUri);
-          await cameraSyncQueueService.addToQueue(historyRecord.id, currentUserId, payload);
-          await refreshPendingCount();
+        console.log('[CameraScan] Adding to offline queue...');
+        const historyRecord = await detectionHistoryService.addPending(payload.imageUri);
+        await cameraSyncQueueService.addToQueue(historyRecord.id, currentUserId, payload);
+        await refreshPendingCount();
 
         setSyncMessage('Sin conexión. Guardamos este análisis para sincronizarlo luego.');
         showToast({

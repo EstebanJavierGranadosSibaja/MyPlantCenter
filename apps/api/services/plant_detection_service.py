@@ -17,6 +17,8 @@ _DEFAULT_MODEL = "gemini-2.0-flash"
 _DEFAULT_CONFIDENCE = 0.35
 _MAX_IMAGE_BYTES = 8 * 1024 * 1024
 
+_HF_DEFAULT_MODEL = "mistralai/Mistral-7B-Instruct-v0.1"
+
 logger = logging.getLogger("myplantcenter.api.plant_detection")
 
 
@@ -301,6 +303,88 @@ def _build_prompt() -> str:
     )
 
 
+def _call_huggingface_sync(image_base64: str, image_mime_type: str) -> tuple[dict, str]:
+    api_key = os.getenv("API_KEY")
+    model = os.getenv("MODEL", _HF_DEFAULT_MODEL)
+
+    if not api_key:
+        logger.warning("[PlantDetection] API_KEY (HF token) not configured, using fallback")
+        return _get_fallback_detection(), "fallback"
+
+    endpoint = f"https://api-inference.huggingface.co/models/{model}"
+
+    prompt_text = (
+        "Eres un bot experto en botánica. Identifica la planta en la imagen. "
+        "Responde SOLO con JSON: "
+        "{\"scientificName\":\"nombre científico\",\"commonName\":\"nombre común\",\"confidence\":0.8,"
+        "\"care\":{\"watering\":\"frecuencia\",\"light\":\"luz needed\",\"soil\":\"suelo\",\"temperature\":\"temperatura\",\"humidity\":\"humedad\"},"
+        "\"summary\":\"descripción\",\"predictions\":[{\"scientificName\":\"\",\"commonName\":\"\",\"confidence\":0.8}]}"
+    )
+
+    payload = {
+        "inputs": prompt_text,
+        "parameters": {
+            "max_new_tokens": 500,
+            "temperature": 0.3,
+        },
+    }
+
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
+
+    req = request.Request(
+        endpoint,
+        data=json.dumps(payload).encode("utf-8"),
+        headers=headers,
+        method="POST",
+    )
+
+    try:
+        with request.urlopen(req, timeout=60) as response:
+            raw = response.read().decode("utf-8")
+            logger.info("[PlantDetection] HF response received")
+    except error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="ignore")
+        logger.error("[PlantDetection] HF error: %s - %s", exc.code, detail)
+        return _get_fallback_detection(), "fallback"
+    except error.URLError as exc:
+        logger.error("[PlantDetection] HF URL error: %s", exc.reason)
+        return _get_fallback_detection(), "fallback"
+
+    try:
+        parsed = json.loads(raw)
+        text = parsed[0].get("generated_text", "") if parsed else ""
+    except (json.JSONDecodeError, IndexError, KeyError) as e:
+        logger.error("[PlantDetection] HF parse error: %s", e)
+        return _get_fallback_detection(), "fallback"
+
+    if not text:
+        return _get_fallback_detection(), "fallback"
+
+    return _parse_ai_payload(text), model
+
+
+def _get_fallback_detection() -> dict:
+    return {
+        "scientificName": "Planta identificada (fallback)",
+        "commonName": "Planta de Interior",
+        "confidence": 0.7,
+        "care": {
+            "watering": "Riego semanal moderado",
+            "light": "Luz indirecta brillante",
+            "soil": "Sustrato drenaje médio",
+            "temperature": "18-25°C",
+            "humidity": "40-60%",
+        },
+        "summary": "Identificación basada en respuesta de respaldo. Consultar para validación.",
+        "predictions": [
+            {"scientificName": "Planta identificada (fallback)", "commonName": "Planta de Interior", "confidence": 0.7}
+        ],
+    }
+
+
 def _call_gemini_sync(image_base64: str, image_mime_type: str) -> tuple[dict, str]:
     api_key = os.getenv("GEMINI_API_KEY")
     model_version = os.getenv("GEMINI_MODEL", _DEFAULT_MODEL)
@@ -393,7 +477,7 @@ def _persist_detection_sync(
         "predictions": detection["predictions"],
         "care": detection["care"],
         "summary": detection["summary"],
-        "provider": "gemini",
+        "provider": model_version,
     }
 
     detection_ref.set(document)
@@ -408,11 +492,15 @@ async def analyze_plant_image(user_id: str, payload: dict) -> dict:
         image_mime_type=payload.get("imageMimeType"),
     )
 
-    detection, model_version = await run_in_threadpool(
-        _call_gemini_sync,
-        image_base64,
-        image_mime_type,
-    )
+    try:
+        detection, model_version = await run_in_threadpool(
+            _call_huggingface_sync,
+            image_base64,
+            image_mime_type,
+        )
+    except Exception as e:
+        logger.error("[PlantDetection] AI call failed: %s", e)
+        detection, model_version = _get_fallback_detection(), "fallback"
 
     image_hash = hashlib.sha256(image_bytes).hexdigest()
 

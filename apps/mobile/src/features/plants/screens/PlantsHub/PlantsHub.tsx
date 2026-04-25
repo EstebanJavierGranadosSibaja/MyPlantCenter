@@ -26,7 +26,7 @@ export const PlantsHub: React.FC = () => {
   const navigation = useNavigation<RootNavigation>();
   const { profile } = useUserProfile(user?.id ?? '');
 
-  const state = usePlantsHub(user?.id);
+  const state = usePlantsHub();
   const { reload } = state;
   const [pendingDeleteId, setPendingDeleteId] = React.useState<string | null>(null);
 

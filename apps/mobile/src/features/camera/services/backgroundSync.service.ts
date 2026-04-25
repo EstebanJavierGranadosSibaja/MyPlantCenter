@@ -1,12 +1,10 @@
 import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
 
-import { cameraSyncQueueService } from './cameraSyncQueue.service';
-import { detectionHistoryService } from './detectionHistory.service';
+import { plantJobService } from 'src/features/plants/services/plantJob.service';
 import { plantDetectionService, OFFLINE_QUEUE_ERROR } from './plantDetection.service';
 
 const INITIAL_DELAY_MS = 1000;
 const MAX_DELAY_MS = 8000;
-const LOCK_DURATION_MS = 30000;
 const MAX_ATTEMPTS = 5;
 
 interface SyncState {
@@ -37,9 +35,6 @@ const acquireLock = (): boolean => {
     return false;
   }
   state.isLocked = true;
-  setTimeout(() => {
-    state.isLocked = false;
-  }, LOCK_DURATION_MS);
   return true;
 };
 
@@ -53,8 +48,11 @@ const processQueue = async (): Promise<{ processed: number; failed: number }> =>
   }
 
   try {
-    const queue = await cameraSyncQueueService.getQueue();
-    if (queue.length === 0) {
+    const pendingJobs = await plantJobService.getPendingJobs();
+    const failedJobs = await plantJobService.getFailedJobs();
+    const jobsToProcess = [...pendingJobs, ...failedJobs];
+
+    if (jobsToProcess.length === 0) {
       releaseLock();
       return { processed: 0, failed: 0 };
     }
@@ -62,27 +60,35 @@ const processQueue = async (): Promise<{ processed: number; failed: number }> =>
     let processed = 0;
     let failed = 0;
 
-    for (const item of queue) {
-      if (item.attempts >= MAX_ATTEMPTS) {
-        await cameraSyncQueueService.remove(item.id);
-        await detectionHistoryService.updateStatus(item.historyId, 'failed');
+    for (const job of jobsToProcess) {
+      if (job.attempts >= MAX_ATTEMPTS) {
+        await plantJobService.removeJob(job.id);
         continue;
       }
 
-       try {
-         const result = await plantDetectionService.analyze(item.userId, item.payload);
-         await detectionHistoryService.update(item.historyId, result, 'synced');
-         await cameraSyncQueueService.remove(item.id);
-         processed += 1;
-       } catch (error) {
-         if (error === OFFLINE_QUEUE_ERROR) {
-           await cameraSyncQueueService.incrementAttempts(item.id);
-           failed += 1;
-         } else {
-           await detectionHistoryService.updateStatus(item.historyId, 'failed');
-           await cameraSyncQueueService.remove(item.id);
-         }
-       }
+      try {
+        await plantJobService.updateJobStatus(job.id, 'syncing');
+
+        await plantDetectionService.analyze(job.id, {
+          imageUri: job.imageUri,
+          imageBase64: undefined,
+          source: 'background-sync',
+        });
+
+        await plantJobService.removeJob(job.id);
+        processed += 1;
+      } catch (error) {
+        if (error === OFFLINE_QUEUE_ERROR) {
+          await plantJobService.updateJobStatus(job.id, 'failed', 'Network unavailable');
+        } else {
+          await plantJobService.updateJobStatus(
+            job.id,
+            'failed',
+            error instanceof Error ? error.message : 'Unknown error',
+          );
+        }
+        failed += 1;
+      }
     }
 
     releaseLock();
@@ -108,7 +114,7 @@ const scheduleNextSync = (): void => {
       const result = await processQueue();
 
       if (result.processed > 0 || result.failed > 0) {
-        console.log('SYNC RESULT:', result);
+        console.log('[BackgroundSync] Result:', result);
       }
 
       if (result.failed > 0) {

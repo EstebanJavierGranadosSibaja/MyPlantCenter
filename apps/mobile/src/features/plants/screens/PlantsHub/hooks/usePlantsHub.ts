@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { plantService } from 'src/features/plants/services/plant.service';
 import { Plant } from 'src/features/plants/types/plant.types';
-import { detectionHistoryService, DetectionRecord } from 'src/features/camera/services/detectionHistory.service';
+import { plantLocalService, LocalPlant } from 'src/features/plants/services/plantLocal.service';
 
 export type PlantSort = 'updated' | 'name' | 'watering';
 
@@ -28,8 +27,8 @@ function toCategoryLabel(rawId: string): string {
     .replace(/\b\w/g, match => match.toUpperCase());
 }
 
-function mapDetectionToPlant(record: DetectionRecord, userId: string): Plant {
-  const wateringInfo = record.careInfo?.watering ?? '';
+function mapLocalPlantToPlant(local: LocalPlant): Plant {
+  const wateringInfo = local.careInfo?.watering ?? '';
   let wateringDays = 7;
   if (wateringInfo) {
     const parsed = parseInt(wateringInfo.replace(/\D/g, ''), 10);
@@ -39,63 +38,22 @@ function mapDetectionToPlant(record: DetectionRecord, userId: string): Plant {
   }
 
   return {
-    id: record.id,
-    name: record.plantName || 'Planta detectada',
-    species: record.scientificName || '',
+    id: local.id,
+    name: local.name || 'Planta detectada',
+    species: local.scientificName || '',
     categoryId: '',
     wateringFrequencyDays: wateringDays,
-    notes: record.careInfo
-      ? `Riego: ${wateringInfo || 'N/A'} | Luz: ${record.careInfo.light || 'N/A'} | Suelo: ${record.careInfo.soil || 'N/A'}`
+    notes: local.careInfo
+      ? `Riego: ${wateringInfo || 'N/A'} | Luz: ${local.careInfo.light || 'N/A'} | Suelo: ${local.careInfo.soil || 'N/A'}`
       : '',
-    acquiredAt: record.timestamp,
-    ownerId: userId,
-    createdAt: record.timestamp,
-    updatedAt: record.timestamp,
+    acquiredAt: local.createdAt,
+    ownerId: '',
+    createdAt: local.createdAt,
+    updatedAt: local.createdAt,
   };
 }
 
-function mergePlants(remotePlants: Plant[], localDetections: DetectionRecord[], userId: string): Plant[] {
-  const plantsMap = new Map<string, Plant>();
-
-  for (const remote of remotePlants) {
-    plantsMap.set(remote.id, remote);
-  }
-
-  const localAddedUris = new Set<string>();
-  for (const [, plant] of plantsMap) {
-    if (plant.notes) {
-      localAddedUris.add(plant.notes);
-    }
-  }
-
-  for (const local of localDetections) {
-    const isPending = local.status === 'pending';
-    const isSyncedFailed = local.status === 'synced' || local.status === 'failed';
-
-    if (isSyncedFailed) {
-      if (localAddedUris.has(local.imageUri)) {
-        continue;
-      }
-    }
-
-    const mapped = mapDetectionToPlant(local, userId);
-
-    if (!isPending && local.imageUri) {
-      localAddedUris.add(local.imageUri);
-    }
-
-    const key = `local-${local.id}`;
-    plantsMap.set(key, mapped);
-  }
-
-  return Array.from(plantsMap.values()).sort((a, b) => {
-    const dateA = new Date(a.updatedAt).getTime();
-    const dateB = new Date(b.updatedAt).getTime();
-    return dateB - dateA;
-  });
-}
-
-export function usePlantsHub(userId?: string) {
+export function usePlantsHub() {
   const [plants, setPlants] = useState<Plant[]>([]);
   const [query, setQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -104,34 +62,19 @@ export function usePlantsHub(userId?: string) {
   const [error, setError] = useState<string | null>(null);
 
   const loadPlants = useCallback(async () => {
-    if (!userId) {
-      setPlants([]);
-      setLoading(false);
-      return;
-    }
 
-    setLoading(true);
-    setError(null);
-
-    let remotePlants: Plant[] = [];
-    let localDetections: DetectionRecord[] = [];
+    let localPlants: LocalPlant[] = [];
 
     try {
-      remotePlants = await plantService.getByUser(userId);
+      localPlants = await plantLocalService.getPlants();
     } catch {
-      console.warn('[PlantsHub] Backend unavailable, using local data only');
+      console.warn('[PlantsHub] Local plant store unavailable');
     }
 
-    try {
-      localDetections = await detectionHistoryService.getAll();
-    } catch {
-      console.warn('[PlantsHub] Local detection history unavailable');
-    }
+    const mapped = localPlants.map(mapLocalPlantToPlant);
 
-    const merged = mergePlants(remotePlants, localDetections, userId);
-
-    if (merged.length > 0) {
-      setPlants(merged);
+    if (mapped.length > 0) {
+      setPlants(mapped);
       setError(null);
     } else {
       setPlants([]);
@@ -139,10 +82,10 @@ export function usePlantsHub(userId?: string) {
     }
 
     setLoading(false);
-  }, [userId]);
+  }, []);
 
   useEffect(() => {
-    loadPlants();
+    void loadPlants();
   }, [loadPlants]);
 
   const categories = useMemo(() => {
