@@ -1,3 +1,4 @@
+import NetInfo from '@react-native-community/netinfo';
 import { Feather } from '@expo/vector-icons';
 import { useCamera } from '@features/camera/hooks/useCamara';
 import { CameraView } from 'expo-camera';
@@ -31,16 +32,27 @@ function isIgnoredWarning(error: unknown): boolean {
   return message.toLowerCase().includes('deprecated');
 }
 
-function handleServiceError(error: unknown, fallbackMessage: string): { isOffline: boolean; shouldShowError: boolean; message: string } {
+async function checkRealConnectivity(): Promise<boolean> {
+  try {
+    const state = await NetInfo.fetch();
+    return Boolean(state.isConnected);
+  } catch {
+    return true;
+  }
+}
+
+async function handleServiceError(error: unknown, fallbackMessage: string): Promise<{ isOffline: boolean; shouldShowError: boolean; message: string }> {
   const message = getErrorMessage(error);
-  const looksOffline = CONNECTIVITY_ERROR_REGEX.test(message);
+  const looksLikeNetwork = CONNECTIVITY_ERROR_REGEX.test(message);
+  const isReallyOffline = !(await checkRealConnectivity());
 
   if (isIgnoredWarning(error)) {
     console.warn('[IGNORED WARNING]', message);
     return { isOffline: false, shouldShowError: false, message };
   }
 
-  return { isOffline: looksOffline, shouldShowError: true, message: looksOffline ? message : fallbackMessage };
+  const isOffline = isReallyOffline && looksLikeNetwork;
+  return { isOffline, shouldShowError: true, message: looksLikeNetwork ? message : fallbackMessage };
 }
 
 export const CameraScan: React.FC = () => {
@@ -272,7 +284,7 @@ const onCapture = async () => {
       });
     } catch (error) {
       console.log('[CameraScan] Catch error:', error);
-      const { isOffline, shouldShowError, message } = handleServiceError(error, 'No se pudo analizar la planta');
+      const { isOffline, shouldShowError, message } = await handleServiceError(error, 'No se pudo analizar la planta');
       console.log('[CameraScan] Error handling result:', { isOffline, shouldShowError, message });
 
       if (!shouldShowError) {

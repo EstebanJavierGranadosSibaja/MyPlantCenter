@@ -1,6 +1,6 @@
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 
-const IMAGE_DIR = (FileSystem as any).cacheDirectory + 'images/';
+const IMAGE_DIR = FileSystem.cacheDirectory + 'images/';
 
 const generateFileId = (): string => {
   if (
@@ -18,32 +18,32 @@ export const fileStorageService = {
     const fileId = generateFileId();
     const fileUri = `${IMAGE_DIR}${fileId}.jpeg`;
 
-    await (FileSystem as any).makeDirectoryAsync(IMAGE_DIR, {
+    await FileSystem.makeDirectoryAsync(IMAGE_DIR, {
       intermediates: true,
     });
 
-    await (FileSystem as any).writeAsStringAsync(fileUri, base64, {
-      encoding: 'base64' as any,
+    await FileSystem.writeAsStringAsync(fileUri, base64, {
+      encoding: FileSystem.EncodingType.Base64,
     });
 
     return fileUri;
   },
 
   async readImage(fileUri: string): Promise<string | null> {
-    const fileInfo = await (FileSystem as any).getInfoAsync(fileUri);
+    const fileInfo = await FileSystem.getInfoAsync(fileUri);
 
     if (!fileInfo.exists) return null;
 
-    return await (FileSystem as any).readAsStringAsync(fileUri, {
-      encoding: 'base64' as any,
+    return await FileSystem.readAsStringAsync(fileUri, {
+      encoding: FileSystem.EncodingType.Base64,
     });
   },
 
   async deleteImage(fileUri: string): Promise<void> {
-    const fileInfo = await (FileSystem as any).getInfoAsync(fileUri);
+    const fileInfo = await FileSystem.getInfoAsync(fileUri);
 
     if (fileInfo.exists) {
-      await (FileSystem as any).deleteAsync(fileUri);
+      await FileSystem.deleteAsync(fileUri);
     }
   },
 };

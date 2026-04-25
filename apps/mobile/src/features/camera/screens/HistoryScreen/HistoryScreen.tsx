@@ -47,6 +47,7 @@ const StatusChip: React.FC<StatusChipProps> = ({ status, styles, colors }) => {
     pending: { label: '⏳ Pendiente', bg: colors.warning + '20', color: colors.warning },
     syncing: { label: '🔄 Sincronizando', bg: colors.warning + '20', color: colors.warning },
     failed: { label: '❌ Error', bg: colors.error + '20', color: colors.error },
+    permanent_failed: { label: '⚠️ Final', bg: colors.error + '30', color: colors.error },
   };
 
   const { label, bg, color } = config[status] || config.pending;
@@ -69,8 +70,9 @@ interface JobItemProps {
 
 const JobItem: React.FC<JobItemProps> = ({ job, styles, theme, onRetry, onDelete, syncingId }) => {
   const isSyncing = syncingId === job.id;
+  const isPermanent = job.status === 'permanent_failed';
   const canRetry = job.status === 'pending' || job.status === 'failed';
-  const hasError = job.status === 'failed' && job.lastError;
+  const hasError = (job.status === 'failed' || isPermanent) && job.lastError;
 
   return (
     <View style={styles.jobCard}>
@@ -102,12 +104,12 @@ const JobItem: React.FC<JobItemProps> = ({ job, styles, theme, onRetry, onDelete
 
         {hasError && (
           <Text style={[styles.timestamp, { color: theme.colors.error, marginTop: 4 }]} numberOfLines={2}>
-            ⚠️ {job.lastError}
+            {isPermanent ? '⚠️ ' : '⚠️ '}{job.lastError}
           </Text>
         )}
 
         <View style={styles.jobActions}>
-          {canRetry && !isSyncing && (
+          {canRetry && !isSyncing && !isPermanent && (
             <TouchableOpacity
               style={styles.retryButton}
               onPress={() => onRetry(job)}

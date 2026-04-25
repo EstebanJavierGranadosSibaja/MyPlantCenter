@@ -8,7 +8,9 @@ const waitForLock = async (lock: Promise<void> | null): Promise<void> => {
   if (lock) await lock;
 };
 
-export type JobStatus = 'pending' | 'syncing' | 'synced' | 'failed';
+export type JobStatus = 'pending' | 'syncing' | 'synced' | 'failed' | 'permanent_failed';
+
+export const MAX_JOB_ATTEMPTS = 3;
 
 export interface PlantJob {
   id: string;
@@ -102,6 +104,10 @@ export const plantJobService = {
     }
     if (status === 'failed') {
       jobs[index].attempts += 1;
+      if (jobs[index].attempts >= MAX_JOB_ATTEMPTS) {
+        jobs[index].status = 'permanent_failed';
+        console.log(`[plantJobService] Job ${jobId} marked permanent_failed after ${jobs[index].attempts} attempts`);
+      }
     }
 
     await writeJobs(jobs);
@@ -119,7 +125,7 @@ export const plantJobService = {
 
   async getFailedJobs(): Promise<PlantJob[]> {
     const jobs = await readJobs();
-    return jobs.filter(j => j.status === 'failed');
+    return jobs.filter(j => j.status === 'failed' || j.status === 'permanent_failed');
   },
 
   async getPendingAndFailedJobs(): Promise<PlantJob[]> {
