@@ -45,6 +45,7 @@ generated/
 ai-output/
 *.gen.*
 .agents/
+skills/
 
 # =========================
 # ENV FILES
@@ -84,6 +85,7 @@ apps/api/serviceAccountKey.json
 .idea/
 .DS_Store
 Thumbs.db
+data/backup/
 
 # =========================
 # TYPESCRIPT
