@@ -44,6 +44,7 @@ gsd-temp/
 generated/
 ai-output/
 *.gen.*
+.agents/
 
 # =========================
 # ENV FILES
