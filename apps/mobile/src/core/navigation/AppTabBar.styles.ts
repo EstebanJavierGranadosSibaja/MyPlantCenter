@@ -44,12 +44,19 @@ export const createTabBarOptions = (theme: AppTheme, bottomInset: number) => ({
         marginTop: theme.spacing['3xs'],
     },
 
-    tabBarLabelStyle: {
-        fontFamily: theme.typography.family.bodySemiBold,
-        fontSize: theme.typography.size.xs,
-        marginBottom: theme.spacing['3xs'],
-    },
-
+  tabBarLabelStyle: {
+    fontFamily: theme.typography.family.bodySemiBold,
+    fontSize: theme.typography.size.xs,
+    marginBottom: theme.spacing['3xs'],
+  },
+  tabIconContainer: {
+    minWidth: theme.spacing['4xl'],
+    paddingHorizontal: theme.spacing.sm + theme.spacing['3xs'],
+    paddingVertical: theme.spacing['3xs'],
+    borderRadius: theme.radius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });
 
 export function useTabBarTheme() {

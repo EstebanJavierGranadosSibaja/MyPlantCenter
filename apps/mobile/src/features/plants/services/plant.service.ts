@@ -1,6 +1,6 @@
 import httpClient from 'src/core/http/client';
-import { ApiResponse } from 'src/features/profile/types/user.types';
 import { EditPlantDTO, Plant } from 'src/features/plants/types/plant.types';
+import { ApiResponse } from 'src/features/profile/types/user.types';
 
 interface RawPlant {
   id: string;
@@ -12,6 +12,7 @@ interface RawPlant {
   careFrequencyPerWeek?: number;
   description?: string;
   acquiredAt?: string;
+  lastWatered?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -47,6 +48,7 @@ function mapPlantFromApi(raw: RawPlant): Plant {
     wateringFrequencyDays: wateringDays,
     notes: raw.description ?? '',
     acquiredAt: raw.acquiredAt,
+    lastWatered: raw.lastWatered,
     ownerId: raw.userId,
     createdAt: raw.createdAt,
     updatedAt: raw.updatedAt,
@@ -120,6 +122,17 @@ export const plantService = {
 
     if (!response.data.success) {
       throw new Error(response.data.error ?? 'No se pudo eliminar la planta.');
+    }
+  },
+
+  async updateLastWatered(plantId: string, lastWatered: string): Promise<void> {
+    const response = await httpClient.patch<ApiResponse<unknown>>(
+      `/api/plants/${plantId}`,
+      { lastWatered },
+    );
+
+    if (!response.data.success) {
+      throw new Error(response.data.error ?? 'No se pudo actualizar el riego.');
     }
   },
 };

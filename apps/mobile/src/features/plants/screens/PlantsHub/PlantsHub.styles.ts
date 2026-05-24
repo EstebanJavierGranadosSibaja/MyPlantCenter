@@ -102,6 +102,12 @@ export const createPlantsHubStyles = (theme: ReturnType<typeof useAppThemeContex
     justifyContent: 'space-between',
   },
 
+  summaryActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+  },
+
   summaryText: {
     color: theme.colors.textPrimary,
     fontFamily: theme.typography.family.bodyMedium,
@@ -120,13 +126,35 @@ export const createPlantsHubStyles = (theme: ReturnType<typeof useAppThemeContex
     borderColor: theme.colors.accent,
   },
 
-  addButtonPressed: {
-    backgroundColor: '#33B07A',
-    borderColor: '#33B07A',
-  },
+   addButtonPressed: {
+     backgroundColor: theme.colors.accentDark,
+     borderColor: theme.colors.accentDark,
+   },
 
   addButtonText: {
     color: theme.colors.textInverse,
+    fontFamily: theme.typography.family.bodySemiBold,
+    fontSize: theme.typography.size.base,
+  },
+
+  calendarButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.full,
+    paddingVertical: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.md,
+    borderWidth: theme.borders.base,
+    borderColor: theme.colors.cardBorder,
+  },
+
+  calendarButtonPressed: {
+    backgroundColor: theme.colors.elevated,
+  },
+
+  calendarButtonText: {
+    color: theme.colors.textPrimary,
     fontFamily: theme.typography.family.bodySemiBold,
     fontSize: theme.typography.size.base,
   },

@@ -55,6 +55,10 @@ export const PlantsHub: React.FC = () => {
     navigation.navigate('AddPlant');
   };
 
+  const handleOpenCalendar = () => {
+    navigation.navigate('WateringCalendar');
+  };
+
   useFocusEffect(
     React.useCallback(() => {
       reload().catch(() => {
@@ -110,16 +114,29 @@ export const PlantsHub: React.FC = () => {
               {state.filteredPlants.length} planta{state.filteredPlants.length === 1 ? '' : 's'}
             </Text>
 
-            <Pressable
-              style={({ pressed }) => [
-                styles.addButton,
-                pressed && styles.addButtonPressed,
-              ]}
-              onPress={handleAddPlant}
-            >
-              <Feather name="plus" size={theme.typography.size.base} color={theme.colors.textInverse} />
-              <Text style={styles.addButtonText}>Agregar</Text>
-            </Pressable>
+            <View style={styles.summaryActions}>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.calendarButton,
+                  pressed && styles.calendarButtonPressed,
+                ]}
+                onPress={handleOpenCalendar}
+              >
+                <Feather name="calendar" size={theme.typography.size.base} color={theme.colors.textPrimary} />
+                <Text style={styles.calendarButtonText}>Calendario</Text>
+              </Pressable>
+
+              <Pressable
+                style={({ pressed }) => [
+                  styles.addButton,
+                  pressed && styles.addButtonPressed,
+                ]}
+                onPress={handleAddPlant}
+              >
+                <Feather name="plus" size={theme.typography.size.base} color={theme.colors.textInverse} />
+                <Text style={styles.addButtonText}>Agregar</Text>
+              </Pressable>
+            </View>
           </View>
 
           {state.loading ? (

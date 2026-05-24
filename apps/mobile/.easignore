@@ -1,0 +1,15 @@
+node_modules
+.git
+.gitignore
+.expo
+.expo-shared
+dist
+web-build
+*.log
+*.zip
+*.tar.gz
+.agents/
+skills/
+.opencode/
+gsd-cache/
+gsd-output/

@@ -1,9 +1,9 @@
-import httpClient from 'src/core/http/client';
-import { ApiResponse } from 'src/features/profile/types/user.types';
 import { isAxiosError } from 'axios';
-import { fileStorageService } from './fileStorage.service';
+import httpClient from 'src/core/http/client';
 import { plantJobService } from 'src/features/plants/services/plantJob.service';
-import { plantLocalService, LocalPlant } from 'src/features/plants/services/plantLocal.service';
+import { LocalPlant, plantLocalService } from 'src/features/plants/services/plantLocal.service';
+import { ApiResponse } from 'src/features/profile/types/user.types';
+import { fileStorageService } from './fileStorage.service';
 
 export interface PlantDetectionCare {
   watering: string;
@@ -109,14 +109,14 @@ export const plantDetectionService = {
         console.log('[PlantDetection] Axios error, response:', error.response?.status);
         if (!error.response) {
           console.log('[PlantDetection] Network error, queuing...');
-          await plantJobService.createJob(payload.imageUri);
+          await plantJobService.createJob(payload.imageUri, userId);
           throw OFFLINE_QUEUE_ERROR;
         }
 
         const status = error.response.status;
         if (isRetryableStatus(status)) {
           console.log('[PlantDetection] Retryable status:', status);
-          await plantJobService.createJob(payload.imageUri);
+          await plantJobService.createJob(payload.imageUri, userId);
           throw OFFLINE_QUEUE_ERROR;
         }
       }

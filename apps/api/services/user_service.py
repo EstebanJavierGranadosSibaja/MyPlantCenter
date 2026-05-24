@@ -260,5 +260,11 @@ async def get_user_info_tiles(user_id: str) -> list[dict]:
     ]
 
 
+async def get_user_visibility(user_id: str) -> str:
+    user = await get_document("users", user_id)
+    visibility = user.get("visibility")
+    return visibility if isinstance(visibility, str) and visibility else "public"
+
+
 async def get_user_plants_list(user_id: str) -> list[dict]:
     return await get_user_plants(user_id)

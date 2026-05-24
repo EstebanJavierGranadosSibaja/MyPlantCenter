@@ -2,10 +2,11 @@ import React from 'react';
 import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 import { AppHeader } from 'src/components/navigation/AppHeader/AppHeader';
-import { plantJobService, PlantJob } from 'src/features/plants/services/plantJob.service';
-import { plantDetectionService } from 'src/features/camera/services/plantDetection.service';
-import { CustomSafeArea } from 'src/shared/components/layout/CustomSafeArea';
+import { useAuth } from 'src/core/contexts/AuthContext';
+import { OFFLINE_QUEUE_ERROR, plantDetectionService } from 'src/features/camera/services/plantDetection.service';
+import { PlantJob, plantJobService } from 'src/features/plants/services/plantJob.service';
 import { showToast } from 'src/shared/components/feedback/FormToast/FormToast';
+import { CustomSafeArea } from 'src/shared/components/layout/CustomSafeArea';
 import { useHistoryScreenTheme } from './HistoryScreen.styles';
 
 const formatDate = (iso: string): string => {
@@ -80,9 +81,9 @@ const JobItem: React.FC<JobItemProps> = ({ job, styles, theme, onRetry, onDelete
         {job.imageUri ? (
           <Image source={{ uri: job.imageUri }} style={styles.jobImage} />
         ) : (
-          <View style={styles.imagePlaceholder}>
-            <Text style={{ fontSize: 20 }}>🌿</Text>
-          </View>
+           <View style={styles.imagePlaceholder}>
+             <Text style={styles.placeholderText}>🌿</Text>
+           </View>
         )}
       </View>
 
@@ -144,6 +145,7 @@ const EmptyState: React.FC<{ title: string; description: string; styles: ReturnT
 
 export const HistoryScreen: React.FC = () => {
   const { theme, styles } = useHistoryScreenTheme();
+  const { user } = useAuth();
   const [pendingJobs, setPendingJobs] = React.useState<PlantJob[]>([]);
   const [failedJobs, setFailedJobs] = React.useState<PlantJob[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -168,7 +170,29 @@ export const HistoryScreen: React.FC = () => {
   const handleRetry = async (job: PlantJob) => {
     if (syncingId) return;
 
-    const userId = 'manual-retry';
+    const userId = job.userId ?? user?.id;
+    if (!userId) {
+      showToast({
+        type: 'error',
+        title: 'No hay sesión activa',
+        subtitle: 'Inicia sesión para reintentar la sincronización.',
+      });
+      return;
+    }
+
+    if (job.userId && user?.id && job.userId !== user.id) {
+      showToast({
+        type: 'error',
+        title: 'Trabajo de otro usuario',
+        subtitle: 'Este análisis pertenece a otra sesión.',
+      });
+      return;
+    }
+
+    if (!job.userId && user?.id) {
+      await plantJobService.assignJobUser(job.id, user.id);
+    }
+
     const payload = {
       imageUri: job.imageUri,
       imageBase64: undefined,
@@ -186,14 +210,15 @@ export const HistoryScreen: React.FC = () => {
         title: 'Análisis completado',
         subtitle: result.scientificName,
       });
+      await plantJobService.removeJob(job.id);
     } catch (error) {
       console.warn('[HistoryScreen] Retry failed:', error);
 
-      await plantJobService.updateJobStatus(
-        job.id,
-        'failed',
-        error instanceof Error ? error.message : 'Unknown error',
-      );
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      const skipAttempt = error === OFFLINE_QUEUE_ERROR
+        || (error instanceof Error && error.message === OFFLINE_QUEUE_ERROR.message);
+
+      await plantJobService.updateJobStatus(job.id, 'failed', message, { skipAttempt });
 
       showToast({
         type: 'error',

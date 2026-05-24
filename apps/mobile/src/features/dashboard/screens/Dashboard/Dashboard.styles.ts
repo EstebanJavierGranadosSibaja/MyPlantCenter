@@ -155,6 +155,87 @@ export const createDashboardStyles = (theme: AppTheme) => StyleSheet.create({
     lineHeight: theme.typography.lineHeight.snug,
     color: theme.colors.textInverse,
   },
+
+  careCard: {
+    backgroundColor: theme.colors.cardBg,
+    borderRadius: theme.radius.lg,
+    borderColor: theme.colors.cardBorder,
+    borderWidth: theme.borders.thin,
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.md,
+    gap: theme.spacing.md,
+  },
+
+  careHeader: {
+    gap: theme.spacing['4xs'],
+  },
+
+  careTitle: {
+    fontFamily: theme.typography.family.bodySemiBold,
+    fontSize: theme.typography.size.base,
+    lineHeight: theme.typography.lineHeight.snug,
+    color: theme.colors.textPrimary,
+  },
+
+  careMeta: {
+    fontFamily: theme.typography.family.bodyRegular,
+    fontSize: theme.typography.size.sm,
+    color: theme.colors.textSecondary,
+  },
+
+  careRow: {
+    flexDirection: 'row',
+    gap: theme.spacing.sm,
+  },
+
+  carePill: {
+    flex: 1,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.md,
+    borderWidth: theme.borders.thin,
+    borderColor: theme.colors.border,
+    paddingVertical: theme.spacing.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: theme.spacing['4xs'],
+  },
+
+  careValue: {
+    fontFamily: theme.typography.family.bodySemiBold,
+    fontSize: theme.typography.size.lg,
+    color: theme.colors.textPrimary,
+  },
+
+  careLabel: {
+    fontFamily: theme.typography.family.bodyMedium,
+    fontSize: theme.typography.size.xs,
+    color: theme.colors.textSecondary,
+    textTransform: 'uppercase' as const,
+    letterSpacing: theme.spacing['4xs'],
+  },
+
+  careButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: theme.spacing.xs,
+    backgroundColor: theme.colors.secondary,
+    borderRadius: theme.radius.full,
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.md,
+    borderWidth: theme.borders.base,
+    borderColor: theme.colors.secondary,
+  },
+
+  careButtonPressed: {
+    opacity: 0.88,
+  },
+
+  careButtonText: {
+    fontFamily: theme.typography.family.bodySemiBold,
+    fontSize: theme.typography.size.sm,
+    color: theme.colors.textInverse,
+  },
 });
 
 export function useDashboardTheme() {

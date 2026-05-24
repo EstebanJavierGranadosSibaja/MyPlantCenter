@@ -25,6 +25,8 @@ Copia `.env.example` a `.env` dentro de `apps/api` y ajusta:
 API_HOST=0.0.0.0
 API_PORT=8000
 API_ENV=development
+PORT=
+FIREBASE_SERVICE_ACCOUNT_JSON=
 FIREBASE_SERVICE_ACCOUNT_PATH=serviceAccountKey.json
 CORS_ORIGINS=http://localhost:8081,http://localhost:19006
 GEMINI_API_KEY=
@@ -59,6 +61,8 @@ Desde la raiz del repo:
 npm run backend:start
 ```
 
+En Render, define `PORT` y `FIREBASE_SERVICE_ACCOUNT_JSON` como variables de entorno.
+
 Solo localhost:
 
 ```bash
@@ -76,6 +80,7 @@ python -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
 - `GET /health`
 - `GET /api/collections/{collection_path}`
 - `POST /api/users/{user_id}/plant-detections/analyze`
+- `POST /api/users/{user_id}/care-history`
 
 Routers de dominio activos:
 

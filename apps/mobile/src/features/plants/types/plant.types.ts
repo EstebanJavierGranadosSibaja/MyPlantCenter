@@ -11,6 +11,7 @@ export interface Plant {
   wateringFrequencyDays: number;
   notes: string;
   acquiredAt?: string;
+  lastWatered?: string;
   ownerId: string;
   createdAt: string;
   updatedAt: string;

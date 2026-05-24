@@ -1,4 +1,5 @@
 from functools import lru_cache
+import json
 from pathlib import Path
 from threading import Lock
 import os
@@ -46,14 +47,21 @@ def _resolve_service_account_path(configured_path: str | None) -> Path:
     )
 
 
-@lru_cache(maxsize=1)
-def get_firestore_client() -> firestore.Client:
+def _service_account_credentials() -> credentials.Certificate:
+    service_account_json = os.getenv("FIREBASE_SERVICE_ACCOUNT_JSON")
+    if service_account_json:
+        return credentials.Certificate(json.loads(service_account_json))
+
     service_account_path = _resolve_service_account_path(
         os.getenv("FIREBASE_SERVICE_ACCOUNT_PATH")
     )
+    return credentials.Certificate(str(service_account_path))
 
+
+@lru_cache(maxsize=1)
+def get_firestore_client() -> firestore.Client:
     if not firebase_admin._apps:
-        credential = credentials.Certificate(str(service_account_path))
+        credential = _service_account_credentials()
         with _firebase_init_lock:
             if not firebase_admin._apps:
                 firebase_admin.initialize_app(credential)

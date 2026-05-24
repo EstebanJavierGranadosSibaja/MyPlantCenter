@@ -7,6 +7,7 @@ from .care_history import router as care_history_router
 from .care_schedule import router as care_schedule_router
 from .categories import router as categories_router
 from .collections import router as collections_router
+from .explore import router as explore_router
 from .friend_requests import router as friend_requests_router
 from .friendships import router as friendships_router
 from .health import router as health_router
@@ -36,4 +37,5 @@ def register_routers(app: FastAPI) -> None:
     app.include_router(friendships_router)
     app.include_router(notifications_router)
     app.include_router(plant_detections_router)
+    app.include_router(explore_router)
     app.include_router(collections_router)

@@ -1,7 +1,7 @@
 import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
 
-import { plantJobService, MAX_JOB_ATTEMPTS } from 'src/features/plants/services/plantJob.service';
-import { plantDetectionService } from './plantDetection.service';
+import { MAX_JOB_ATTEMPTS, plantJobService } from 'src/features/plants/services/plantJob.service';
+import { OFFLINE_QUEUE_ERROR, plantDetectionService } from './plantDetection.service';
 
 const INITIAL_DELAY_MS = 1000;
 const MAX_DELAY_MS = 8000;
@@ -47,11 +47,16 @@ const releaseLock = (): void => {
   state.isLocked = false;
 };
 
-const processJob = async (job: { id: string; imageUri: string; attempts: number }): Promise<{ success: boolean; error?: string }> => {
+const processJob = async (job: { id: string; imageUri: string; attempts: number; userId?: string }): Promise<{ success: boolean; error?: string }> => {
+  if (!job.userId) {
+    await plantJobService.updateJobStatus(job.id, 'failed', 'Usuario no asociado al trabajo');
+    return { success: false, error: 'Usuario no asociado al trabajo' };
+  }
+
   await plantJobService.updateJobStatus(job.id, 'syncing');
 
   try {
-    await plantDetectionService.analyze(job.id, {
+    await plantDetectionService.analyze(job.userId, {
       imageUri: job.imageUri,
       imageBase64: undefined,
       source: 'background-sync',
@@ -61,7 +66,9 @@ const processJob = async (job: { id: string; imageUri: string; attempts: number 
     return { success: true };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
-    await plantJobService.updateJobStatus(job.id, 'failed', message);
+    const skipAttempt = error === OFFLINE_QUEUE_ERROR
+      || (error instanceof Error && error.message === OFFLINE_QUEUE_ERROR.message);
+    await plantJobService.updateJobStatus(job.id, 'failed', message, { skipAttempt });
     return { success: false, error: message };
   }
 };
@@ -156,6 +163,8 @@ const startListening = (): void => {
   if (unsubscribeNetInfo) {
     return;
   }
+
+  void plantJobService.resetSyncingJobs();
 
   unsubscribeNetInfo = NetInfo.addEventListener((netInfo: NetInfoState) => {
     const wasConnected = state.isConnected;

@@ -50,12 +50,8 @@ export const Avatar: React.FC<AvatarProps> = ({
       >
         {uri ? (
           <Image
-            source={{ uri }}
-            style={{
-              width: '100%',
-              height: '100%',
-              borderRadius: theme.radius.full,
-            }}
+             source={{ uri }}
+             style={styles.image}
             resizeMode="cover"
           />
         ) : (

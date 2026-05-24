@@ -15,6 +15,7 @@ export const MAX_JOB_ATTEMPTS = 3;
 export interface PlantJob {
   id: string;
   imageUri: string;
+  userId?: string;
   plantName: string;
   scientificName: string;
   confidence: number;
@@ -44,6 +45,11 @@ const safeParseJobs = (value: string | null): PlantJob[] => {
   }
 };
 
+const readJobsWithLock = async (): Promise<PlantJob[]> => {
+  await waitForLock(jobWriteLock);
+  return readJobs();
+};
+
 const readJobs = async (): Promise<PlantJob[]> => {
   const raw = await AsyncStorage.getItem(STORAGE_KEY);
   return safeParseJobs(raw);
@@ -62,12 +68,24 @@ const writeJobs = async (jobs: PlantJob[]): Promise<void> => {
 const createId = (): string => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
 export const plantJobService = {
-  async createJob(imageUri: string): Promise<PlantJob> {
-    const jobs = await readJobs();
+  async createJob(imageUri: string, userId?: string): Promise<PlantJob> {
+    const jobs = await readJobsWithLock();
+    const existing = jobs.find(job =>
+      job.imageUri === imageUri
+      && (userId ? job.userId === userId : !job.userId),
+    );
+    if (existing) {
+      if (userId && !existing.userId) {
+        existing.userId = userId;
+        await writeJobs(jobs);
+      }
+      return existing;
+    }
 
     const job: PlantJob = {
       id: createId(),
       imageUri,
+      userId,
       plantName: 'Pendiente',
       scientificName: '',
       confidence: 0,
@@ -93,8 +111,13 @@ export const plantJobService = {
     return job;
   },
 
-  async updateJobStatus(jobId: string, status: JobStatus, error?: string): Promise<void> {
-    const jobs = await readJobs();
+  async updateJobStatus(
+    jobId: string,
+    status: JobStatus,
+    error?: string,
+    options?: { skipAttempt?: boolean },
+  ): Promise<void> {
+    const jobs = await readJobsWithLock();
     const index = jobs.findIndex(j => j.id === jobId);
     if (index === -1) return;
 
@@ -102,7 +125,7 @@ export const plantJobService = {
     if (error) {
       jobs[index].lastError = error;
     }
-    if (status === 'failed') {
+    if (status === 'failed' && !options?.skipAttempt) {
       jobs[index].attempts += 1;
       if (jobs[index].attempts >= MAX_JOB_ATTEMPTS) {
         jobs[index].status = 'permanent_failed';
@@ -114,34 +137,61 @@ export const plantJobService = {
   },
 
   async getJob(jobId: string): Promise<PlantJob | null> {
-    const jobs = await readJobs();
+    const jobs = await readJobsWithLock();
     return jobs.find(j => j.id === jobId) || null;
   },
 
   async getPendingJobs(): Promise<PlantJob[]> {
-    const jobs = await readJobs();
+    const jobs = await readJobsWithLock();
     return jobs.filter(j => j.status === 'pending');
   },
 
   async getFailedJobs(): Promise<PlantJob[]> {
-    const jobs = await readJobs();
+    const jobs = await readJobsWithLock();
     return jobs.filter(j => j.status === 'failed' || j.status === 'permanent_failed');
   },
 
   async getPendingAndFailedJobs(): Promise<PlantJob[]> {
-    const jobs = await readJobs();
+    const jobs = await readJobsWithLock();
     return jobs.filter(j => j.status === 'pending' || j.status === 'failed');
   },
 
   async getSyncingJobs(): Promise<PlantJob[]> {
-    const jobs = await readJobs();
+    const jobs = await readJobsWithLock();
     return jobs.filter(j => j.status === 'syncing');
   },
 
   async removeJob(jobId: string): Promise<void> {
-    const jobs = await readJobs();
+    const jobs = await readJobsWithLock();
     const next = jobs.filter(j => j.id !== jobId);
     await writeJobs(next);
+  },
+
+  async assignJobUser(jobId: string, userId: string): Promise<void> {
+    const jobs = await readJobsWithLock();
+    const index = jobs.findIndex(j => j.id === jobId);
+    if (index === -1) return;
+    jobs[index].userId = userId;
+    await writeJobs(jobs);
+  },
+
+  async resetSyncingJobs(): Promise<number> {
+    const jobs = await readJobsWithLock();
+    let updated = 0;
+
+    for (const job of jobs) {
+      if (job.status === 'syncing') {
+        job.status = 'failed';
+        job.lastError = 'Sincronización interrumpida';
+        updated += 1;
+      }
+    }
+
+    if (updated > 0) {
+      await writeJobs(jobs);
+    }
+
+    return updated;
   },
 
   async clear(): Promise<void> {

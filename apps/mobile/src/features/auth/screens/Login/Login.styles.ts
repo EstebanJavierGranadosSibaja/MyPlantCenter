@@ -74,8 +74,8 @@ export const createLoginStyles = (theme: AppTheme) =>
             elevation: theme.shadows.md.elevation,
         },
         buttonPressed: {
-            backgroundColor: '#12563B',
-            borderColor: '#12563B',
+            backgroundColor: theme.colors.primaryDark,
+            borderColor: theme.colors.primaryDark,
         },
         buttonText: {
             fontFamily: theme.typography.family.bodySemiBold,

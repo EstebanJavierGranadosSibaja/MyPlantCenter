@@ -44,15 +44,15 @@ Flujo no autenticado:
 
 Flujo autenticado:
 
-- Tabs: Inicio, Plantas, CameraAction, Amigos, Perfil
-- Stack adicional: CameraScan, UserProfile, EditProfile, AddPlant, EditPlant
+- Tabs: Inicio, Plantas, CameraAction, Amigos, Explorar, Perfil
+- Stack adicional: CameraScan, UserProfile, EditProfile, AddPlant, EditPlant, WateringCalendar
 
 ## Variables De Entorno (`.env.local`)
 
 Variables usadas hoy por la app:
 
 ```env
-EXPO_PUBLIC_API_URL=
+EXPO_PUBLIC_API_URL=https://myplantcenter.onrender.com
 EXPO_PUBLIC_FIREBASE_API_KEY=
 EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=
 EXPO_PUBLIC_FIREBASE_PROJECT_ID=

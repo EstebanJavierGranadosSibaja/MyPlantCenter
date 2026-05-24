@@ -35,6 +35,9 @@ def _sanitize_payload(payload: dict) -> dict:
         nickname = payload["nickname"]
         updates["nickname"] = nickname.strip() if isinstance(nickname, str) else nickname
 
+    if "lastWatered" in payload and payload["lastWatered"] is not None:
+        updates["lastWatered"] = payload["lastWatered"]
+
     return updates
 
 
@@ -144,7 +147,16 @@ async def get_user_plants(user_id: str) -> list[dict]:
     return sorted(plants, key=lambda plant: plant.get("order") or 0)
 
 
-async def get_plant_detail(plant_id: str) -> dict:
+async def assert_plant_owner(plant_id: str, user_id: str) -> dict:
+    plant = await get_document("plants", plant_id)
+    if plant.get("userId") != user_id:
+        error_response(403, "Acceso denegado para esta planta.")
+    return plant
+
+
+async def get_plant_detail(plant_id: str, user_id: str | None = None) -> dict:
+    if user_id:
+        await assert_plant_owner(plant_id, user_id)
     plant = await get_document("plants", plant_id)
     tags = await get_collection("plantTags", filters=[("plantId", "==", plant_id)])
     tags = sorted(tags, key=lambda tag: tag.get("order") or 0)
@@ -153,9 +165,11 @@ async def get_plant_detail(plant_id: str) -> dict:
     return {"plant": plant, "tags": tags, "issues": issues}
 
 
-async def update_plant(plant_id: str, payload: dict) -> dict:
+async def update_plant(plant_id: str, payload: dict, user_id: str | None = None) -> dict:
+    if user_id:
+        await assert_plant_owner(plant_id, user_id)
     await run_in_threadpool(_update_plant_sync, plant_id, payload)
-    return await get_plant_detail(plant_id)
+    return await get_plant_detail(plant_id, user_id=user_id)
 
 
 async def create_plant(user_id: str, payload: dict) -> dict:
@@ -163,6 +177,8 @@ async def create_plant(user_id: str, payload: dict) -> dict:
     return await get_plant_detail(plant_id)
 
 
-async def delete_plant(plant_id: str) -> dict:
+async def delete_plant(plant_id: str, user_id: str | None = None) -> dict:
+    if user_id:
+        await assert_plant_owner(plant_id, user_id)
     await run_in_threadpool(_delete_plant_sync, plant_id)
     return {"deleted": True, "plantId": plant_id}

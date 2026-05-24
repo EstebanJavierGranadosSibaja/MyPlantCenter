@@ -7,13 +7,16 @@ import { ActivityIndicator, View } from 'react-native';
 
 import { useAuth } from 'src/core/contexts/AuthContext';
 import { useAppThemeContext } from 'src/core/contexts/ThemeContext';
+import { useAppNavigatorTheme } from 'src/core/navigation/AppNavigator.styles';
 import { useTabBarTheme } from 'src/core/navigation/AppTabBar.styles';
-import { backgroundSyncService } from 'src/features/camera/services/backgroundSync.service';
 import { Login } from 'src/features/auth/screens/Login/Login';
 import { Register } from 'src/features/auth/screens/Register/Register';
 import { CameraTabButton } from 'src/features/camera/components/CameraTabButton/CameraTabButton';
 import { CameraScan } from 'src/features/camera/screens/CameraScan/CameraScan';
+import { backgroundSyncService } from 'src/features/camera/services/backgroundSync.service';
+import { WateringCalendar } from 'src/features/care/screens/WateringCalendar/WateringCalendar';
 import { Dashboard } from 'src/features/dashboard/screens/Dashboard/Dashboard';
+import { Explorar } from 'src/features/explore/screens/Explore/Explore';
 import { AddFriend } from 'src/features/friends/screens/AddFriend/AddFriend';
 import { FriendRequests } from 'src/features/friends/screens/FriendRequests/FriendRequests';
 import { FriendsHome } from 'src/features/friends/screens/FriendsHome/FriendsHome';
@@ -32,6 +35,7 @@ export type RootStackParamList = {
   AddPlant: undefined;
   EditProfile: undefined;
   CameraScan: undefined;
+  WateringCalendar: undefined;
 };
 
 export type TabParamList = {
@@ -40,6 +44,7 @@ export type TabParamList = {
   CameraAction: undefined;
   Amigos: undefined;
   Perfil: undefined;
+  Explorar: undefined;
 };
 
 export type FriendsStackParamList = {
@@ -108,89 +113,86 @@ function FriendsNavigator() {
 function TabNavigator() {
   const { tabBarOptions } = useTabBarTheme();
   const theme = useAppThemeContext();
+  const tabIconContainer = tabBarOptions.tabIconContainer ?? {};
 
-  const createTabIcon = (name: React.ComponentProps<typeof Feather>['name']) => {
-    const TabIcon = ({
-      focused,
-      color,
-      size,
-    }: {
-      focused: boolean;
-      color: string;
-      size: number;
-    }) => (
-      <View
-        style={{
-          minWidth: theme.spacing['4xl'],
-          paddingHorizontal: theme.spacing.sm + theme.spacing['3xs'],
-          paddingVertical: theme.spacing['3xs'],
-          borderRadius: theme.radius.full,
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: focused
-            ? (theme.mode === 'light' ? '#E6EFE9' : '#1E382E')
-            : 'transparent',
-        }}
-      >
-        <Feather name={name} size={size} color={color} />
-      </View>
-    );
+   const createTabIcon = (name: React.ComponentProps<typeof Feather>['name']) => {
+     const TabIcon = ({
+       focused,
+       color,
+       size,
+     }: {
+       focused: boolean;
+       color: string;
+       size: number;
+     }) => (
+       <View style={[tabIconContainer, { backgroundColor: focused ? theme.colors.tabBg : 'transparent' }]}>
+         <Feather name={name} size={size} color={color} />
+       </View>
+     );
 
     TabIcon.displayName = `TabIcon-${name}`;
     return TabIcon;
   };
 
-  return (
-    <Tab.Navigator screenOptions={tabBarOptions}>
-      <Tab.Screen
-        name="Inicio"
-        component={Dashboard}
-        options={{
-          tabBarLabel: 'Inicio',
-          tabBarIcon: createTabIcon('home'),
-        }}
-      />
-      <Tab.Screen
-        name="Plantas"
-        component={PlantsHub}
-        options={{
-          tabBarLabel: 'Plantas',
-          tabBarIcon: createTabIcon('feather'),
-        }}
-      />
-      <Tab.Screen
-        name="CameraAction"
-        component={CameraActionPlaceholder}
-        options={{
-          tabBarLabel: '',
-          tabBarButton: props => <CameraTabButton {...props} />,
-          tabBarIcon: () => null,
-        }}
-        listeners={({ navigation }) => ({
-          tabPress: event => {
-            event.preventDefault();
-            navigation.getParent()?.navigate('CameraScan' as never);
-          },
-        })}
-      />
-      <Tab.Screen
-        name="Amigos"
-        component={FriendsNavigator}
-        options={{
-          tabBarLabel: 'Amigos',
-          tabBarIcon: createTabIcon('users'),
-        }}
-      />
-      <Tab.Screen
-        name="Perfil"
-        component={OwnProfileScreen}
-        options={{
-          tabBarLabel: 'Perfil',
-          tabBarIcon: createTabIcon('user'),
-        }}
-      />
-    </Tab.Navigator>
-  );
+return (
+<Tab.Navigator screenOptions={tabBarOptions}>
+<Tab.Screen
+name="Inicio"
+component={Dashboard}
+options={{
+tabBarLabel: 'Inicio',
+tabBarIcon: createTabIcon('home'),
+}}
+/>
+<Tab.Screen
+name="Plantas"
+component={PlantsHub}
+options={{
+tabBarLabel: 'Plantas',
+tabBarIcon: createTabIcon('feather'),
+}}
+/>
+<Tab.Screen
+name="CameraAction"
+component={CameraActionPlaceholder}
+options={{
+tabBarLabel: '',
+tabBarButton: props => <CameraTabButton {...props} />,
+tabBarIcon: () => null,
+}}
+listeners={({ navigation }) => ({
+tabPress: event => {
+event.preventDefault();
+navigation.getParent()?.navigate('CameraScan' as never);
+},
+})}
+/>
+<Tab.Screen
+name="Amigos"
+component={FriendsNavigator}
+options={{
+tabBarLabel: 'Amigos',
+tabBarIcon: createTabIcon('users'),
+}}
+/>
+<Tab.Screen
+name="Explorar"
+component={Explorar}
+options={{
+tabBarLabel: 'Explorar',
+tabBarIcon: createTabIcon('search'),
+}}
+/>
+<Tab.Screen
+name="Perfil"
+component={OwnProfileScreen}
+options={{
+tabBarLabel: 'Perfil',
+tabBarIcon: createTabIcon('user'),
+}}
+/>
+</Tab.Navigator>
+);
 }
 
 // Stack Navigator 
@@ -203,6 +205,7 @@ function RootStack() {
       <Stack.Screen name="EditProfile" component={EditProfileScreen} />
       <Stack.Screen name="AddPlant" component={AddPlant} />
       <Stack.Screen name="EditPlant" component={EditPlant} />
+      <Stack.Screen name="WateringCalendar" component={WateringCalendar} />
     </Stack.Navigator>
   );
 }
@@ -231,20 +234,14 @@ export function AppNavigator() {
     };
   }, [isAuthenticated]);
 
-  if (loading) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
-          backgroundColor: theme.colors.background,
-        }}
-      >
-        <ActivityIndicator size="large" color={theme.colors.accent} />
-      </View>
-    );
-  }
+   if (loading) {
+     const { styles } = useAppNavigatorTheme();
+     return (
+       <View style={styles.loadingContainer}>
+         <ActivityIndicator size="large" color={theme.colors.accent} />
+       </View>
+     );
+   }
 
   return (
     <>

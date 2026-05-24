@@ -6,6 +6,7 @@ import { Pressable, Text, View } from 'react-native';
 import { AppHeader } from 'src/components/navigation/AppHeader/AppHeader';
 import { useAuth } from 'src/core/contexts/AuthContext';
 import { RootStackParamList } from 'src/core/navigation/AppNavigator';
+import { buildCareSummary, buildCareTasks } from 'src/features/care/utils/careSchedule';
 import { plantService } from 'src/features/plants/services/plant.service';
 import { CustomSafeArea } from 'src/shared/components/layout/CustomSafeArea';
 import { useDashboardTheme } from './Dashboard.styles';
@@ -60,10 +61,12 @@ export const Dashboard: React.FC = () => {
   const greeting = getGreeting();
   const [loading, setLoading] = useState(true);
   const [plantsCount, setPlantsCount] = useState(0);
+  const [careSummary, setCareSummary] = useState(() => buildCareSummary([]));
 
   const loadPlantsCount = React.useCallback(async () => {
     if (!user?.id) {
       setPlantsCount(0);
+      setCareSummary(buildCareSummary([]));
       setLoading(false);
       return;
     }
@@ -72,8 +75,10 @@ export const Dashboard: React.FC = () => {
     try {
       const plants = await plantService.getByUser(user.id);
       setPlantsCount(plants.length);
+      setCareSummary(buildCareSummary(buildCareTasks(plants)));
     } catch {
       setPlantsCount(0);
+      setCareSummary(buildCareSummary([]));
     } finally {
       setLoading(false);
     }
@@ -101,6 +106,10 @@ export const Dashboard: React.FC = () => {
 
   const handleAddPlant = () => {
     navigation.navigate('AddPlant');
+  };
+
+  const handleOpenCalendar = () => {
+    navigation.navigate('WateringCalendar');
   };
 
   return (
@@ -169,6 +178,45 @@ export const Dashboard: React.FC = () => {
               <Text style={styles.actionButtonText}>
                 {plantsCount === 0 ? 'Agregar primera planta' : 'Agregar otra planta'}
               </Text>
+            </Pressable>
+          </View>
+
+          <View style={styles.careCard}>
+            <View style={styles.careHeader}>
+              <Text style={styles.careTitle}>Riego inteligente</Text>
+              <Text style={styles.careMeta}>Hoy y próximos días</Text>
+            </View>
+
+            <View style={styles.careRow}>
+              <View style={styles.carePill}>
+                <Text style={styles.careValue}>{loading ? '--' : String(careSummary.overdue)}</Text>
+                <Text style={styles.careLabel}>Atrasadas</Text>
+              </View>
+              <View style={styles.carePill}>
+                <Text style={styles.careValue}>{loading ? '--' : String(careSummary.dueToday)}</Text>
+                <Text style={styles.careLabel}>Hoy</Text>
+              </View>
+              <View style={styles.carePill}>
+                <Text style={styles.careValue}>{loading ? '--' : String(careSummary.soon + careSummary.upcoming)}</Text>
+                <Text style={styles.careLabel}>Próximas</Text>
+              </View>
+            </View>
+
+            <Pressable
+              style={({ pressed }) => [
+                styles.careButton,
+                pressed && styles.careButtonPressed,
+              ]}
+              onPress={handleOpenCalendar}
+              accessibilityRole="button"
+              accessibilityLabel="Ver calendario de riego"
+            >
+              <Feather
+                name="calendar"
+                size={theme.typography.size.base}
+                color={theme.colors.textInverse}
+              />
+              <Text style={styles.careButtonText}>Ver calendario</Text>
             </Pressable>
           </View>
         </View>

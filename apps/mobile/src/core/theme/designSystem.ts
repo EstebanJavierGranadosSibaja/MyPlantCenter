@@ -30,6 +30,9 @@ interface ThemeColors {
   heroTextSubtle: string;
   heroAccentMuted: string;
 
+  heroHighlightPrimary: string;
+  heroBottomLayer: string;
+
   cardBg: string;
   cardBorder: string;
 
@@ -61,20 +64,20 @@ interface ThemeColors {
 
 // Interface para los espacios 
 interface ThemeSpacing {
-  '5xs': number;   // 0.3
-  '4xs': number;   // 0.5
-  '3xs': number;   // 1.5
-  '2xs': number;   // 2
-  xs: number;   // 4
-  sm: number;   // 8
-  md: number;   // 12
-  lg: number;   // 18
-  xl: number;   // 24
-  '2xl': number;   // 32
-  '3xl': number;   // 40
-  '4xl': number;   // 48
-  '5xl': number;   // 56 
-  '6xl': number;   // 64
+  '5xs': number;   // 2
+  '4xs': number;   // 4
+  '3xs': number;   // 6
+  '2xs': number;   // 8
+  xs: number;   // 12
+  sm: number;   // 16
+  md: number;   // 24
+  lg: number;   // 32
+  xl: number;   // 40
+  '2xl': number;   // 48
+  '3xl': number;   // 56
+  '4xl': number;   // 64
+  '5xl': number;   // 72 
+  '6xl': number;   // 80
 }
 
 // Interface para los bordes radius
@@ -223,20 +226,20 @@ export interface AppTheme {
 
 // Spacing compartido
 const sharedSpacing: ThemeSpacing = {
-  '5xs': 0.3,
-  '4xs': 0.5,
-  '3xs': 1.5,
-  '2xs': 2,
-  xs: 4,
-  sm: 8,
-  md: 12,
-  lg: 16,
-  xl: 24,
-  '2xl': 32,
-  '3xl': 40,
-  '4xl': 48,
-  '5xl': 56,
-  '6xl': 64,
+  '5xs': 2,
+  '4xs': 4,
+  '3xs': 6,
+  '2xs': 8,
+  xs: 12,
+  sm: 16,
+  md: 24,
+  lg: 32,
+  xl: 40,
+  '2xl': 48,
+  '3xl': 56,
+  '4xl': 64,
+  '5xl': 72,
+  '6xl': 80,
 };
 
 // Radius compartido
@@ -397,15 +400,17 @@ const lightColors: ThemeColors = {
   warning: '#D79A3B',
   error: '#C9524B',
 
-  heroBg: '#103D2B',
-  heroText: '#F2FAF5',
-  heroAccent: '#BDEFD9',
-  heroInputBg: 'rgba(255,255,255,0.14)',
-  heroInputBgSubtle: '#ECF4EF',
-  heroInputBorder: '#C7D7CE',
-  heroInputBorderSubtle: '#D8E4DC',
-  heroTextSubtle: '#D4E6DD',
-  heroAccentMuted: '#9CD8BE',
+    heroBg: '#103D2B',
+    heroText: '#F2FAF5',
+    heroAccent: '#BDEFD9',
+    heroInputBg: 'rgba(255,255,255,0.14)',
+    heroInputBgSubtle: '#ECF4EF',
+    heroInputBorder: '#C7D7CE',
+    heroInputBorderSubtle: '#D8E4DC',
+    heroTextSubtle: '#D4E6DD',
+    heroAccentMuted: '#9CD8BE',
+    heroHighlightPrimary: 'rgba(146,226,183,0.18)',
+    heroBottomLayer: 'rgba(255,255,255,0.42)',
 
   cardBg: '#F9FCFA',
   cardBorder: '#D2E0D8',
@@ -454,15 +459,17 @@ const darkColors: ThemeColors = {
   warning: '#D79A3B',
   error: '#C9524B',
 
-  heroBg: '#081E15',
-  heroText: '#F2FAF5',
-  heroAccent: '#9FE3C6',
-  heroInputBg: 'rgba(255,255,255,0.08)',
-  heroInputBgSubtle: '#1E382E',
-  heroInputBorder: '#3B5B4B',
-  heroInputBorderSubtle: '#2F4E3F',
-  heroTextSubtle: '#C7DFD2',
-  heroAccentMuted: '#7CCBAC',
+    heroBg: '#081E15',
+    heroText: '#F2FAF5',
+    heroAccent: '#9FE3C6',
+    heroInputBg: 'rgba(255,255,255,0.08)',
+    heroInputBgSubtle: '#1E382E',
+    heroInputBorder: '#3B5B4B',
+    heroInputBorderSubtle: '#2F4E3F',
+    heroTextSubtle: '#C7DFD2',
+    heroAccentMuted: '#7CCBAC',
+    heroHighlightPrimary: 'rgba(122,226,171,0.14)',
+    heroBottomLayer: 'rgba(255,255,255,0.06)',
 
   cardBg: '#1B3328',
   cardBorder: '#2B473A',

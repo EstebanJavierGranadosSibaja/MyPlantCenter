@@ -8,13 +8,13 @@ export const HeroBackground: React.FC = () => {
 
     const highlightColor =
         theme.mode === 'light'
-            ? 'rgba(146,226,183,0.18)'
-            : 'rgba(122,226,171,0.14)';
+            ? theme.colors.heroHighlightPrimary
+            : theme.colors.heroHighlightPrimary;
 
     const bottomLayerColor =
         theme.mode === 'light'
-            ? 'rgba(255,255,255,0.42)'
-            : 'rgba(255,255,255,0.06)';
+            ? theme.colors.heroBottomLayer
+            : theme.colors.heroBottomLayer;
 
     return (
         <View style={styles.heroBackground}>

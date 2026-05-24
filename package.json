@@ -9,7 +9,7 @@
     "frontend:ios": "npm --prefix apps/mobile run ios",
     "frontend:lint": "npm --prefix apps/mobile run lint",
     "backend:install": "pip install -r apps/api/requirements.txt",
-    "backend:start": "cd apps/api && python -m uvicorn main:app --host 0.0.0.0 --port 8000",
+    "backend:start": "cd apps/api && python server.py",
     "backend:start:local": "cd apps/api && python -m uvicorn main:app --host 127.0.0.1 --port 8000",
     "backend:check:firestore-contract": "python scripts/migrations/validate_firestore_contract.py",
     "data:normalize": "node scripts/firestore/normalize-db.mjs",
