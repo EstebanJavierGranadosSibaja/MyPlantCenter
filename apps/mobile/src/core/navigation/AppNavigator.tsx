@@ -2,29 +2,31 @@ import { Feather } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator, NativeStackScreenProps } from '@react-navigation/native-stack';
+import { BlurView } from 'expo-blur';
+import * as Haptics from 'expo-haptics';
 import React from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, Platform, StyleSheet, View } from 'react-native';
 
 import { useAuth } from 'src/core/contexts/AuthContext';
 import { useAppThemeContext } from 'src/core/contexts/ThemeContext';
 import { useAppNavigatorTheme } from 'src/core/navigation/AppNavigator.styles';
 import { useTabBarTheme } from 'src/core/navigation/AppTabBar.styles';
-import { Login } from 'src/features/auth/screens/Login/Login';
-import { Register } from 'src/features/auth/screens/Register/Register';
-import { CameraTabButton } from 'src/features/camera/components/CameraTabButton/CameraTabButton';
-import { CameraScan } from 'src/features/camera/screens/CameraScan/CameraScan';
+import { LoginV2 as Login } from 'src/features/auth/screens/Login/LoginV2';
+import { RegisterV2 as Register } from 'src/features/auth/screens/Register/RegisterV2';
+import { CameraTabButtonV2 as CameraTabButton } from 'src/features/camera/components/CameraTabButton/CameraTabButtonV2';
+import { CameraScanV2 as CameraScan } from 'src/features/camera/screens/CameraScan/CameraScanV2';
 import { backgroundSyncService } from 'src/features/camera/services/backgroundSync.service';
-import { WateringCalendar } from 'src/features/care/screens/WateringCalendar/WateringCalendar';
-import { Dashboard } from 'src/features/dashboard/screens/Dashboard/Dashboard';
-import { Explorar } from 'src/features/explore/screens/Explore/Explore';
-import { AddFriend } from 'src/features/friends/screens/AddFriend/AddFriend';
-import { FriendRequests } from 'src/features/friends/screens/FriendRequests/FriendRequests';
-import { FriendsHome } from 'src/features/friends/screens/FriendsHome/FriendsHome';
-import { AddPlant } from 'src/features/plants/screens/AddPlant/AddPlant';
-import { EditPlant } from 'src/features/plants/screens/EditPlant/EditPlant';
-import { PlantsHub } from 'src/features/plants/screens/PlantsHub/PlantsHub';
-import { EditProfile } from 'src/features/profile/screens/EditProfile/EditProfile';
-import { ProfileView } from 'src/features/profile/screens/ProfileView/ProfileView';
+import { WateringCalendarV2 as WateringCalendar } from 'src/features/care/screens/WateringCalendar/WateringCalendarV2';
+import { DashboardV2 as Dashboard } from 'src/features/dashboard/screens/Dashboard/DashboardV2';
+import { ExplorarV2 as Explorar } from 'src/features/explore/screens/Explore/ExplorarV2';
+import { AddFriendV2 as AddFriend } from 'src/features/friends/screens/AddFriend/AddFriendV2';
+import { FriendRequestsV2 as FriendRequests } from 'src/features/friends/screens/FriendRequests/FriendRequestsV2';
+import { FriendsHomeV2 as FriendsHome } from 'src/features/friends/screens/FriendsHome/FriendsHomeV2';
+import { AddPlantV2 as AddPlant } from 'src/features/plants/screens/AddPlant/AddPlantV2';
+import { EditPlantV2 as EditPlant } from 'src/features/plants/screens/EditPlant/EditPlantV2';
+import { PlantsHubV2 as PlantsHub } from 'src/features/plants/screens/PlantsHub/PlantsHubV2';
+import { EditProfileV2 as EditProfile } from 'src/features/profile/screens/EditProfile/EditProfileV2';
+import { ProfileViewV2 as ProfileView } from 'src/features/profile/screens/ProfileView/ProfileViewV2';
 import { FormToastProvider } from 'src/shared/components/feedback/FormToast/FormToast';
 
 // Tipos 
@@ -32,7 +34,7 @@ export type RootStackParamList = {
   MainTabs: undefined;
   UserProfile: { userId: string };
   EditPlant: { plantId: string };
-  AddPlant: undefined;
+  AddPlant: { prefill?: { name?: string; species?: string; notes?: string } } | undefined;
   EditProfile: undefined;
   CameraScan: undefined;
   WateringCalendar: undefined;
@@ -109,33 +111,62 @@ function FriendsNavigator() {
   );
 }
 
+// iOS-only: real frosted-glass pill. Android: expo-blur renders no blur,
+// so AppTabBar.styles.ts keeps the opaque glass fallback color there.
+// Defined outside TabNavigator so the reference is stable across renders.
+//
+// The wrapper View carries borderRadius + overflow:hidden so the BlurView is
+// clipped to the pill shape without restricting the tab bar container itself
+// (which needs overflow:visible for the floating camera button).
+const TAB_BAR_BLUR_CLIP = StyleSheet.create({
+  pill: { borderRadius: 32, overflow: 'hidden' },
+});
+
+function TabBarBackground() {
+  if (Platform.OS !== 'ios') return null;
+  return (
+    <View style={[StyleSheet.absoluteFill, TAB_BAR_BLUR_CLIP.pill]}>
+      <BlurView intensity={72} tint="systemMaterial" style={StyleSheet.absoluteFill} />
+    </View>
+  );
+}
+
 // Tab Navigator
 function TabNavigator() {
   const { tabBarOptions } = useTabBarTheme();
   const theme = useAppThemeContext();
   const tabIconContainer = tabBarOptions.tabIconContainer ?? {};
 
-   const createTabIcon = (name: React.ComponentProps<typeof Feather>['name']) => {
-     const TabIcon = ({
-       focused,
-       color,
-       size,
-     }: {
-       focused: boolean;
-       color: string;
-       size: number;
-     }) => (
-       <View style={[tabIconContainer, { backgroundColor: focused ? theme.colors.tabBg : 'transparent' }]}>
-         <Feather name={name} size={size} color={color} />
-       </View>
-     );
+  const createTabIcon = (name: React.ComponentProps<typeof Feather>['name']) => {
+    const TabIcon = ({
+      focused,
+      color,
+    }: {
+      focused: boolean;
+      color: string;
+      size: number;
+    }) => (
+      <View style={[tabIconContainer, { backgroundColor: focused ? theme.colors.tabBg : 'transparent' }]}>
+        <Feather name={name} size={theme.layout.iconSm} color={color} />
+      </View>
+    );
 
     TabIcon.displayName = `TabIcon-${name}`;
     return TabIcon;
   };
 
 return (
-<Tab.Navigator screenOptions={tabBarOptions}>
+<Tab.Navigator
+  screenOptions={{
+    ...tabBarOptions,
+    tabBarBackground: TabBarBackground,
+  }}
+  screenListeners={{
+    tabPress: () => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    },
+  }}
+>
 <Tab.Screen
 name="Inicio"
 component={Dashboard}
@@ -223,6 +254,7 @@ function AuthNavigator() {
 export function AppNavigator() {
   const { isAuthenticated, loading } = useAuth();
   const theme = useAppThemeContext();
+  const { styles } = useAppNavigatorTheme();
 
   React.useEffect(() => {
     if (isAuthenticated) {
@@ -234,14 +266,13 @@ export function AppNavigator() {
     };
   }, [isAuthenticated]);
 
-   if (loading) {
-     const { styles } = useAppNavigatorTheme();
-     return (
-       <View style={styles.loadingContainer}>
-         <ActivityIndicator size="large" color={theme.colors.accent} />
-       </View>
-     );
-   }
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={theme.colors.accent} />
+      </View>
+    );
+  }
 
   return (
     <>

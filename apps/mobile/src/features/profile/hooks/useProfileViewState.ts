@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useUserProfile } from 'src/features/profile/hooks/useUserProfile';
-import { ProfileTab } from 'src/features/profile/screens/ProfileView/ProfileView';
+import { ProfileTab } from 'src/features/profile/screens/ProfileView/profile/ProfileTabs/ProfileTabs';
 
 // Hook 
 export function useProfileViewState(userId: string, isOwner: boolean) {

@@ -14,7 +14,7 @@ export const createBadgeStyles = (theme: AppTheme) => StyleSheet.create({
 
   label: {
     fontFamily: theme.typography.family.bodySemiBold,
-    letterSpacing: 0.4,
+    letterSpacing: theme.typography.letterSpacing.wide,
   },
 
 });

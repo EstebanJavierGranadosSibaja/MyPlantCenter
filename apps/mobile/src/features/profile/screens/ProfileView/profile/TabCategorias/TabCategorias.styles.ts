@@ -1,95 +1,89 @@
-import { StyleSheet } from 'react-native';
-import { useAppThemeContext } from 'src/core/contexts/ThemeContext';
-import { AppTheme } from 'src/core/theme/designSystem';
+import { UITheme } from 'src/ui';
+import { useUITheme } from 'src/ui';
 
-export const createTabCategoriasStyles = (theme: AppTheme) => StyleSheet.create({
+// ─────────────────────────────────────────────────────────────────────────────
+
+const CHART_BAR_RADIUS = 8;
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const createTabCategoriasStyles = (theme: UITheme) => ({
 
   container: {
     paddingHorizontal: theme.layout.screenPaddingH,
-    paddingTop:        theme.spacing.lg,
+    paddingTop:        theme.spacing['2xl'],
     paddingBottom:     theme.spacing['5xl'],
-    gap:               theme.spacing.lg,
+    gap:               theme.spacing['2xl'],
   },
 
   sectionTitle: {
-    fontFamily:    theme.typography.family.bodySemiBold,
-    fontSize:      theme.typography.size.sm,
-    color:         theme.colors.textSecondary,
-    letterSpacing: 1.4,
-    textTransform: 'uppercase' as const,
-    marginBottom:  theme.spacing.sm,
+    ...theme.text.overline,
+    color:        theme.colors.textSecondary,
+    marginBottom: theme.spacing.base,
   },
 
   list: {
-    gap: theme.spacing.sm,
+    gap: theme.spacing.base,
   },
 
   listCard: {
-    backgroundColor: theme.colors.elevated,
-    borderRadius: theme.radius.lg,
-    padding: theme.spacing.md,
-    borderWidth: theme.borders.thin,
-    borderColor: theme.colors.cardBorder,
-    shadowColor: theme.shadows.sm.color,
-    shadowOffset: theme.shadows.sm.offset,
-    shadowOpacity: theme.shadows.sm.opacity,
-    shadowRadius: theme.shadows.sm.radius,
-    elevation: theme.shadows.sm.elevation,
+    backgroundColor: theme.colors.surfaceElevated,
+    borderRadius:    theme.radius.lg,
+    padding:         theme.spacing.xl,
+    borderWidth:     1,
+    borderColor:     theme.colors.borderDefault,
+    ...theme.shadows.xs,
   },
 
   chartContainer: {
-    backgroundColor: theme.colors.elevated,
+    backgroundColor: theme.colors.surfaceElevated,
     borderRadius:    theme.radius.lg,
-    padding:         theme.spacing.lg,
-    borderWidth:     theme.borders.thin,
-    borderColor:     theme.colors.cardBorder,
-    shadowColor: theme.shadows.sm.color,
-    shadowOffset: theme.shadows.sm.offset,
-    shadowOpacity: theme.shadows.sm.opacity,
-    shadowRadius: theme.shadows.sm.radius,
-    elevation: theme.shadows.sm.elevation,
-    gap: theme.spacing.md,
+    padding:         theme.spacing['2xl'],
+    borderWidth:     1,
+    borderColor:     theme.colors.borderDefault,
+    ...theme.shadows.xs,
+    gap:             theme.spacing.xl,
   },
 
   chartRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.sm,
+    flexDirection: 'row' as const,
+    alignItems:    'center' as const,
+    gap:           theme.spacing.base,
   },
 
   chartRowLabel: {
+    ...theme.text.bodyMd,
     width: 86,
-    fontFamily: theme.typography.family.bodyMedium,
-    fontSize: theme.typography.size.sm,
-    color: theme.colors.textMuted,
+    color: theme.colors.textTertiary,
   },
 
   chartTrack: {
-    flex: 1,
-    height: theme.spacing.lg,
-    borderRadius: theme.radius.sm,
-    backgroundColor: theme.colors.heroInputBgSubtle,
-    borderWidth: theme.borders.thin,
-    borderColor: theme.colors.cardBorder,
-    overflow: 'hidden',
+    flex:            1,
+    height:          theme.spacing.lg,
+    borderRadius:    theme.radius.xs,
+    backgroundColor: theme.colors.bgSubtle,
+    borderWidth:     1,
+    borderColor:     theme.colors.borderSubtle,
+    overflow:        'hidden' as const,
   },
 
   chartFill: {
-    height: '100%',
-    borderRadius: theme.layout.chartBarRadius,
+    height:       '100%' as const,
+    borderRadius: CHART_BAR_RADIUS,
   },
 
   chartRowValue: {
-    minWidth: 20,
-    textAlign: 'right',
-    fontFamily: theme.typography.family.bodySemiBold,
-    fontSize: theme.typography.size.lg,
-    color: theme.colors.textPrimary,
+    ...theme.text.h3,
+    minWidth:  20,
+    textAlign: 'right' as const,
+    color:     theme.colors.textPrimary,
   },
 
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+
 export function useTabCategoriasTheme() {
-  const theme = useAppThemeContext();
+  const theme = useUITheme();
   return { theme, styles: createTabCategoriasStyles(theme) };
 }

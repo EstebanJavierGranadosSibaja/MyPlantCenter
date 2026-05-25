@@ -1,6 +1,7 @@
 from typing import Any
 
 from fastapi.concurrency import run_in_threadpool
+from firebase_admin import firestore as fb_firestore
 from google.cloud.firestore_v1.base_query import FieldFilter
 
 from config.firebase import get_firestore_client
@@ -42,6 +43,7 @@ def _read_collection_sync(
     *,
     filters: list[tuple[str, str, Any]] | None = None,
     order_by: str | None = None,
+    order_direction: str = "ASCENDING",
 ) -> list[dict[str, Any]]:
     query = _resolve_collection_path(collection_path)
 
@@ -49,7 +51,12 @@ def _read_collection_sync(
         query = query.where(filter=FieldFilter(field_name, operator, value))
 
     if order_by:
-        query = query.order_by(order_by)
+        direction = (
+            fb_firestore.Query.DESCENDING
+            if order_direction == "DESCENDING"
+            else fb_firestore.Query.ASCENDING
+        )
+        query = query.order_by(order_by, direction=direction)
 
     return [serialize_document(document) for document in query.stream()]
 
@@ -68,6 +75,7 @@ async def get_collection(
     *,
     filters: list[tuple[str, str, Any]] | None = None,
     order_by: str | None = None,
+    order_direction: str = "ASCENDING",
 ) -> list[dict[str, Any]]:
     try:
         return await run_in_threadpool(
@@ -75,6 +83,7 @@ async def get_collection(
             collection_path,
             filters=filters,
             order_by=order_by,
+            order_direction=order_direction,
         )
     except Exception as exc:  # noqa: BLE001
         if hasattr(exc, "status_code"):

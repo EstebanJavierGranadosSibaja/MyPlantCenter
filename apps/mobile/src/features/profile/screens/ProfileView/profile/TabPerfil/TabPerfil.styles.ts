@@ -1,206 +1,159 @@
-import { StyleSheet } from 'react-native';
-import { useAppThemeContext } from 'src/core/contexts/ThemeContext';
-import { AppTheme } from 'src/core/theme/designSystem';
+import { UITheme } from 'src/ui';
+import { useUITheme } from 'src/ui';
 
-export const createTabPerfilStyles = (theme: AppTheme) => StyleSheet.create({
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Hardcoded sizes not in UILayout
+const FAV_ICON_SIZE = 48;
+const LOGRO_SIZE = 52;
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const createTabPerfilStyles = (theme: UITheme) => ({
 
   container: {
     paddingHorizontal: theme.layout.screenPaddingH,
-    paddingTop: theme.spacing.lg,
-    paddingBottom: theme.spacing['5xl'],
-    gap: theme.spacing.lg,
+    paddingTop:        theme.spacing['2xl'],
+    paddingBottom:     theme.spacing['5xl'],
+    gap:               theme.spacing['2xl'],
   },
 
   sectionBlock: {
-    gap: theme.spacing.sm,
+    gap: theme.spacing.base,
   },
 
   sectionCard: {
-    backgroundColor: theme.colors.elevated,
-    borderRadius: theme.radius.lg,
-    borderWidth: theme.borders.thin,
-    borderColor: theme.colors.cardBorder,
-    padding: theme.spacing.md,
-    shadowColor: theme.shadows.sm.color,
-    shadowOffset: theme.shadows.sm.offset,
-    shadowOpacity: theme.shadows.sm.opacity,
-    shadowRadius: theme.shadows.sm.radius,
-    elevation: theme.shadows.sm.elevation,
+    backgroundColor: theme.colors.surfaceElevated,
+    borderRadius:    theme.radius.lg,
+    borderWidth:     1,
+    borderColor:     theme.colors.borderDefault,
+    padding:         theme.spacing.xl,
+    ...theme.shadows.xs,
   },
 
   sectionTitle: {
-    fontFamily: theme.typography.family.bodySemiBold,
-    fontSize: theme.typography.size.sm,
+    ...theme.text.overline,
     color: theme.colors.textSecondary,
-    letterSpacing: 1.4,
-    textTransform: 'uppercase' as const,
   },
 
   descriptionText: {
-    fontFamily: theme.typography.family.bodyRegular,
-    fontSize: theme.typography.size.base,
+    ...theme.text.body,
     color: theme.colors.textSecondary,
-    lineHeight: theme.typography.lineHeight.relaxed,
   },
 
   descriptionInput: {
-    fontFamily: theme.typography.family.bodyRegular,
-    fontSize: theme.typography.size.base,
-    color: theme.colors.textPrimary,
-    backgroundColor: theme.colors.cardBg,
-    borderWidth: theme.borders.thick,
-    borderColor: theme.colors.border,
-    borderRadius: theme.radius.md,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.md,
-    lineHeight: theme.typography.lineHeight.relaxed,
+    ...theme.text.body,
+    color:             theme.colors.textPrimary,
+    backgroundColor:   theme.colors.bgSubtle,
+    borderWidth:       1.5,
+    borderColor:       theme.colors.borderDefault,
+    borderRadius:      theme.radius.md,
+    paddingHorizontal: theme.spacing.xl,
+    paddingVertical:   theme.spacing.xl,
     textAlignVertical: 'top' as const,
-    minHeight: theme.layout.avatarLg + theme.spacing.xl,
-    shadowColor: theme.shadows.none.color,
-    shadowOffset: theme.shadows.none.offset,
-    shadowOpacity: theme.shadows.none.opacity,
-    shadowRadius: theme.shadows.none.radius,
-    elevation: theme.shadows.none.elevation,
+    minHeight:         theme.layout.avatarLg + theme.spacing['3xl'],
+    ...theme.shadows.none,
   },
 
+  // ── Favorite plant card ────────────────────────────────────────────────────
+
   favPlantCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.lg,
-    backgroundColor: theme.colors.primary,
-    borderRadius: theme.radius.lg,
-    padding: theme.spacing.lg,
-    borderWidth: theme.borders.thin,
-    borderColor: theme.colors.heroInputBorder,
-    shadowColor: theme.shadows.md.color,
-    shadowOffset: theme.shadows.md.offset,
-    shadowOpacity: theme.shadows.md.opacity,
-    shadowRadius: theme.shadows.md.radius,
-    elevation: theme.shadows.md.elevation,
+    flexDirection: 'row' as const,
+    alignItems:    'center' as const,
+    gap:           theme.spacing['2xl'],
+    backgroundColor: theme.colors.accent,
+    borderRadius:  theme.radius.lg,
+    padding:       theme.spacing['2xl'],
+    borderWidth:   1,
+    borderColor:   theme.colors.accentMuted,
+    ...theme.shadows.md,
   },
 
   favPlantIcon: {
-    width: theme.layout.favIconSize,
-    height: theme.layout.favIconSize,
-    borderRadius: theme.radius.full,
-    backgroundColor: theme.colors.favPlantIconBg,
-    fontSize: theme.typography.size['3xl'],
-    lineHeight: theme.typography.lineHeight.loose,
-    alignItems: 'center',
-    justifyContent: 'center',
+    width:           FAV_ICON_SIZE,
+    height:          FAV_ICON_SIZE,
+    borderRadius:    theme.radius.full,
+    backgroundColor: theme.colors.accentSoft,
+    alignItems:      'center' as const,
+    justifyContent:  'center' as const,
   },
 
   favPlantInfo: {
     flex: 1,
-    gap: theme.spacing.xs + 2,
+    gap:  theme.spacing.xs,
   },
 
   favPlantName: {
-    fontFamily: theme.typography.family.displayBoldItalic,
-    fontSize: theme.typography.size.xl,
-    color: theme.colors.heroText,
+    ...theme.text.h3,
+    color: theme.colors.textOnAccent,
   },
 
   favPlantCategoria: {
-    fontFamily: theme.typography.family.bodyRegular,
-    fontSize: theme.typography.size.base,
-    color: theme.colors.heroText,
+    ...theme.text.bodyMd,
+    color: theme.colors.textOnAccent,
   },
+
+  // ── Birthday row ───────────────────────────────────────────────────────────
 
   birthdayRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.md,
-    backgroundColor: theme.colors.elevated,
-    borderRadius: theme.radius.lg,
-    padding: theme.spacing.lg,
-    borderWidth: theme.borders.thin,
-    borderColor: theme.colors.cardBorder,
-    shadowColor: theme.shadows.sm.color,
-    shadowOffset: theme.shadows.sm.offset,
-    shadowOpacity: theme.shadows.sm.opacity,
-    shadowRadius: theme.shadows.sm.radius,
-    elevation: theme.shadows.sm.elevation,
-  },
-
-  birthdayIcon: {
-    fontSize: theme.typography.size['3xl'],
-    lineHeight: theme.typography.lineHeight.loose,
+    flexDirection:   'row' as const,
+    alignItems:      'center' as const,
+    gap:             theme.spacing.xl,
+    backgroundColor: theme.colors.surfaceElevated,
+    borderRadius:    theme.radius.lg,
+    padding:         theme.spacing['2xl'],
+    borderWidth:     1,
+    borderColor:     theme.colors.borderDefault,
+    ...theme.shadows.xs,
   },
 
   birthdayLabel: {
-    fontFamily: theme.typography.family.bodyRegular,
-    fontSize: theme.typography.size.sm,
-    color: theme.colors.textMuted,
-    marginBottom: theme.spacing.xs - 2,
+    ...theme.text.caption,
+    color:        theme.colors.textTertiary,
+    marginBottom: 2,
   },
 
   birthdayValue: {
-    fontFamily: theme.typography.family.displayBold,
-    fontSize: theme.typography.size.lg,
+    ...theme.text.h3,
     color: theme.colors.textPrimary,
   },
 
-  logrosRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: theme.spacing.sm,
-  },
+  // ── Logros ─────────────────────────────────────────────────────────────────
 
   logrosPanel: {
-    backgroundColor: theme.colors.elevated,
-    borderRadius: theme.radius.lg,
-    borderWidth: theme.borders.thin,
-    borderColor: theme.colors.cardBorder,
-    padding: theme.spacing.md,
-    shadowColor: theme.shadows.sm.color,
-    shadowOffset: theme.shadows.sm.offset,
-    shadowOpacity: theme.shadows.sm.opacity,
-    shadowRadius: theme.shadows.sm.radius,
-    elevation: theme.shadows.sm.elevation,
+    backgroundColor: theme.colors.surfaceElevated,
+    borderRadius:    theme.radius.lg,
+    borderWidth:     1,
+    borderColor:     theme.colors.borderDefault,
+    padding:         theme.spacing.xl,
+    ...theme.shadows.xs,
+  },
+
+  logrosRow: {
+    flexDirection: 'row' as const,
+    flexWrap:      'wrap' as const,
+    gap:           theme.spacing.base,
   },
 
   logroItem: {
-    width: theme.layout.logroSize,
-    height: theme.layout.logroSize,
-    borderRadius: theme.radius.md,
-    borderWidth: theme.borders.thin,
-    alignItems: 'center',
-    justifyContent: 'center',
+    width:          LOGRO_SIZE,
+    height:         LOGRO_SIZE,
+    borderRadius:   theme.radius.md,
+    borderWidth:    1,
+    alignItems:     'center' as const,
+    justifyContent: 'center' as const,
   },
 
   logroEmoji: {
-    fontSize: theme.typography.size['3xl'],
-    lineHeight: theme.typography.lineHeight.loose,
-  },
-
-  saveButton: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: theme.spacing.sm,
-    backgroundColor: theme.colors.primary,
-    borderRadius: theme.radius.md,
-    paddingVertical: theme.spacing.md + 3,
-    paddingHorizontal: theme.spacing.xl,
-    marginTop: theme.spacing.sm,
-    shadowColor: theme.shadows.md.color,
-    shadowOffset: theme.shadows.md.offset,
-    shadowOpacity: theme.shadows.md.opacity,
-    shadowRadius: theme.shadows.md.radius,
-    elevation: theme.shadows.md.elevation,
-  },
-
-  saveButtonText: {
-    fontFamily: theme.typography.family.bodySemiBold,
-    fontSize: theme.typography.size.base,
-    color: theme.colors.textInverse,
-    letterSpacing: 0.4,
+    fontSize:   28,
+    lineHeight: 36,
   },
 
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+
 export function useTabPerfilTheme() {
-  const theme = useAppThemeContext();
+  const theme = useUITheme();
   return { theme, styles: createTabPerfilStyles(theme) };
 }

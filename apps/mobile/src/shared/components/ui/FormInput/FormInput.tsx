@@ -1,6 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { Control, FieldPath, FieldValues, useController } from 'react-hook-form';
 import {
     Platform,
@@ -99,6 +99,39 @@ export function FormInput<T extends FieldValues>({
   const { theme, styles } = useFormInputTheme();
   const [isFocused, setIsFocused] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  // Tracks when this field last gained focus.
+  const focusedAtRef = useRef(0);
+
+  // Extract props that need special handling before spreading the rest.
+  const {
+    onSubmitEditing: rawOnSubmitEditing,
+    onFocus: callerOnFocus,
+    blurOnSubmit: callerBlurOnSubmit,
+    returnKeyType,
+    ...restInputProps
+  } = inputProps;
+
+  // When returnKeyType="next", auto-apply blurOnSubmit={false} so Android does
+  // not blur the current field before onSubmitEditing fires in JS. Without this,
+  // the field blurs first, Android starts its own focus traversal natively, and
+  // the programmatic ref.focus() arrives late — creating a race condition that
+  // manifests as focus jumping on Samsung devices with Samsung Pass / autofill.
+  // Callers can override by passing blurOnSubmit explicitly.
+  const effectiveBlurOnSubmit = callerBlurOnSubmit !== undefined
+    ? callerBlurOnSubmit
+    : returnKeyType === 'next' ? false : undefined;
+
+  // Secondary guard: some third-party IMEs (Gboard on certain ROMs) still fire
+  // IME_ACTION_NEXT spuriously within milliseconds of focus even with
+  // blurOnSubmit={false}. Block onSubmitEditing callbacks that arrive within
+  // 120 ms of gaining focus as a defense-in-depth measure.
+  const guardedOnSubmitEditing = rawOnSubmitEditing
+    ? (...args: Parameters<NonNullable<typeof rawOnSubmitEditing>>) => {
+        if (Date.now() - focusedAtRef.current < 120) return;
+        rawOnSubmitEditing(...args);
+      }
+    : undefined;
 
   const {
     field: { value, onChange, onBlur },
@@ -255,12 +288,19 @@ export function FormInput<T extends FieldValues>({
               setIsFocused(false);
               onBlur();
             }}
-            onFocus={() => setIsFocused(true)}
+            onFocus={(e) => {
+              focusedAtRef.current = Date.now();
+              setIsFocused(true);
+              callerOnFocus?.(e);
+            }}
             editable={editable}
             secureTextEntry={shouldSecure}
             style={[styles.input, inputStyle, style]}
             placeholderTextColor={theme.colors.textMuted}
-            {...inputProps}
+            returnKeyType={returnKeyType}
+            blurOnSubmit={effectiveBlurOnSubmit}
+            {...restInputProps}
+            onSubmitEditing={guardedOnSubmitEditing}
           />
 
           {trailingElement}

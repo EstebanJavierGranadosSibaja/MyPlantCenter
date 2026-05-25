@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { StyleSheet } from 'react-native';
 import { useAppThemeContext } from 'src/core/contexts/ThemeContext';
 import { AppTheme } from 'src/core/theme/designSystem';
@@ -25,11 +26,11 @@ export const createFormInputStyles = (theme: AppTheme) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.md,
+    borderRadius: theme.layout.inputRadius,
     borderWidth: theme.borders.base,
     borderColor: theme.colors.cardBorder,
     paddingHorizontal: theme.spacing.md,
-    minHeight: theme.spacing['3xl'] + theme.spacing.xs,
+    height: theme.layout.inputHeight,
     gap: theme.spacing.sm,
   },
 
@@ -55,7 +56,7 @@ export const createFormInputStyles = (theme: AppTheme) => StyleSheet.create({
     fontFamily: theme.typography.family.bodyRegular,
     fontSize: theme.typography.size.base,
     color: theme.colors.textPrimary,
-    paddingVertical: theme.spacing.sm + 2,
+    paddingVertical: 0,
   },
 
   errorRow: {
@@ -87,5 +88,6 @@ export const createFormInputStyles = (theme: AppTheme) => StyleSheet.create({
 
 export function useFormInputTheme() {
   const theme = useAppThemeContext();
-  return { theme, styles: createFormInputStyles(theme) };
+  const styles = useMemo(() => createFormInputStyles(theme), [theme]);
+  return { theme, styles };
 }

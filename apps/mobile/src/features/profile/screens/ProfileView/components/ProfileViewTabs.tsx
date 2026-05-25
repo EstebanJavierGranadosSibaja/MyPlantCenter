@@ -5,7 +5,7 @@ import { ProfileTabs } from '../profile/ProfileTabs/ProfileTabs';
 import { TabAjustes } from '../profile/TabAjustes/TabAjustes';
 import { TabCategorias } from '../profile/TabCategorias/TabCategorias';
 import { TabPerfil } from '../profile/TabPerfil/TabPerfil';
-import { ProfileTab } from '../ProfileView';
+import { ProfileTab } from '../profile/ProfileTabs/ProfileTabs';
 
 // Tabs disponibles según ownership
 const OWNER_TABS = ['perfil', 'categorias', 'ajustes'] as const;

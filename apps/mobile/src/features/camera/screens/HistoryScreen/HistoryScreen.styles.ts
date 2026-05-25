@@ -1,6 +1,6 @@
 import { StyleSheet } from 'react-native';
-import { useAppThemeContext } = from 'src/core/contexts/ThemeContext';
-import { AppTheme } = from 'src/core/theme/designSystem';
+import { useAppThemeContext } from 'src/core/contexts/ThemeContext';
+import { AppTheme } from 'src/core/theme/designSystem';
 
 export const createHistoryScreenStyles = (theme: AppTheme) => StyleSheet.create({
   placeholderText: {

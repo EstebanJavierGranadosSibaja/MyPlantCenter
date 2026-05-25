@@ -3,15 +3,22 @@ import React from 'react';
 import { Text, View } from 'react-native';
 import { UserProfile } from 'src/features/profile/types/user.types';
 import { EmptyState } from 'src/shared/components/feedback/EmptyState/EmptyState';
-import { EditProfile } from '../../../EditProfile/EditProfile';
+import { EditProfileV2 as EditProfile } from '../../../EditProfile/EditProfileV2';
 import { useTabPerfilTheme } from './TabPerfil.styles';
 
+// ─────────────────────────────────────────────────────────────────────────────
 
 interface TabPerfilProps {
   profile: UserProfile;
   editMode: boolean;
   onProfileSaved: () => void;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+const DISABLED_OPACITY = 0.45;
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 export const TabPerfil: React.FC<TabPerfilProps> = ({
   profile,
@@ -40,22 +47,18 @@ export const TabPerfil: React.FC<TabPerfilProps> = ({
             <View style={styles.favPlantIcon}>
               <Feather
                 name={profile.favoritePlant.iconName}
-                size={theme.typography.size['3xl']}
+                size={theme.text.h1.fontSize}
                 color={theme.colors.accent}
               />
             </View>
             <View style={styles.favPlantInfo}>
-              <Text style={styles.favPlantName}>
-                {profile.favoritePlant.name}
-              </Text>
-              <Text style={styles.favPlantCategoria}>
-                {profile.favoritePlant.category}
-              </Text>
+              <Text style={styles.favPlantName}>{profile.favoritePlant.name}</Text>
+              <Text style={styles.favPlantCategoria}>{profile.favoritePlant.category}</Text>
             </View>
             <Feather
               name="heart"
-              size={theme.typography.size['2xl']}
-              color={theme.colors.accent}
+              size={theme.text.h2.fontSize}
+              color={theme.colors.textOnAccent}
             />
           </View>
         </View>
@@ -68,7 +71,7 @@ export const TabPerfil: React.FC<TabPerfilProps> = ({
           <View style={styles.birthdayRow}>
             <Feather
               name="gift"
-              size={theme.typography.size['2xl']}
+              size={theme.text.h2.fontSize}
               color={theme.colors.accent}
             />
             <View>
@@ -100,12 +103,12 @@ export const TabPerfil: React.FC<TabPerfilProps> = ({
                     styles.logroItem,
                     {
                       backgroundColor: logro.unlocked
-                        ? theme.colors.logroActiveBg
-                        : theme.colors.cardBg,
+                        ? theme.colors.accentSoft
+                        : theme.colors.surface,
                       borderColor: logro.unlocked
-                        ? theme.colors.logroActiveBorder
-                        : theme.colors.border,
-                      opacity: logro.unlocked ? 1 : theme.opacity.disabled,
+                        ? theme.colors.accentMuted
+                        : theme.colors.borderDefault,
+                      opacity: logro.unlocked ? 1 : DISABLED_OPACITY,
                     },
                   ]}
                 >

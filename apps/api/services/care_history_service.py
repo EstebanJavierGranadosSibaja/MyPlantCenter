@@ -146,11 +146,11 @@ def _create_care_history_sync(user_id: str, payload: dict) -> dict:
 
 
 async def get_user_care_history(user_id: str) -> list[dict]:
-    return await get_collection(
+    results = await get_collection(
         "careHistory",
         filters=[("userId", "==", user_id)],
-        order_by="completedAt",
     )
+    return sorted(results, key=lambda r: r.get("completedAt") or "", reverse=True)
 
 
 async def create_care_history(user_id: str, payload: dict) -> dict:

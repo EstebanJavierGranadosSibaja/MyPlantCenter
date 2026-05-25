@@ -34,6 +34,7 @@ export interface PlantDetectionResult {
 export interface PlantDetectionRequest {
   imageUri: string;
   imageMimeType?: string;
+  imageBase64?: string;
   plantId?: string;
   source?: string;
 }
@@ -98,7 +99,7 @@ export const plantDetectionService = {
       const result = response.data.data;
       console.log('[PlantDetection] Result:', result.scientificName);
 
-      await plantLocalService.addPlant(createLocalPlantFromResult(result, payload.imageUri, userId));
+      await plantLocalService.addPlant(createLocalPlantFromResult(result, payload.imageUri));
 
       console.log('[PlantDetection] Saved to plantLocalService');
 

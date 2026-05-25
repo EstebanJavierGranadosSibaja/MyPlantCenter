@@ -1,70 +1,82 @@
+import { useMemo } from 'react';
+import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppThemeContext } from 'src/core/contexts/ThemeContext';
 import { AppTheme } from 'src/core/theme/designSystem';
 
+// On iOS the BlurView (mounted via tabBarBackground) provides the visual
+// surface, so the bar itself must be transparent. On Android, expo-blur
+// renders no actual blur, so we keep the opaque glass color as fallback.
+const tabBarBg = (theme: AppTheme) =>
+  Platform.OS === 'ios' ? 'transparent' : theme.colors.tabBarGlassBg;
+
 export const createTabBarOptions = (theme: AppTheme, bottomInset: number) => ({
 
-    headerShown: false,
+  headerShown: false,
 
-    tabBarStyle: {
-        backgroundColor: theme.colors.cardBg,
-        borderTopColor: theme.colors.cardBorder,
-        borderTopWidth: theme.borders.thin,
-        borderWidth: theme.borders.thin,
-        borderColor: theme.colors.cardBorder,
-        height: theme.layout.heroPaddingTop + Math.max(bottomInset, theme.spacing.md),
-        borderRadius: theme.layout.tabBarRadius + theme.radius.xs,
-        marginHorizontal: theme.layout.screenPaddingH,
-        bottom: 0,
-        position: 'absolute' as const,
-        overflow: 'visible' as const,
-        paddingTop: theme.spacing.sm,
-        paddingBottom: Math.max(bottomInset, theme.spacing.sm),
-        shadowColor: theme.shadows.lg.color,
-        shadowOffset: theme.shadows.lg.offset,
-        shadowOpacity: theme.shadows.lg.opacity,
-        shadowRadius: theme.shadows.lg.radius,
-        elevation: theme.shadows.lg.elevation,
-        marginBottom: theme.spacing.lg,
-        marginTop: theme.spacing.md,
-    },
+  // Keep the floating pill visible when keyboard opens — the default (true on
+  // Android) hides the bar and can trigger spurious focus/navigation events.
+  tabBarHideOnKeyboard: false,
 
-    tabBarItemStyle: {
-        marginHorizontal: theme.spacing['2xs'],
-        marginVertical: theme.spacing.xs,
-        borderRadius: theme.radius.full,
-    },
+  tabBarStyle: {
+    backgroundColor: tabBarBg(theme),
+    borderWidth: theme.borders.base,
+    borderColor: theme.colors.tabBarGlassBorder,
+    height: theme.layout.tabBarHeight,
+    paddingTop: theme.spacing['3xs'],
+    paddingBottom: theme.spacing['2xs'],
+    paddingHorizontal: theme.spacing['2xs'],
+    // Floating pill positioning
+    position: 'absolute' as const,
+    bottom: Math.max(bottomInset, 0) + 8,
+    left: 16,
+    right: 16,
+    borderRadius: 32,
+    // Elevated shadow for floating feel
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: theme.mode === 'dark' ? 0.35 : 0.10,
+    shadowRadius: 20,
+    elevation: 14,
+  },
 
-    tabBarActiveBackgroundColor: 'transparent',
+  tabBarItemStyle: {
+    marginHorizontal: theme.spacing['5xs'],
+    marginVertical: 0,
+    borderRadius: theme.radius.lg,
+  },
 
-    tabBarActiveTintColor: theme.colors.tabActive,
-    tabBarInactiveTintColor: theme.colors.tabInactive,
+  tabBarActiveBackgroundColor: 'transparent',
+  tabBarActiveTintColor: theme.colors.tabActive,
+  tabBarInactiveTintColor: theme.colors.tabInactive,
 
-    tabBarIconStyle: {
-        marginTop: theme.spacing['3xs'],
-    },
+  tabBarIconStyle: {
+    marginTop: 0,
+  },
 
   tabBarLabelStyle: {
     fontFamily: theme.typography.family.bodySemiBold,
     fontSize: theme.typography.size.xs,
-    marginBottom: theme.spacing['3xs'],
+    marginTop: theme.spacing['5xs'],
+    marginBottom: 0,
   },
+
   tabIconContainer: {
-    minWidth: theme.spacing['4xl'],
-    paddingHorizontal: theme.spacing.sm + theme.spacing['3xs'],
-    paddingVertical: theme.spacing['3xs'],
+    paddingHorizontal: theme.spacing.xs,
+    paddingVertical: theme.spacing['5xs'],
     borderRadius: theme.radius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
   },
 });
 
 export function useTabBarTheme() {
-    const theme = useAppThemeContext();
-    const insets = useSafeAreaInsets();
-
-    return {
-        theme,
-        tabBarOptions: createTabBarOptions(theme, insets.bottom),
-    };
+  const theme = useAppThemeContext();
+  const insets = useSafeAreaInsets();
+  const tabBarOptions = useMemo(
+    () => createTabBarOptions(theme, insets.bottom),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [theme, insets.bottom],
+  );
+  return { theme, tabBarOptions };
 }

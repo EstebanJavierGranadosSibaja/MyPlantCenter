@@ -494,12 +494,12 @@ async def analyze_plant_image(user_id: str, payload: dict) -> dict:
 
     try:
         detection, model_version = await run_in_threadpool(
-            _call_huggingface_sync,
+            _call_gemini_sync,
             image_base64,
             image_mime_type,
         )
     except Exception as e:
-        logger.error("[PlantDetection] AI call failed: %s", e)
+        logger.error("[PlantDetection] Gemini call failed: %s", e)
         detection, model_version = _get_fallback_detection(), "fallback"
 
     image_hash = hashlib.sha256(image_bytes).hexdigest()

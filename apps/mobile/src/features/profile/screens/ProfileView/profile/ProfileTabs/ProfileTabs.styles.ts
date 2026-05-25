@@ -1,36 +1,33 @@
-import { StyleSheet } from 'react-native';
-import { useAppThemeContext } from 'src/core/contexts/ThemeContext';
+import { UITheme } from 'src/ui';
+import { useUITheme } from 'src/ui';
 
+// ─────────────────────────────────────────────────────────────────────────────
 
-export const createProfileTabsStyles = (theme: ReturnType<typeof useAppThemeContext>) => StyleSheet.create({
+export const createProfileTabsStyles = (theme: UITheme) => ({
 
   wrapper: {
     paddingHorizontal: theme.layout.screenPaddingH,
-    paddingTop:        theme.spacing.md,
-    paddingBottom:     theme.spacing.sm,
+    paddingTop:        theme.spacing.xl,
+    paddingBottom:     theme.spacing.base,
   },
 
   container: {
-    flexDirection:   'row',
-    backgroundColor: theme.colors.elevated,
+    flexDirection:   'row' as const,
+    backgroundColor: theme.colors.surfaceElevated,
     borderRadius:    theme.radius.lg,
-    padding:         theme.spacing.xs,
-    gap:             theme.spacing.xs,
-    borderWidth:     theme.borders.thin,
-    borderColor:     theme.colors.cardBorder,
-    shadowColor:     theme.shadows.sm.color,
-    shadowOffset:    theme.shadows.sm.offset,
-    shadowOpacity:   theme.shadows.sm.opacity,
-    shadowRadius:    theme.shadows.sm.radius,
-    elevation:       theme.shadows.sm.elevation,
+    padding:         theme.spacing.md,
+    gap:             theme.spacing.md,
+    borderWidth:     1,
+    borderColor:     theme.colors.borderDefault,
+    ...theme.shadows.xs,
   },
 
   tab: {
     flex:            1,
     borderRadius:    theme.radius.full,
-    paddingVertical: theme.spacing.sm,
-    alignItems:      'center',
-    justifyContent:  'center',
+    paddingVertical: 10,
+    alignItems:      'center' as const,
+    justifyContent:  'center' as const,
   },
 
   tabPressed: {
@@ -38,21 +35,16 @@ export const createProfileTabsStyles = (theme: ReturnType<typeof useAppThemeCont
   },
 
   tabActive: {
-    backgroundColor: theme.mode === 'light' ? theme.colors.heroInputBgSubtle : theme.colors.heroInputBg,
-    borderWidth: theme.borders.thin,
-    borderColor: theme.colors.cardBorder,
-    shadowColor:     theme.shadows.sm.color,
-    shadowOffset:    theme.shadows.sm.offset,
-    shadowOpacity:   theme.shadows.sm.opacity,
-    shadowRadius:    theme.shadows.sm.radius,
-    elevation:       theme.shadows.sm.elevation,
+    backgroundColor: theme.mode === 'light' ? theme.colors.bgSubtle : theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.borderSubtle,
+    ...theme.shadows.xs,
   },
 
   tabText: {
-    fontFamily: theme.typography.family.bodySemiBold,
-    fontSize:   theme.typography.size.sm,
-    color:      theme.colors.textSecondary,
-    letterSpacing: theme.spacing['4xs'],
+    ...theme.text.label,
+    color:         theme.colors.textSecondary,
+    letterSpacing: 0.3,
   },
 
   tabTextActive: {
@@ -61,7 +53,9 @@ export const createProfileTabsStyles = (theme: ReturnType<typeof useAppThemeCont
 
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+
 export function useProfileTabsTheme() {
-  const theme = useAppThemeContext();
+  const theme = useUITheme();
   return { theme, styles: createProfileTabsStyles(theme) };
 }

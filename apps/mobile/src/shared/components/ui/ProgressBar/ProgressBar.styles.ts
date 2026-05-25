@@ -1,7 +1,8 @@
 import { StyleSheet } from 'react-native';
 import { useAppThemeContext } from 'src/core/contexts/ThemeContext';
+import { AppTheme } from 'src/core/theme/designSystem';
 
-export const createProgressBarStyles = (theme: ReturnType<typeof useAppThemeContext>) => StyleSheet.create({
+export const createProgressBarStyles = (theme: AppTheme) => StyleSheet.create({
 
   track: {
     width: '100%' as any,
@@ -24,7 +25,7 @@ export const createProgressBarStyles = (theme: ReturnType<typeof useAppThemeCont
     fontFamily: theme.typography.family.bodySemiBold,
     fontSize: theme.typography.size.xs,
     color: theme.colors.textMuted,
-    letterSpacing: theme.spacing['3xs'],
+    letterSpacing: theme.typography.letterSpacing.widest,
     textTransform: 'uppercase' as const,
   },
 

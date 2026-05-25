@@ -1,89 +1,69 @@
-import { StyleSheet } from 'react-native';
-import { useAppThemeContext } from 'src/core/contexts/ThemeContext';
-import { AppTheme } from 'src/core/theme/designSystem';
+import { UITheme } from 'src/ui';
+import { useUITheme } from 'src/ui';
 
-export const createTabAjustesStyles = (theme: AppTheme) => StyleSheet.create({
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const createTabAjustesStyles = (theme: UITheme) => ({
 
   container: {
     paddingHorizontal: theme.layout.screenPaddingH,
-    paddingTop: theme.spacing.lg,
-    paddingBottom: theme.spacing['5xl'],
-    gap: theme.spacing.lg,
+    paddingTop:        theme.spacing['2xl'],
+    paddingBottom:     theme.spacing['5xl'],
+    gap:               theme.spacing['2xl'],
   },
 
   sectionTitle: {
-    fontFamily: theme.typography.family.bodySemiBold,
-    fontSize: theme.typography.size.sm,
-    color: theme.colors.textSecondary,
-    letterSpacing: 1.4,
-    textTransform: 'uppercase' as const,
-    marginBottom: theme.spacing.sm,
+    ...theme.text.overline,
+    color:        theme.colors.textTertiary,
+    marginBottom: theme.spacing.md,
   },
 
   group: {
-    backgroundColor: theme.colors.elevated,
-    borderRadius: theme.radius.lg,
-    borderWidth: theme.borders.thin,
-    borderColor: theme.colors.cardBorder,
-    overflow: 'hidden',
-    shadowColor: theme.shadows.sm.color,
-    shadowOffset: theme.shadows.sm.offset,
-    shadowOpacity: theme.shadows.sm.opacity,
-    shadowRadius: theme.shadows.sm.radius,
-    elevation: theme.shadows.sm.elevation,
+    backgroundColor: theme.colors.surface,
+    borderRadius:    theme.radius.lg,
+    borderWidth:     1,
+    borderColor:     theme.colors.borderDefault,
+    overflow:        'hidden' as const,
+    ...theme.shadows.xs,
   },
 
   groupItem: {
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.xl,
+    paddingVertical:   theme.spacing.base,
   },
 
   groupDivider: {
-    height: theme.borders.base,
-    backgroundColor: theme.colors.border,
+    height:          0.5,
+    backgroundColor: theme.colors.divider,
   },
 
-  // Selector de tema — tres opciones en fila
+  // ── Theme selector ─────────────────────────────────────────────────────────
+
   themeSelector: {
-    flexDirection: 'row',
-    gap: theme.spacing.sm,
+    flexDirection: 'row' as const,
+    gap:           theme.spacing.base,
   },
 
   themeOption: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: theme.spacing.xs,
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.radius.md,
-    borderWidth: theme.borders.thin,
-    borderColor: theme.colors.cardBorder,
+    flex:            1,
+    alignItems:      'center' as const,
+    justifyContent:  'center' as const,
+    gap:             theme.spacing.sm,
+    paddingVertical: theme.spacing.xl,
+    borderRadius:    theme.layout.cardRadius,
+    borderWidth:     1,
+    borderColor:     theme.colors.borderDefault,
     backgroundColor: theme.colors.surface,
-    shadowColor: theme.shadows.none.color,
-    shadowOffset: theme.shadows.none.offset,
-    shadowOpacity: theme.shadows.none.opacity,
-    shadowRadius: theme.shadows.none.radius,
-    elevation: theme.shadows.none.elevation,
   },
 
   themeOptionActive: {
-    borderColor: theme.colors.accent,
-    backgroundColor: theme.mode === 'light' ? '#E8F6EE' : '#204434',
-    shadowColor: theme.shadows.sm.color,
-    shadowOffset: theme.shadows.sm.offset,
-    shadowOpacity: theme.shadows.sm.opacity,
-    shadowRadius: theme.shadows.sm.radius,
-    elevation: theme.shadows.sm.elevation,
-  },
-
-  themeOptionIcon: {
-    fontSize: theme.typography.size['2xl'],
-    lineHeight: theme.typography.lineHeight.normal,
+    borderColor:     theme.colors.accent,
+    backgroundColor: theme.mode === 'light' ? theme.colors.accentSoft : theme.colors.surfaceElevated,
+    ...theme.shadows.xs,
   },
 
   themeOptionLabel: {
-    fontFamily: theme.typography.family.bodySemiBold,
-    fontSize: theme.typography.size.sm,
+    ...theme.text.label,
     color: theme.colors.textSecondary,
   },
 
@@ -91,48 +71,11 @@ export const createTabAjustesStyles = (theme: AppTheme) => StyleSheet.create({
     color: theme.colors.accent,
   },
 
-  actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.md,
-    backgroundColor: theme.colors.elevated,
-    borderWidth: theme.borders.thin,
-    borderColor: theme.colors.cardBorder,
-    borderRadius: theme.radius.lg,
-    padding: theme.spacing.md + 2,
-    shadowColor: theme.shadows.sm.color,
-    shadowOffset: theme.shadows.sm.offset,
-    shadowOpacity: theme.shadows.sm.opacity,
-    shadowRadius: theme.shadows.sm.radius,
-    elevation: theme.shadows.sm.elevation,
-  },
-
-  actionButtonPressed: {
-    backgroundColor: theme.colors.surface,
-  },
-
-  actionIcon: {
-    fontSize: theme.typography.size['2xl'],
-    lineHeight: theme.typography.lineHeight.normal,
-  },
-
-  actionLabel: {
-    fontFamily: theme.typography.family.bodyMedium,
-    fontSize: theme.typography.size.base,
-    color: theme.colors.textPrimary,
-    flex: 1,
-  },
-
-  actionChevron: {
-    fontFamily: theme.typography.family.bodyRegular,
-    fontSize: theme.typography.size.xl,
-    color: theme.colors.textMuted,
-  },
-
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
 
 export function useTabAjustesTheme() {
-  const theme = useAppThemeContext();
+  const theme = useUITheme();
   return { theme, styles: createTabAjustesStyles(theme) };
 }

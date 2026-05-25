@@ -1,7 +1,8 @@
 import { StyleSheet } from 'react-native';
 import { useAppThemeContext } from 'src/core/contexts/ThemeContext';
+import { AppTheme } from 'src/core/theme/designSystem';
 
-export const createConfirmActionModalStyles = (theme: ReturnType<typeof useAppThemeContext>) =>
+export const createConfirmActionModalStyles = (theme: AppTheme) =>
     StyleSheet.create({
         overlay: {
             flex: 1,
@@ -28,7 +29,7 @@ export const createConfirmActionModalStyles = (theme: ReturnType<typeof useAppTh
             fontFamily: theme.typography.family.bodySemiBold,
             fontSize: theme.typography.size['2xl'],
             color: theme.colors.textPrimary,
-            letterSpacing: theme.spacing['4xs'],
+            letterSpacing: theme.typography.letterSpacing.wider,
         },
         message: {
             fontFamily: theme.typography.family.bodyRegular,
@@ -43,12 +44,13 @@ export const createConfirmActionModalStyles = (theme: ReturnType<typeof useAppTh
             marginTop: theme.spacing.sm,
         },
         button: {
+            height: theme.layout.buttonHeightSm,
             paddingHorizontal: theme.spacing.md,
-            paddingVertical: theme.spacing.sm,
-            borderRadius: theme.radius.sm,
+            borderRadius: theme.layout.buttonRadius,
             minWidth: theme.layout.modalActionMinWidth,
             alignItems: 'center',
-            borderWidth: theme.borders.thin,
+            justifyContent: 'center',
+            borderWidth: theme.borders.base,
         },
         cancelButton: {
             backgroundColor: theme.colors.cardBg,

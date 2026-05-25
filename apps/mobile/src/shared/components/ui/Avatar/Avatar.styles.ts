@@ -37,7 +37,7 @@ export const createAvatarStyles = (theme: AppTheme) => StyleSheet.create({
     fontFamily: theme.typography.family.bodyBold,
     fontSize: theme.typography.size.xs,
     color: theme.colors.textInverse,
-    letterSpacing: 0.4,
+    letterSpacing: theme.typography.letterSpacing.wide,
   },
 
 });

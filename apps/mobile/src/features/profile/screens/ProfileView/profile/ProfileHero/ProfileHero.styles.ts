@@ -1,39 +1,46 @@
-import { Dimensions, StyleSheet } from 'react-native';
-import { useAppThemeContext } from 'src/core/contexts/ThemeContext';
-import { AppTheme } from 'src/core/theme/designSystem';
+import { Dimensions } from 'react-native';
+import { UITheme } from 'src/ui';
+import { useUITheme } from 'src/ui';
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const IS_COMPACT_SCREEN = SCREEN_WIDTH < 390;
+const IS_COMPACT = SCREEN_WIDTH < 390;
 
-export const createProfileHeroStyles = (theme: AppTheme) => StyleSheet.create({
+// ─────────────────────────────────────────────────────────────────────────────
 
-  // Contenedor raíz 
+export const createProfileHeroStyles = (theme: UITheme) => ({
+
+  // ── Root ───────────────────────────────────────────────────────────────────
+
   root: {
     width: SCREEN_WIDTH,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.bg,
   },
 
-  // Fondo hero 
   heroTopSection: {
-    position: 'relative',
-    marginBottom: theme.spacing.xs,
+    position: 'relative' as const,
+    marginBottom: theme.spacing.sm,
   },
+
+  // ── Hero background ────────────────────────────────────────────────────────
 
   heroBackground: {
     width: SCREEN_WIDTH,
     height: SCREEN_WIDTH * 0.42,
-    overflow: 'hidden',
-    position: 'relative',
-    backgroundColor: theme.colors.heroBg,
+    overflow: 'hidden' as const,
+    position: 'relative' as const,
+    backgroundColor: theme.colors.accentSoft,
   },
 
   heroBase: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: theme.colors.heroBg,
+    position: 'absolute' as const,
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: theme.colors.accentSoft,
   },
 
   heroHighlightPrimary: {
-    position: 'absolute',
+    position: 'absolute' as const,
     width: SCREEN_WIDTH * 0.88,
     height: SCREEN_WIDTH * 0.88,
     borderRadius: theme.radius.full,
@@ -42,7 +49,7 @@ export const createProfileHeroStyles = (theme: AppTheme) => StyleSheet.create({
   },
 
   heroHighlightSecondary: {
-    position: 'absolute',
+    position: 'absolute' as const,
     width: SCREEN_WIDTH * 0.72,
     height: SCREEN_WIDTH * 0.72,
     borderRadius: theme.radius.full,
@@ -51,352 +58,261 @@ export const createProfileHeroStyles = (theme: AppTheme) => StyleSheet.create({
   },
 
   heroBottomLayer: {
-    position: 'absolute',
+    position: 'absolute' as const,
     left: 0,
     right: 0,
-    bottom: -theme.spacing.sm,
+    bottom: -theme.spacing.md,
     height: SCREEN_WIDTH * 0.20,
-    borderTopLeftRadius: theme.radius.xl + theme.radius.md,
-    borderTopRightRadius: theme.radius.xl + theme.radius.md,
-    borderTopWidth: theme.borders.thin,
-    borderTopColor: theme.colors.heroInputBorder,
+    borderTopLeftRadius: theme.radius['2xl'] + theme.radius.md,
+    borderTopRightRadius: theme.radius['2xl'] + theme.radius.md,
+    borderTopWidth: 0.5,
+    borderTopColor: theme.colors.borderSubtle,
   },
 
-  // Avatar, flota sobre el fondo 
+  // ── Avatar ─────────────────────────────────────────────────────────────────
+
   avatarWrapper: {
-    position: 'absolute',
-    bottom: -theme.layout.avatarLg * 0.4,
+    position: 'absolute' as const,
+    bottom: -(theme.layout.avatarLg * 0.4),
     left: theme.layout.screenPaddingH,
     zIndex: 10,
   },
 
   avatarRing: {
-    padding: theme.spacing['4xs'] + 2,
+    padding: 6,
     borderRadius: theme.radius.full,
   },
 
   avatarRingActive: {
-    borderWidth: theme.spacing.xs,
+    borderWidth: 3,
     borderColor: theme.colors.accent,
-    backgroundColor: theme.colors.elevated,
+    backgroundColor: theme.colors.surfaceElevated,
   },
 
   levelPill: {
-    position: 'absolute',
-    bottom: -theme.spacing.sm,
-    alignSelf: 'center',
+    position: 'absolute' as const,
+    bottom: -theme.spacing.md,
+    alignSelf: 'center' as const,
     left: 0,
     right: 0,
-    alignItems: 'center',
+    alignItems: 'center' as const,
   },
 
   levelPillInner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.xs - 2,
-    backgroundColor: theme.colors.primary,
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 6,
+    backgroundColor: theme.colors.accent,
     borderRadius: theme.radius.full,
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: theme.spacing['4xs'] + 1,
-    borderWidth: theme.borders.bold,
-    borderColor: theme.colors.background,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: 5,
+    borderWidth: 2,
+    borderColor: theme.colors.bg,
   },
 
   levelText: {
-    fontFamily: theme.typography.family.bodySemiBold,
-    fontSize: theme.typography.size.xs - 1,
-    color: theme.colors.textInverse,
-    letterSpacing: theme.spacing['4xs'],
+    ...theme.text.overline,
+    color: theme.colors.textOnAccent,
   },
+
+  // ── Summary shell (identity + XP + bio card) ───────────────────────────────
 
   summaryShell: {
     marginHorizontal: theme.layout.screenPaddingH,
-    backgroundColor: theme.mode === 'light' ? theme.colors.surface : theme.colors.elevated,
+    backgroundColor: theme.mode === 'light' ? theme.colors.surface : theme.colors.surfaceElevated,
     borderRadius: theme.radius.lg,
-    borderWidth: theme.borders.thin,
-    borderColor: theme.colors.cardBorder,
-    paddingHorizontal: theme.spacing.lg,
-    paddingBottom: theme.spacing.lg,
-    shadowColor: theme.shadows.md.color,
-    shadowOffset: theme.shadows.md.offset,
-    shadowOpacity: theme.shadows.md.opacity,
-    shadowRadius: theme.shadows.md.radius,
-    elevation: theme.shadows.md.elevation,
+    borderWidth: 1,
+    borderColor: theme.colors.borderDefault,
+    paddingHorizontal: theme.spacing.xl,
+    paddingBottom: theme.spacing.xl,
+    ...theme.shadows.sm,
   },
 
-  // Identidad
+  // ── Identity ───────────────────────────────────────────────────────────────
+
   identitySection: {
-    paddingTop: theme.layout.avatarLg * 0.42 + (IS_COMPACT_SCREEN ? theme.spacing.sm : theme.spacing.md),
-    gap: IS_COMPACT_SCREEN ? theme.spacing['2xs'] : theme.spacing.xs,
+    paddingTop: theme.layout.avatarLg * 0.42 + (IS_COMPACT ? theme.spacing.md : theme.spacing.xl),
+    gap: IS_COMPACT ? theme.spacing.sm : theme.spacing.md,
   },
 
   displayName: {
-    fontFamily: theme.typography.family.displayBold,
-    fontSize: IS_COMPACT_SCREEN ? theme.typography.size['2xl'] : theme.typography.size['3xl'],
+    ...(IS_COMPACT ? theme.text.h2 : theme.text.h1),
     color: theme.colors.textPrimary,
-    lineHeight: IS_COMPACT_SCREEN ? theme.typography.lineHeight.snug : theme.typography.lineHeight.normal,
   },
 
   nickname: {
-    fontFamily: theme.typography.family.bodyRegular,
-    fontSize: IS_COMPACT_SCREEN ? theme.typography.size.sm : theme.typography.size.md,
-    color: theme.colors.textMuted,
+    ...theme.text.bodyMd,
+    color: theme.colors.textTertiary,
   },
 
   levelTitle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.xs - 1,
-    marginTop: IS_COMPACT_SCREEN ? theme.spacing['4xs'] : theme.spacing.xs - 2,
-    alignSelf: 'flex-start',
-    backgroundColor: theme.colors.favPlantIconBg,
-    borderWidth: theme.borders.thin,
-    borderColor: theme.colors.cardBorder,
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 6,
+    marginTop: IS_COMPACT ? 4 : 6,
+    alignSelf: 'flex-start' as const,
+    backgroundColor: theme.colors.accentSoft,
+    borderWidth: 1,
+    borderColor: theme.colors.accentMuted,
     borderRadius: theme.radius.full,
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: theme.spacing['3xs'],
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: 6,
   },
 
   levelTitleText: {
-    fontFamily: theme.typography.family.bodySemiBold,
-    fontSize: theme.typography.size.sm,
-    color: theme.colors.secondary,
-    letterSpacing: theme.spacing['4xs'],
+    ...theme.text.label,
+    color: theme.colors.accentForeground,
+    letterSpacing: 0.5,
   },
 
-  // XP bar
+  // ── XP bar ─────────────────────────────────────────────────────────────────
+
   xpSection: {
-    marginTop: IS_COMPACT_SCREEN ? theme.spacing.sm : theme.spacing.md,
-    gap: theme.spacing['2xs'],
+    marginTop: IS_COMPACT ? theme.spacing.md : theme.spacing.xl,
+    gap: theme.spacing.sm,
   },
 
   xpRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: 'row' as const,
+    justifyContent: 'space-between' as const,
+    alignItems: 'center' as const,
   },
 
   xpLabel: {
-    fontFamily: theme.typography.family.bodySemiBold,
-    fontSize: theme.typography.size.xs,
+    ...theme.text.overline,
     color: theme.colors.textSecondary,
-    letterSpacing: theme.spacing['4xs'],
-    textTransform: 'uppercase' as const,
   },
 
   xpValue: {
-    fontFamily: theme.typography.family.bodySemiBold,
-    fontSize: theme.typography.size.xs,
-    color: theme.colors.secondary,
+    ...theme.text.label,
+    color: theme.colors.accentForeground,
   },
 
-  // Bio 
+  // ── Bio ────────────────────────────────────────────────────────────────────
+
   bioSection: {
-    marginTop: IS_COMPACT_SCREEN ? theme.spacing.sm : theme.spacing.md,
+    marginTop: IS_COMPACT ? theme.spacing.md : theme.spacing.xl,
   },
 
   bioText: {
-    fontFamily: theme.typography.family.bodyRegular,
-    fontSize: IS_COMPACT_SCREEN ? theme.typography.size.sm : theme.typography.size.base,
+    ...(IS_COMPACT ? theme.text.bodyMd : theme.text.body),
     color: theme.colors.textSecondary,
-    lineHeight: theme.typography.lineHeight.snug,
   },
 
   bioInput: {
-    fontFamily: theme.typography.family.bodyRegular,
-    fontSize: theme.typography.size.base,
+    ...theme.text.body,
     color: theme.colors.textPrimary,
-    backgroundColor: theme.colors.cardBg,
-    borderWidth: theme.borders.thick,
-    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.bgSubtle,
+    borderWidth: 1.5,
+    borderColor: theme.colors.borderDefault,
     borderRadius: theme.radius.md,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    lineHeight: theme.typography.lineHeight.normal,
+    paddingHorizontal: theme.spacing.xl,
+    paddingVertical: theme.spacing.xl,
     textAlignVertical: 'top' as const,
     minHeight: theme.layout.avatarMd,
   },
 
-  // Stats
+  // ── Stats row ──────────────────────────────────────────────────────────────
+
   statsSection: {
-    flexDirection: 'row',
+    flexDirection: 'row' as const,
     paddingHorizontal: theme.layout.screenPaddingH,
-    marginTop: IS_COMPACT_SCREEN ? theme.spacing.md : theme.spacing.lg,
-    gap: theme.spacing.sm,
+    marginTop: IS_COMPACT ? theme.spacing.xl : theme.spacing['2xl'],
+    gap: theme.spacing.md,
   },
 
   statItem: {
     flex: 1,
-    alignItems: 'center',
-    paddingVertical: theme.spacing.md + 2,
-    backgroundColor: theme.mode === 'light' ? theme.colors.surface : theme.colors.elevated,
+    alignItems: 'center' as const,
+    paddingVertical: theme.spacing.xl,
+    backgroundColor: theme.mode === 'light' ? theme.colors.surface : theme.colors.surfaceElevated,
     borderRadius: theme.radius.lg,
-    borderWidth: theme.borders.thin,
-    borderColor: theme.colors.cardBorder,
-    shadowColor: theme.shadows.sm.color,
-    shadowOffset: theme.shadows.sm.offset,
-    shadowOpacity: theme.shadows.sm.opacity,
-    shadowRadius: theme.shadows.sm.radius,
-    elevation: theme.shadows.sm.elevation,
-    gap: theme.spacing.xs - 2,
+    borderWidth: 1,
+    borderColor: theme.colors.borderDefault,
+    ...theme.shadows.sm,
+    gap: 6,
   },
 
   statValue: {
-    fontFamily: theme.typography.family.displayBold,
-    fontSize: IS_COMPACT_SCREEN ? theme.typography.size['2xl'] : theme.typography.size['3xl'],
+    ...theme.text.numeric,
     color: theme.colors.textPrimary,
-    lineHeight: theme.typography.lineHeight.normal,
   },
 
   statLabel: {
-    fontFamily: theme.typography.family.bodySemiBold,
-    fontSize: theme.typography.size.xs,
-    color: theme.colors.textMuted,
-    letterSpacing: theme.spacing['4xs'],
-    textTransform: 'uppercase' as const,
+    ...theme.text.overline,
+    color: theme.colors.textTertiary,
   },
 
-  // Highlights 
-  highlightsSection: {
-    marginHorizontal: theme.layout.screenPaddingH,
-    marginTop: IS_COMPACT_SCREEN ? theme.spacing.md : theme.spacing.lg,
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.lg,
-    borderRadius: theme.radius.lg,
-    borderWidth: theme.borders.thin,
-    borderColor: theme.colors.cardBorder,
-    backgroundColor: theme.colors.elevated,
-    shadowColor: theme.shadows.sm.color,
-    shadowOffset: theme.shadows.sm.offset,
-    shadowOpacity: theme.shadows.sm.opacity,
-    shadowRadius: theme.shadows.sm.radius,
-    elevation: theme.shadows.sm.elevation,
-    gap: theme.spacing.sm,
-  },
+  // ── Action buttons ─────────────────────────────────────────────────────────
 
-  highlightsSectionTitle: {
-    fontFamily: theme.typography.family.bodySemiBold,
-    fontSize: theme.typography.size.xs,
-    color: theme.colors.textSecondary,
-    letterSpacing: theme.spacing['4xs'],
-    textTransform: 'uppercase' as const,
-  },
-
-  highlightsList: {
-    flexDirection: 'row',
-    gap: theme.spacing.sm,
-  },
-
-  highlightItem: {
-    width: theme.layout.avatarMd + theme.spacing['2xl'],
-    alignItems: 'center',
-    gap: theme.spacing.xs,
-    paddingHorizontal: theme.spacing.xs,
-    paddingVertical: theme.spacing.sm,
-    borderRadius: theme.radius.md,
-    borderWidth: theme.borders.thin,
-    borderColor: theme.colors.cardBorder,
-    backgroundColor: theme.colors.surface,
-  },
-
-  highlightRing: {
-    width: theme.layout.avatarMd,
-    height: theme.layout.avatarMd,
-    borderRadius: theme.radius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: theme.borders.thick,
-  },
-
-  highlightEmoji: {
-    fontSize: theme.typography.size['2xl'],
-    lineHeight: theme.typography.lineHeight.normal,
-  },
-
-  highlightLabel: {
-    fontFamily: theme.typography.family.bodySemiBold,
-    fontSize: theme.typography.size.xs - 1,
-    color: theme.colors.textMuted,
-    textAlign: 'center' as const,
-    maxWidth: theme.layout.avatarMd + theme.spacing.md,
-  },
-
-  // Acciones 
   actionsSection: {
     paddingHorizontal: theme.layout.screenPaddingH,
-    marginTop: theme.spacing.md,
-    marginBottom: theme.spacing.md,
-    flexDirection: 'row',
-    gap: theme.spacing.sm,
+    marginTop: theme.spacing.xl,
+    marginBottom: theme.spacing.xl,
+    flexDirection: 'row' as const,
+    gap: theme.spacing.md,
   },
 
   actionButtonPrimary: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: theme.spacing.xs,
-    backgroundColor: theme.colors.primary,
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    gap: theme.spacing.sm,
+    backgroundColor: theme.colors.accent,
     borderRadius: theme.radius.md,
-    paddingVertical: theme.spacing.md + 2,
-    borderWidth: theme.borders.base,
-    borderColor: theme.colors.primary,
-    shadowColor: theme.shadows.sm.color,
-    shadowOffset: theme.shadows.sm.offset,
-    shadowOpacity: theme.shadows.sm.opacity,
-    shadowRadius: theme.shadows.sm.radius,
-    elevation: theme.shadows.sm.elevation,
+    paddingVertical: theme.spacing.base,
+    borderWidth: 1,
+    borderColor: theme.colors.accent,
+    ...theme.shadows.sm,
   },
 
   actionButtonPrimaryPressed: {
-    backgroundColor: '#12563B',
-    borderColor: '#12563B',
+    backgroundColor: theme.colors.accentPressed,
+    borderColor: theme.colors.accentPressed,
   },
 
   actionButtonSecondary: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: theme.spacing.xs,
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    gap: theme.spacing.sm,
     backgroundColor: theme.colors.surface,
     borderRadius: theme.radius.md,
-    paddingVertical: theme.spacing.md + 2,
-    borderWidth: theme.borders.thin,
-    borderColor: theme.colors.cardBorder,
-    shadowColor: theme.shadows.sm.color,
-    shadowOffset: theme.shadows.sm.offset,
-    shadowOpacity: theme.shadows.sm.opacity,
-    shadowRadius: theme.shadows.sm.radius,
-    elevation: theme.shadows.sm.elevation,
+    paddingVertical: theme.spacing.base,
+    borderWidth: 1,
+    borderColor: theme.colors.borderDefault,
+    ...theme.shadows.sm,
   },
 
   actionButtonSecondaryPressed: {
-    backgroundColor: theme.colors.elevated,
+    backgroundColor: theme.colors.bgSubtle,
   },
 
   actionButtonTextPrimary: {
-    fontFamily: theme.typography.family.bodySemiBold,
-    fontSize: theme.typography.size.base,
-    color: theme.colors.textInverse,
+    ...theme.text.button,
+    color: theme.colors.textOnAccent,
   },
 
   actionButtonTextSecondary: {
-    fontFamily: theme.typography.family.bodySemiBold,
-    fontSize: theme.typography.size.base,
+    ...theme.text.button,
     color: theme.colors.textPrimary,
   },
 
-  // Divider 
+  // ── Divider ────────────────────────────────────────────────────────────────
+
   divider: {
-    height: theme.borders.base,
-    backgroundColor: theme.colors.border,
-    marginTop: theme.spacing.md,
+    height: 1,
+    backgroundColor: theme.colors.divider,
+    marginTop: theme.spacing.xl,
   },
 
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+
 export function useProfileHeroTheme() {
-  const theme = useAppThemeContext();
+  const theme = useUITheme();
   return { theme, styles: createProfileHeroStyles(theme) };
 }
