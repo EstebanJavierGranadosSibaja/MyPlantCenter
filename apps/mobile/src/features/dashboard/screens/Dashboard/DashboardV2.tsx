@@ -2,12 +2,14 @@ import { Feather } from '@expo/vector-icons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useCallback, useMemo, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useAuth } from 'src/core/contexts/AuthContext';
 import { RootStackParamList } from 'src/core/navigation/AppNavigator';
 import { buildCareSummary, buildCareTasks } from 'src/features/care/utils/careSchedule';
+import { notificationService } from 'src/features/notifications/services/notification.service';
 import { plantService } from 'src/features/plants/services/plant.service';
+import { vacationService } from 'src/features/vacation/services/vacation.service';
 import { Button, Screen, ScreenHeader, Surface, Text, useUITheme } from 'src/ui';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -43,10 +45,12 @@ export function DashboardV2() {
   const navigation = useNavigation<RootNav>();
   const greeting = getGreeting();
 
-  const [loading, setLoading]         = useState(true);
-  const [refreshing, setRefreshing]   = useState(false);
-  const [plantsCount, setPlantsCount] = useState(0);
-  const [careSummary, setCareSummary] = useState(() => buildCareSummary([]));
+  const [loading, setLoading]               = useState(true);
+  const [refreshing, setRefreshing]         = useState(false);
+  const [plantsCount, setPlantsCount]       = useState(0);
+  const [careSummary, setCareSummary]       = useState(() => buildCareSummary([]));
+  const [unreadCount, setUnreadCount]       = useState(0);
+  const [vacationActive, setVacationActive] = useState(false);
 
   const fetchData = useCallback(async () => {
     if (!user?.id) {
@@ -55,9 +59,15 @@ export function DashboardV2() {
       return;
     }
     try {
-      const plants = await plantService.getByUser(user.id);
+      const [plants, notifications, vacation] = await Promise.all([
+        plantService.getByUser(user.id),
+        notificationService.getByUser(user.id).catch(() => []),
+        vacationService.load().catch(() => null),
+      ]);
       setPlantsCount(plants.length);
       setCareSummary(buildCareSummary(buildCareTasks(plants)));
+      setUnreadCount(notifications.filter(n => !n.read).length);
+      setVacationActive(vacation?.isActive ?? false);
     } catch {
       setPlantsCount(0);
       setCareSummary(buildCareSummary([]));
@@ -105,7 +115,25 @@ export function DashboardV2() {
       onRefresh={handleRefresh}
     >
 
-      <ScreenHeader title="Inicio" />
+      <ScreenHeader
+        title="Inicio"
+        rightSlot={
+          <Pressable
+            onPress={() => navigation.navigate('Notifications')}
+            hitSlop={8}
+            style={styles.bellButton}
+          >
+            <Feather name="bell" size={theme.layout.iconMd} color={theme.colors.textSecondary} />
+            {unreadCount > 0 && (
+              <View style={[styles.bellBadge, { backgroundColor: theme.colors.accent }]}>
+                <Text variant="overline" color="textOnAccent" style={styles.bellBadgeText}>
+                  {unreadCount > 9 ? '9+' : String(unreadCount)}
+                </Text>
+              </View>
+            )}
+          </Pressable>
+        }
+      />
 
       {/* ── Greeting hero ──────────────────────────────────────────────── */}
       <Animated.View entering={FadeInDown.duration(320)}>
@@ -192,6 +220,38 @@ export function DashboardV2() {
         </Surface>
       </Animated.View>
 
+      {/* ── Vacation Mode ──────────────────────────────────────────────── */}
+      <Animated.View entering={FadeInDown.duration(320).delay(320)}>
+        <Surface elevation="xs" radius="lg" border="subtle" style={styles.card}>
+          <View style={styles.vacationRow}>
+            <View style={[styles.vacationIcon, { backgroundColor: vacationActive ? theme.colors.accentSoft : theme.colors.bgSubtle }]}>
+              <Feather name="sun" size={theme.layout.iconMd} color={vacationActive ? theme.colors.accent : theme.colors.textTertiary} />
+            </View>
+            <View style={styles.vacationText}>
+              <Text variant="title">Modo Vacaciones</Text>
+              <Text variant="bodyMd" color="textSecondary">
+                {vacationActive
+                  ? 'Vacaciones activas — revisa qué plantas necesitan atención.'
+                  : 'Planifica qué hacer con tus plantas mientras estás fuera.'}
+              </Text>
+            </View>
+          </View>
+          <Button
+            label={vacationActive ? 'Ver plan de vacaciones' : 'Planificar vacaciones'}
+            variant={vacationActive ? 'primary' : 'secondary'}
+            onPress={() => navigation.navigate('VacationMode')}
+            leftSlot={
+              <Feather
+                name={vacationActive ? 'sun' : 'calendar'}
+                size={theme.layout.iconSm}
+                color={vacationActive ? theme.colors.textOnAccent : theme.colors.textPrimary}
+              />
+            }
+            fullWidth
+          />
+        </Surface>
+      </Animated.View>
+
     </Screen>
   );
 }
@@ -249,6 +309,41 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingVertical: 10,
     alignItems: 'center',
+    gap: 4,
+  },
+  bellButton: {
+    position: 'relative',
+    padding: 4,
+  },
+  bellBadge: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 3,
+  },
+  bellBadgeText: {
+    fontSize: 9,
+    lineHeight: 12,
+  },
+  vacationRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  vacationIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  vacationText: {
+    flex: 1,
     gap: 4,
   },
 });

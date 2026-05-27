@@ -18,6 +18,8 @@ import { CameraScanV2 as CameraScan } from 'src/features/camera/screens/CameraSc
 import { backgroundSyncService } from 'src/features/camera/services/backgroundSync.service';
 import { WateringCalendarV2 as WateringCalendar } from 'src/features/care/screens/WateringCalendar/WateringCalendarV2';
 import { DashboardV2 as Dashboard } from 'src/features/dashboard/screens/Dashboard/DashboardV2';
+import { NotificationsScreen as Notifications } from 'src/features/notifications/screens/NotificationsScreen';
+import { VacationModeScreen as VacationMode } from 'src/features/vacation/screens/VacationModeScreen';
 import { ExplorarV2 as Explorar } from 'src/features/explore/screens/Explore/ExplorarV2';
 import { AddFriendV2 as AddFriend } from 'src/features/friends/screens/AddFriend/AddFriendV2';
 import { FriendRequestsV2 as FriendRequests } from 'src/features/friends/screens/FriendRequests/FriendRequestsV2';
@@ -38,6 +40,8 @@ export type RootStackParamList = {
   EditProfile: undefined;
   CameraScan: undefined;
   WateringCalendar: undefined;
+  Notifications: undefined;
+  VacationMode: undefined;
 };
 
 export type TabParamList = {
@@ -237,6 +241,8 @@ function RootStack() {
       <Stack.Screen name="AddPlant" component={AddPlant} />
       <Stack.Screen name="EditPlant" component={EditPlant} />
       <Stack.Screen name="WateringCalendar" component={WateringCalendar} />
+      <Stack.Screen name="Notifications" component={Notifications} />
+      <Stack.Screen name="VacationMode" component={VacationMode} />
     </Stack.Navigator>
   );
 }
