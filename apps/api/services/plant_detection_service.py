@@ -17,8 +17,6 @@ _DEFAULT_MODEL = "gemini-2.0-flash"
 _DEFAULT_CONFIDENCE = 0.35
 _MAX_IMAGE_BYTES = 8 * 1024 * 1024
 
-_HF_DEFAULT_MODEL = "mistralai/Mistral-7B-Instruct-v0.1"
-
 logger = logging.getLogger("myplantcenter.api.plant_detection")
 
 
@@ -303,69 +301,6 @@ def _build_prompt() -> str:
     )
 
 
-def _call_huggingface_sync(image_base64: str, image_mime_type: str) -> tuple[dict, str]:
-    api_key = os.getenv("API_KEY")
-    model = os.getenv("MODEL", _HF_DEFAULT_MODEL)
-
-    if not api_key:
-        logger.warning("[PlantDetection] API_KEY (HF token) not configured, using fallback")
-        return _get_fallback_detection(), "fallback"
-
-    endpoint = f"https://api-inference.huggingface.co/models/{model}"
-
-    prompt_text = (
-        "Eres un bot experto en botánica. Identifica la planta en la imagen. "
-        "Responde SOLO con JSON: "
-        "{\"scientificName\":\"nombre científico\",\"commonName\":\"nombre común\",\"confidence\":0.8,"
-        "\"care\":{\"watering\":\"frecuencia\",\"light\":\"luz needed\",\"soil\":\"suelo\",\"temperature\":\"temperatura\",\"humidity\":\"humedad\"},"
-        "\"summary\":\"descripción\",\"predictions\":[{\"scientificName\":\"\",\"commonName\":\"\",\"confidence\":0.8}]}"
-    )
-
-    payload = {
-        "inputs": prompt_text,
-        "parameters": {
-            "max_new_tokens": 500,
-            "temperature": 0.3,
-        },
-    }
-
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
-    }
-
-    req = request.Request(
-        endpoint,
-        data=json.dumps(payload).encode("utf-8"),
-        headers=headers,
-        method="POST",
-    )
-
-    try:
-        with request.urlopen(req, timeout=60) as response:
-            raw = response.read().decode("utf-8")
-            logger.info("[PlantDetection] HF response received")
-    except error.HTTPError as exc:
-        detail = exc.read().decode("utf-8", errors="ignore")
-        logger.error("[PlantDetection] HF error: %s - %s", exc.code, detail)
-        return _get_fallback_detection(), "fallback"
-    except error.URLError as exc:
-        logger.error("[PlantDetection] HF URL error: %s", exc.reason)
-        return _get_fallback_detection(), "fallback"
-
-    try:
-        parsed = json.loads(raw)
-        text = parsed[0].get("generated_text", "") if parsed else ""
-    except (json.JSONDecodeError, IndexError, KeyError) as e:
-        logger.error("[PlantDetection] HF parse error: %s", e)
-        return _get_fallback_detection(), "fallback"
-
-    if not text:
-        return _get_fallback_detection(), "fallback"
-
-    return _parse_ai_payload(text), model
-
-
 def _get_fallback_detection() -> dict:
     return {
         "scientificName": "Planta identificada (fallback)",
@@ -531,21 +466,6 @@ async def analyze_plant_image(user_id: str, payload: dict) -> dict:
         "provider": stored["provider"],
         "modelVersion": stored["modelVersion"],
     }
-
-
-async def identify_plant(payload: dict) -> dict:
-    user_id = _coerce_text(payload.get("userId"), "")
-    if not user_id:
-        error_response(400, "Debes enviar userId para guardar el historial remoto.")
-
-    normalized_payload = {
-        "imageBase64": payload.get("imageBase64") or "",
-        "imageMimeType": payload.get("imageMimeType") or "image/jpeg",
-        "plantId": payload.get("plantId"),
-        "source": payload.get("source") or "camera",
-    }
-
-    return await analyze_plant_image(user_id, normalized_payload)
 
 
 async def list_user_plant_detections(user_id: str) -> dict:

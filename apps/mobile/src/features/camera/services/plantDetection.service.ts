@@ -60,21 +60,14 @@ const createLocalPlantFromResult = (result: PlantDetectionResult, imageUri: stri
 
 export const plantDetectionService = {
   async analyze(userId: string, payload: PlantDetectionRequest): Promise<PlantDetectionResult> {
-    console.log('[PlantDetection] analyze called, userId:', userId, 'imageUri:', payload.imageUri);
-
     try {
       let imageBase64 = payload.imageBase64;
 
       if (!imageBase64) {
-        console.log('[PlantDetection] No base64 in payload, reading from storage...');
         imageBase64 = await fileStorageService.readImage(payload.imageUri);
-        console.log('[PlantDetection] Image read from storage, hasBase64:', !!imageBase64);
-      } else {
-        console.log('[PlantDetection] Using base64 from payload');
       }
 
       if (!imageBase64) {
-        console.log('[PlantDetection] Throwing: Image not found');
         throw new Error('Image not found in local storage.');
       }
 
@@ -83,40 +76,29 @@ export const plantDetectionService = {
         imageBase64,
       };
 
-      console.log('[PlantDetection] Sending request to backend...');
-
       const response = await httpClient.post<ApiResponse<PlantDetectionResult>>(
         `/api/users/${userId}/plant-detections/analyze`,
         requestPayload,
       );
-
-      console.log('[PlantDetection] Response received, success:', response.data.success);
 
       if (!response.data.success) {
         throw new Error(response.data.error ?? 'No se pudo analizar la imagen de la planta.');
       }
 
       const result = response.data.data;
-      console.log('[PlantDetection] Result:', result.scientificName);
 
       await plantLocalService.addPlant(createLocalPlantFromResult(result, payload.imageUri));
 
-      console.log('[PlantDetection] Saved to plantLocalService');
-
       return result;
     } catch (error) {
-      console.log('[PlantDetection] Catch error:', error);
       if (isAxiosError(error)) {
-        console.log('[PlantDetection] Axios error, response:', error.response?.status);
         if (!error.response) {
-          console.log('[PlantDetection] Network error, queuing...');
           await plantJobService.createJob(payload.imageUri, userId);
           throw OFFLINE_QUEUE_ERROR;
         }
 
         const status = error.response.status;
         if (isRetryableStatus(status)) {
-          console.log('[PlantDetection] Retryable status:', status);
           await plantJobService.createJob(payload.imageUri, userId);
           throw OFFLINE_QUEUE_ERROR;
         }
@@ -128,7 +110,6 @@ export const plantDetectionService = {
         await plantJobService.updateJobStatus(matchingJob.id, 'failed', error instanceof Error ? error.message : 'Unknown error');
       }
 
-      console.log('[PlantDetection] Rethrowing error');
       throw error;
     }
   },

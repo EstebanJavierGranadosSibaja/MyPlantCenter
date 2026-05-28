@@ -1,7 +1,7 @@
-import { Feather } from '@expo/vector-icons';
 import React from 'react';
 import { ScrollView, Text, View } from 'react-native';
-import { PlantCategory } from 'src/features/profile/types/user.types';
+import { FeatherIconName, PlantCategory } from 'src/features/profile/types/user.types';
+import { Feather } from '@expo/vector-icons';
 import { useProfileHeroTheme } from '../ProfileHero.styles';
 
 interface HeroHighlightsProps {
@@ -9,7 +9,7 @@ interface HeroHighlightsProps {
 }
 
 // Ícono Feather por categoría — fallback a 'feather' si no existe
-const CATEGORY_ICONS: Record<string, string> = {
+const CATEGORY_ICONS: Record<string, FeatherIconName> = {
     'Tropicales': 'sun',
     'Suculentas': 'droplet',
     'Helechos': 'wind',
@@ -36,7 +36,7 @@ export const HeroHighlights: React.FC<HeroHighlightsProps> = ({ categories }) =>
                             { borderColor: cat.color },
                         ]}>
                             <Feather
-                                name={(CATEGORY_ICONS[cat.name] ?? 'feather') as any}
+                                name={CATEGORY_ICONS[cat.name] ?? 'feather'}
                                 size={theme.typography.size['2xl']}
                                 color={cat.color}
                             />

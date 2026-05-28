@@ -8,7 +8,7 @@ import PermissionService, {
 import CameraService, {
     CaptureOptions,
     PhotoResult,
-} from '../services/camara.service';
+} from '../services/camera.service';
 
 export function useCamera() {
     const cameraRef = useRef<CameraView>(null);
