@@ -4,7 +4,7 @@ import { Toaster, toast } from 'sonner-native';
 import { useFormToastTheme } from './FormToast.styles';
 
 export interface ToastConfig {
-  type: 'success' | 'warning' | 'error';
+  type: 'success' | 'info' | 'warning' | 'error';
   title: string;
   subtitle?: string;
   autoDismiss?: boolean;
@@ -27,6 +27,11 @@ export function showToast(config: ToastConfig): void {
 
   if (config.type === 'success') {
     toast.success(config.title, options);
+    return;
+  }
+
+  if (config.type === 'info') {
+    toast(config.title, options);
     return;
   }
 

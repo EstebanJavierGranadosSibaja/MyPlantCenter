@@ -97,7 +97,10 @@ def _create_care_history_sync(user_id: str, payload: dict) -> dict:
 
     @firestore.transactional
     def _write(txn: firestore.Transaction) -> dict:
-        plant_snapshot = txn.get(plant_ref)
+        # Python 3.14 + google-cloud-firestore >= 2.19: txn.get(doc_ref)
+        # now returns a generator even for a single DocumentReference.
+        # Use next() to extract the snapshot.
+        plant_snapshot = next(txn.get(plant_ref))
         if not plant_snapshot.exists:
             error_response(404, "No se encontro la planta indicada.")
 
@@ -106,7 +109,7 @@ def _create_care_history_sync(user_id: str, payload: dict) -> dict:
             error_response(403, "La planta no pertenece al usuario.")
 
         if history_ref is not None:
-            history_snapshot = txn.get(history_ref)
+            history_snapshot = next(txn.get(history_ref))
             if history_snapshot.exists:
                 existing = history_snapshot.to_dict() or {}
                 existing.setdefault("id", history_ref.id)
@@ -133,7 +136,7 @@ def _create_care_history_sync(user_id: str, payload: dict) -> dict:
         if care_type == "watering":
             txn.update(plant_ref, {"lastWatered": completed_at, "updatedAt": now})
 
-        user_snapshot = txn.get(user_ref)
+        user_snapshot = next(txn.get(user_ref))
         if user_snapshot.exists:
             user_payload = user_snapshot.to_dict() or {}
             updates = _build_user_stat_updates(user_payload, completed_at, care_type)

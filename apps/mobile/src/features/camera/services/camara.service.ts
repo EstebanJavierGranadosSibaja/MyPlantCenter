@@ -43,6 +43,11 @@ const CameraService = {
     },
 
     async saveToGallery(uri: string) {
+        const { granted } = await MediaLibrary.getPermissionsAsync();
+        if (!granted) {
+            const { granted: newGranted } = await MediaLibrary.requestPermissionsAsync();
+            if (!newGranted) throw new Error('Permiso de galería denegado.');
+        }
         return await MediaLibrary.createAssetAsync(uri);
     },
 
