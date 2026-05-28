@@ -1,10 +1,14 @@
 import { Feather } from '@expo/vector-icons';
-import React, { useCallback } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { sendPasswordResetEmail } from 'firebase/auth';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Share, Text, TouchableOpacity, View } from 'react-native';
+import { auth } from 'src/core/config/firebase';
+import httpClient from 'src/core/http/client';
 import { useAuth } from 'src/core/contexts/AuthContext';
 import { ThemePreference, useThemeContext } from 'src/core/contexts/ThemeContext';
-import { UpdateNotificationsDTO, UpdatePrivacyDTO, UserProfile } from 'src/features/profile/types/user.types';
+import { ApiResponse, UpdateNotificationsDTO, UpdatePrivacyDTO, UserProfile } from 'src/features/profile/types/user.types';
 import { ConfirmActionModal } from 'src/shared/components/feedback/ConfirmActionModal/ConfirmActionModal';
+import { showToast } from 'src/shared/components/feedback/FormToast/FormToast';
 import { ListItem } from 'src/shared/components/ui/ListItem/ListItem';
 import { Toggle } from 'src/shared/components/ui/Toggle/Toggle';
 import { useConfirmAction } from 'src/shared/hooks/useConfirmAction';
@@ -42,6 +46,21 @@ export const TabAjustes: React.FC<TabAjustesProps> = ({
   const { logout, loading } = useAuth();
   const confirm = useConfirmAction();
 
+  const [friendCode, setFriendCode] = useState('');
+
+  useEffect(() => {
+    let mounted = true;
+    httpClient
+      .get<ApiResponse<{ friendCode?: string }>>(`/api/users/${profile.id}`)
+      .then(res => {
+        if (mounted && res.data.success && res.data.data.friendCode) {
+          setFriendCode(res.data.data.friendCode.toUpperCase());
+        }
+      })
+      .catch(() => {});
+    return () => { mounted = false; };
+  }, [profile.id]);
+
   const openLogoutConfirm = useCallback(() => {
     confirm.openConfirm(
       {
@@ -53,6 +72,54 @@ export const TabAjustes: React.FC<TabAjustesProps> = ({
       logout,
     );
   }, [confirm, logout]);
+
+  const openPasswordResetConfirm = useCallback(() => {
+    const email = auth.currentUser?.email;
+    if (!email) {
+      showToast({
+        type: 'error',
+        title: 'No pudimos identificar tu correo',
+        subtitle: 'Vuelve a iniciar sesión e inténtalo de nuevo.',
+      });
+      return;
+    }
+
+    confirm.openConfirm(
+      {
+        title:       'Cambiar contraseña',
+        message:     `Te enviaremos un correo a ${email} con instrucciones para restablecer tu contraseña.`,
+        confirmText: 'Enviar correo',
+        cancelText:  'Cancelar',
+      },
+      async () => {
+        try {
+          await sendPasswordResetEmail(auth, email);
+          showToast({
+            type: 'success',
+            title: 'Correo enviado',
+            subtitle: 'Revisa tu bandeja para restablecer la contraseña.',
+          });
+        } catch {
+          showToast({
+            type: 'error',
+            title: 'No se pudo enviar el correo',
+            subtitle: 'Inténtalo de nuevo en unos minutos.',
+          });
+        }
+      },
+    );
+  }, [confirm]);
+
+  const handleShareProfile = useCallback(async () => {
+    const code = friendCode || profile.nickname.replace('@', '').toUpperCase();
+    try {
+      await Share.share({
+        message: `¡Agrégame en MyPlantCenter! 🌱\nMi código de amistad es: ${code}`,
+      });
+    } catch {
+      // Share cancelado por el usuario — sin acción
+    }
+  }, [friendCode, profile.nickname]);
 
   return (
     <View style={styles.container}>
@@ -173,10 +240,10 @@ export const TabAjustes: React.FC<TabAjustesProps> = ({
         <Text style={styles.sectionTitle}>Cuenta</Text>
         <View style={styles.group}>
           <ListItem
-            label="Exportar mis datos"
-            iconName="save"
+            label="Compartir perfil"
+            iconName="share-2"
             iconColor={theme.colors.accent}
-            onPress={() => undefined}
+            onPress={handleShareProfile}
             showChevron
             showDivider
           />
@@ -184,7 +251,7 @@ export const TabAjustes: React.FC<TabAjustesProps> = ({
             label="Cambiar contraseña"
             iconName="lock"
             iconColor={theme.colors.textSecondary}
-            onPress={() => undefined}
+            onPress={openPasswordResetConfirm}
             showChevron
             showDivider
           />
@@ -193,14 +260,6 @@ export const TabAjustes: React.FC<TabAjustesProps> = ({
             iconName="log-out"
             iconColor={theme.colors.warning}
             onPress={openLogoutConfirm}
-            showChevron
-            showDivider
-          />
-          <ListItem
-            label="Eliminar cuenta"
-            iconName="trash-2"
-            destructive
-            onPress={() => undefined}
             showChevron
           />
         </View>

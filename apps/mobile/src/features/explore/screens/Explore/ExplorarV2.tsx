@@ -1,10 +1,11 @@
 import { Feather } from '@expo/vector-icons';
 import React from 'react';
-import { ActivityIndicator, Image, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { ActivityIndicator, Image, ScrollView, StyleSheet, View } from 'react-native';
 import { exploreService } from 'src/features/explore/services/explore.service';
 import { RecentActivity, TrendingPlant } from 'src/features/explore/types/explore.types';
 import { EmptyState } from 'src/shared/components/feedback/EmptyState/EmptyState';
 import { Badge } from 'src/shared/components/ui/Badge/Badge';
+import { SearchBar } from 'src/shared/components/ui/SearchBar/SearchBar';
 import { Screen, ScreenHeader, Surface, Text, useUITheme } from 'src/ui';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -102,33 +103,11 @@ export function ExplorarV2() {
 
       <ScreenHeader title="Explorar" />
 
-      {/* Search bar */}
-      <View
-        style={[
-          styles.searchWrapper,
-          { backgroundColor: theme.colors.surface, borderColor: theme.colors.borderDefault },
-        ]}
-      >
-        <Feather name="search" size={theme.layout.iconSm} color={theme.colors.textTertiary} />
-        <TextInput
-          value={query}
-          onChangeText={setQuery}
-          placeholder="Busca plantas, usuarios o tendencias"
-          placeholderTextColor={theme.colors.textTertiary}
-          autoCorrect={false}
-          autoCapitalize="none"
-          returnKeyType="search"
-          style={[styles.searchInput, { color: theme.colors.textPrimary }]}
-        />
-        {query.length > 0 && (
-          <Feather
-            name="x"
-            size={theme.layout.iconSm}
-            color={theme.colors.textTertiary}
-            onPress={() => setQuery('')}
-          />
-        )}
-      </View>
+      <SearchBar
+        value={query}
+        onChange={setQuery}
+        placeholder="Busca plantas, usuarios o tendencias"
+      />
 
       {/* Body */}
       {loading ? (
@@ -231,20 +210,6 @@ const styles = StyleSheet.create({
     paddingTop: 4,
     paddingBottom: 120,
     gap: 16,
-  },
-  searchWrapper: {
-    height: 48,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingHorizontal: 14,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: 14,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 15,
-    fontWeight: '400',
   },
   loadingCard: {
     padding: 32,

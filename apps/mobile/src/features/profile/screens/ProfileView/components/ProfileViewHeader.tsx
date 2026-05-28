@@ -4,15 +4,12 @@ import React from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { UserProfile } from 'src/features/profile/types/user.types';
 import { useUITheme } from 'src/ui';
-import { FollowButton } from './FollowButton';
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface ProfileViewHeaderProps {
   isOwner: boolean;
   profile: UserProfile;
-  following: boolean;
-  onToggleFollow: () => void;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -20,8 +17,6 @@ interface ProfileViewHeaderProps {
 export const ProfileViewHeader: React.FC<ProfileViewHeaderProps> = ({
   isOwner,
   profile,
-  following,
-  onToggleFollow,
 }) => {
   const theme = useUITheme();
   const navigation = useNavigation();
@@ -62,10 +57,6 @@ export const ProfileViewHeader: React.FC<ProfileViewHeaderProps> = ({
           {isOwner ? 'Mi Perfil' : profile.name}
         </Text>
       </View>
-
-      {!isOwner && (
-        <FollowButton following={following} onToggle={onToggleFollow} />
-      )}
 
     </View>
   );

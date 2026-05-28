@@ -15,3 +15,16 @@ export interface FriendRequest {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface FriendSummary {
+  id: string;
+  name: string;
+  nickname: string;
+  avatarUrl?: string | null;
+  level: number;
+  visibility: string;
+  plantsCount: number;
+  streakDays: number;
+  friendshipId: string;
+  friendsSince?: string | null;
+}

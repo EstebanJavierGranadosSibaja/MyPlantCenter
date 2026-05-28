@@ -15,10 +15,9 @@ export function useProfileViewState(userId: string, isOwner: boolean) {
         updateNotifications,
     } = useUserProfile(userId);
 
-    // UI state 
+    // UI state
     const [activeTab, setActiveTab] = useState<ProfileTab>('perfil');
     const [editMode, setEditMode] = useState(false);
-    const [following, setFollowing] = useState(false);
 
     // Handlers
     const handleEdit = useCallback(() => {
@@ -33,10 +32,6 @@ export function useProfileViewState(userId: string, isOwner: boolean) {
 
     const handleCancelEdit = useCallback(() => {
         setEditMode(false);
-    }, []);
-
-    const toggleFollow = useCallback(() => {
-        setFollowing(f => !f);
     }, []);
 
     // Hero props, pre-empaquetados para ProfileHero
@@ -61,12 +56,10 @@ export function useProfileViewState(userId: string, isOwner: boolean) {
         activeTab,
         setActiveTab,
         editMode,
-        following,
         // handlers
         handleEdit,
         handleProfileUpdated,
         handleCancelEdit,
-        toggleFollow,
         // servicios
         updatePrivacy,
         updateNotifications,

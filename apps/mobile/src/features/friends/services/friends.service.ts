@@ -1,5 +1,5 @@
 import httpClient from 'src/core/http/client';
-import { FriendRequest, Friendship } from 'src/features/friends/types/friends.types';
+import { FriendRequest, Friendship, FriendSummary } from 'src/features/friends/types/friends.types';
 import { ApiResponse } from 'src/features/profile/types/user.types';
 
 export const socialService = {
@@ -8,6 +8,16 @@ export const socialService = {
 
     if (!response.data.success) {
       throw new Error(response.data.error ?? 'No se pudieron cargar las amistades.');
+    }
+
+    return response.data.data;
+  },
+
+  async getFriends(userId: string): Promise<FriendSummary[]> {
+    const response = await httpClient.get<ApiResponse<FriendSummary[]>>(`/api/users/${userId}/friends`);
+
+    if (!response.data.success) {
+      throw new Error(response.data.error ?? 'No se pudieron cargar los amigos.');
     }
 
     return response.data.data;

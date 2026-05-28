@@ -33,8 +33,6 @@ export function ProfileViewV2({ userId, isOwner }: ProfileViewProps) {
       <ProfileViewHeader
         isOwner={isOwner}
         profile={state.profile}
-        following={state.following}
-        onToggleFollow={state.toggleFollow}
       />
       <ProfileHero {...state.heroProps} />
       <ProfileViewTabs
