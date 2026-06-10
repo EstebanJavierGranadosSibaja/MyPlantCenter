@@ -214,13 +214,15 @@ export function TextField<T extends FieldValues>({
   // it reproduces on a real device but NEVER in the browser (the web has no IME
   // editor actions) and why it survived removing every JS .focus() call.
   //
-  // Fix: map "next" to a plain return key (no ACTION_NEXT), so Android has no
-  // action to traverse on. submitBehavior="submit" keeps focus + keyboard open
-  // so the return key is an inert no-op. The user taps the next field (the norm
-  // in modern forms). Terminal fields ("done"/"go"/"send") keep their action
-  // and run the caller's onSubmitEditing (e.g. submit the form).
+  // Fix: map "next" to IME_ACTION_DONE. NOTE: "default" does NOT work — it maps
+  // to IME_ACTION_UNSPECIFIED, and on a single-line field with a following
+  // focusable field Android INFERS actionNext and traverses focus anyway. "done"
+  // is an explicit terminal action the framework never traverses on.
+  // submitBehavior="submit" keeps focus + keyboard open so a (possibly spurious)
+  // Done press is an inert no-op instead of closing the keyboard — the user taps
+  // the next field. Terminal fields keep their own action + run onSubmitEditing.
   const isNext = returnKeyType === 'next';
-  const nativeReturnKeyType = isNext ? 'default' : returnKeyType;
+  const nativeReturnKeyType = isNext ? 'done' : returnKeyType;
   const submitBehavior = isNext ? ('submit' as const) : undefined;
 
   // ── Trailing element ───────────────────────────────────────────────────────
