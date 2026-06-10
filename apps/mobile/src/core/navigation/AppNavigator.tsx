@@ -30,6 +30,11 @@ import { PlantsHubV2 as PlantsHub } from 'src/features/plants/screens/PlantsHub/
 import { EditProfileV2 as EditProfile } from 'src/features/profile/screens/EditProfile/EditProfileV2';
 import { ProfileViewV2 as ProfileView } from 'src/features/profile/screens/ProfileView/ProfileViewV2';
 import { FormToastProvider } from 'src/shared/components/feedback/FormToast/FormToast';
+import { ChatProvider } from 'src/features/chat/context/ChatProvider';
+import { GroupChatScreen } from 'src/features/chat/screens/GroupChat/GroupChatScreen';
+import { DMListScreen } from 'src/features/chat/screens/DirectMessages/DMListScreen';
+import { DMThreadScreen } from 'src/features/chat/screens/DirectMessages/DMThreadScreen';
+import { ChatStackParamList } from 'src/features/chat/screens/ChatNavigator';
 
 // Tipos 
 export type RootStackParamList = {
@@ -49,8 +54,9 @@ export type TabParamList = {
   Plantas: undefined;
   CameraAction: undefined;
   Amigos: undefined;
-  Perfil: undefined;
+  Chat: undefined;
   Explorar: undefined;
+  Perfil: undefined;
 };
 
 export type FriendsStackParamList = {
@@ -58,6 +64,8 @@ export type FriendsStackParamList = {
   AddFriend: undefined;
   FriendRequests: undefined;
 };
+
+export type { ChatStackParamList };
 
 export type AuthStackParamList = {
   Login: undefined;
@@ -67,6 +75,7 @@ export type AuthStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<TabParamList>();
 const FriendsStack = createNativeStackNavigator<FriendsStackParamList>();
+const ChatStack = createNativeStackNavigator<ChatStackParamList>();
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 
 // Pantallas wrapper 
@@ -112,6 +121,16 @@ function FriendsNavigator() {
       <FriendsStack.Screen name="AddFriend" component={AddFriend} />
       <FriendsStack.Screen name="FriendRequests" component={FriendRequests} />
     </FriendsStack.Navigator>
+  );
+}
+
+function ChatNavigator() {
+  return (
+    <ChatStack.Navigator screenOptions={{ headerShown: false }}>
+      <ChatStack.Screen name="GroupChat" component={GroupChatScreen} />
+      <ChatStack.Screen name="DMList" component={DMListScreen} />
+      <ChatStack.Screen name="DMThread" component={DMThreadScreen} />
+    </ChatStack.Navigator>
   );
 }
 
@@ -211,6 +230,14 @@ tabBarIcon: createTabIcon('users'),
 }}
 />
 <Tab.Screen
+name="Chat"
+component={ChatNavigator}
+options={{
+tabBarLabel: 'Chat',
+tabBarIcon: createTabIcon('message-circle'),
+}}
+/>
+<Tab.Screen
 name="Explorar"
 component={Explorar}
 options={{
@@ -283,7 +310,13 @@ export function AppNavigator() {
   return (
     <>
       <NavigationContainer>
-        {isAuthenticated ? <RootStack /> : <AuthNavigator />}
+        {isAuthenticated ? (
+          <ChatProvider>
+            <RootStack />
+          </ChatProvider>
+        ) : (
+          <AuthNavigator />
+        )}
       </NavigationContainer>
       <FormToastProvider />
     </>
