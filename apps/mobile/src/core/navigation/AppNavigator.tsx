@@ -1,6 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { getFocusedRouteNameFromRoute, NavigationContainer } from '@react-navigation/native';
+import { getFocusedRouteNameFromRoute, NavigationContainer, NavigatorScreenParams } from '@react-navigation/native';
 import { createNativeStackNavigator, NativeStackScreenProps } from '@react-navigation/native-stack';
 import { BlurView } from 'expo-blur';
 import * as Haptics from 'expo-haptics';
@@ -15,6 +15,7 @@ import { LoginV2 as Login } from 'src/features/auth/screens/Login/LoginV2';
 import { RegisterV2 as Register } from 'src/features/auth/screens/Register/RegisterV2';
 import { CameraTabButtonV2 as CameraTabButton } from 'src/features/camera/components/CameraTabButton/CameraTabButtonV2';
 import { CameraScanV2 as CameraScan } from 'src/features/camera/screens/CameraScan/CameraScanV2';
+import { ScanHistoryScreen as ScanHistory } from 'src/features/camera/screens/ScanHistory/ScanHistoryScreen';
 import { backgroundSyncService } from 'src/features/camera/services/backgroundSync.service';
 import { WateringCalendarV2 as WateringCalendar } from 'src/features/care/screens/WateringCalendar/WateringCalendarV2';
 import { DashboardV2 as Dashboard } from 'src/features/dashboard/screens/Dashboard/DashboardV2';
@@ -38,12 +39,13 @@ import { ChatStackParamList } from 'src/features/chat/screens/ChatNavigator';
 
 // Tipos 
 export type RootStackParamList = {
-  MainTabs: undefined;
+  MainTabs: NavigatorScreenParams<TabParamList> | undefined;
   UserProfile: { userId: string };
   EditPlant: { plantId: string };
   AddPlant: { prefill?: { name?: string; species?: string; notes?: string } } | undefined;
   EditProfile: undefined;
   CameraScan: undefined;
+  ScanHistory: undefined;
   WateringCalendar: undefined;
   Notifications: undefined;
   VacationMode: undefined;
@@ -272,6 +274,7 @@ function RootStack() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="MainTabs" component={TabNavigator} />
       <Stack.Screen name="CameraScan" component={CameraScan} />
+      <Stack.Screen name="ScanHistory" component={ScanHistory} />
       <Stack.Screen name="UserProfile" component={VisitorProfileScreen} />
       <Stack.Screen name="EditProfile" component={EditProfileScreen} />
       <Stack.Screen name="AddPlant" component={AddPlant} />

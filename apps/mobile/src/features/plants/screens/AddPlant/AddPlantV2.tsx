@@ -10,13 +10,20 @@ import { normalizeDateInput } from 'src/features/plants/validators/date.validato
 import { EditPlantFormValues, EditPlantSchema } from 'src/features/plants/validators/plant.validators';
 import { useUserProfile } from 'src/features/profile/hooks/useUserProfile';
 import { useFormToast } from 'src/shared/components/feedback/FormToast/useFormToast';
-import { Button, DetailHeader, KeyboardScreen, Surface, Text, TextField, useUITheme } from 'src/ui';
+import { Button, DateField, DetailHeader, KeyboardScreen, Surface, Text, TextField, useUITheme } from 'src/ui';
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AddPlant'>;
 
 const FALLBACK_CATEGORY_ID = 'general';
+
+// Fecha de hoy en formato DD/MM/AAAA para prellenar la fecha de adquisición.
+function todayDDMMYYYY(): string {
+  const d = new Date();
+  const pad = (n: number) => (n < 10 ? `0${n}` : `${n}`);
+  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+}
 
 // ─ Local chip ─────────────────────────────────────────────────────────────────
 // Category selector pill — inline here until needed by other screens.
@@ -69,7 +76,7 @@ export function AddPlantV2({ navigation, route }: Props) {
         categoryId: profile?.categories?.[0]?.id ?? '',
         wateringFrequencyDays: 3,
         notes: prefill?.notes ?? '',
-        acquiredAt: '',
+        acquiredAt: todayDDMMYYYY(),
       },
       mode: 'onSubmit',
     });
@@ -107,7 +114,9 @@ export function AddPlantV2({ navigation, route }: Props) {
           acquiredAt:            normalizeDateInput(values.acquiredAt),
         });
         showToast({ type: 'success', title: 'Planta agregada' });
-        navigation.goBack();
+        // Vamos directo a la pestaña Plantas (no goBack), para no volver a la
+        // vista previa de la cámara donde se podría re-agregar la planta.
+        navigation.navigate('MainTabs', { screen: 'Plantas' });
       } catch {
         showToast({ type: 'error', title: 'No se pudo crear la planta', autoDismiss: false });
       }
@@ -220,17 +229,14 @@ export function AddPlantV2({ navigation, route }: Props) {
               returnKeyType="next"
             />
 
-            <TextField
+            <DateField
               control={control}
               name="acquiredAt"
               label="Fecha de adquisición"
               leftIcon="calendar"
               placeholder="DD/MM/AAAA"
-              hint="Formato: día/mes/año"
-              keyboardType="number-pad"
-              autoCorrect={false}
-              returnKeyType="done"
-              onSubmitEditing={onSave}
+              hint="Toca para elegir la fecha"
+              maximumDate={new Date()}
             />
 
           </Surface>

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isValidDateInput } from 'src/features/plants/validators/date.validators';
 
 export const EditProfileSchema = z.object({
   name: z
@@ -24,7 +25,7 @@ export const EditProfileSchema = z.object({
     .string()
     .optional()
     .refine(
-      val => !val || !isNaN(Date.parse(val)),
+      val => isValidDateInput(val),
       'Fecha de nacimiento inválida'
     ),
 

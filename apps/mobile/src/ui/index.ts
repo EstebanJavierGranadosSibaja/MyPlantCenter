@@ -36,12 +36,13 @@ export {
 export type { UIThemePreference } from './theme/UIThemeContext';
 
 // ── Primitives ────────────────────────────────────────────────────────────────
-export { Text, Surface, Button, TextField, ScreenHeader, DetailHeader } from './primitives';
+export { Text, Surface, Button, TextField, DateField, ScreenHeader, DetailHeader } from './primitives';
 export type {
   TextProps,
   SurfaceProps,
   ButtonProps, ButtonVariant, ButtonSize,
   TextFieldProps,
+  DateFieldProps,
   ScreenHeaderProps,
   DetailHeaderProps,
 } from './primitives';

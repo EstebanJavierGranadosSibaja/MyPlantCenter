@@ -13,6 +13,9 @@ export type { ButtonProps, ButtonVariant, ButtonSize } from './Button/Button';
 export { TextField } from './TextField/TextField';
 export type { TextFieldProps } from './TextField/TextField';
 
+export { DateField } from './DateField/DateField';
+export type { DateFieldProps } from './DateField/DateField';
+
 export { ScreenHeader } from './ScreenHeader/ScreenHeader';
 export type { ScreenHeaderProps } from './ScreenHeader/ScreenHeader';
 

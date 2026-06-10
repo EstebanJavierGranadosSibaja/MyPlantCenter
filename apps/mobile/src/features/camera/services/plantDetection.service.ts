@@ -41,6 +41,21 @@ export interface PlantDetectionRequest {
 
 export const OFFLINE_QUEUE_ERROR = new Error('OFFLINE_QUEUE');
 
+// Encola un análisis para sincronizarlo luego. Si tenemos el base64, guardamos
+// la imagen en almacenamiento estable y encolamos ESE uri — así la sync podrá
+// leerla aunque el archivo temporal de cámara/galería ya no exista.
+async function queueOffline(payload: PlantDetectionRequest, userId: string): Promise<void> {
+  let imageUri = payload.imageUri;
+  if (payload.imageBase64) {
+    try {
+      imageUri = await fileStorageService.saveImage(payload.imageBase64);
+    } catch {
+      // Si falla el guardado, encolamos el uri original como mejor esfuerzo.
+    }
+  }
+  await plantJobService.createJob(imageUri, userId);
+}
+
 const isRetryableStatus = (status?: number): boolean => {
   if (!status) return false;
   return status === 429 || (status >= 500 && status < 600);
@@ -93,13 +108,13 @@ export const plantDetectionService = {
     } catch (error) {
       if (isAxiosError(error)) {
         if (!error.response) {
-          await plantJobService.createJob(payload.imageUri, userId);
+          await queueOffline(payload, userId);
           throw OFFLINE_QUEUE_ERROR;
         }
 
         const status = error.response.status;
         if (isRetryableStatus(status)) {
-          await plantJobService.createJob(payload.imageUri, userId);
+          await queueOffline(payload, userId);
           throw OFFLINE_QUEUE_ERROR;
         }
       }

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isValidDateInput } from './date.validators';
 
 export const EditPlantSchema = z.object({
   name: z
@@ -27,7 +28,7 @@ export const EditPlantSchema = z.object({
     .string()
     .optional()
     .refine(
-      val => !val || !isNaN(Date.parse(val)),
+      val => isValidDateInput(val),
       'Fecha de adquisición inválida'
     ),
 });

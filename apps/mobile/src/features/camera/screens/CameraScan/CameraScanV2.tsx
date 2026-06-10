@@ -105,11 +105,11 @@ export function CameraScanV2() {
     setIsCapturing(false);
     if (!photo) return;
 
-    try {
-      await plantJobService.createJob(photo.uri, userId ?? undefined);
-      await refreshPending();
-      showToast({ type: 'info', title: 'Foto capturada', subtitle: 'Visible en historial' });
-    } catch { /* local history failure is non-critical */ }
+    // No encolamos la foto aquí: la cola de sincronización es SOLO para análisis
+    // que fallaron por falta de conexión (lo gestiona analyze()). Encolar cada
+    // captura inflaba el contador de "pendientes" y reprocesaba fotos ya
+    // analizadas. Aquí solo confirmamos la captura.
+    showToast({ type: 'info', title: 'Foto lista', subtitle: 'Toca "Usar para IA" para identificarla.' });
 
     try { await saveToGallery(photo.uri); } catch { /* gallery save is non-critical */ }
   };
@@ -135,10 +135,7 @@ export function CameraScanV2() {
       mimeType: asset.mimeType ?? 'image/jpeg',
     });
 
-    try {
-      await plantJobService.createJob(asset.uri, userId ?? undefined);
-      showToast({ type: 'info', title: 'Imagen seleccionada', subtitle: 'Visible en historial' });
-    } catch { /* non-critical */ }
+    showToast({ type: 'info', title: 'Imagen lista', subtitle: 'Toca "Usar para IA" para identificarla.' });
   };
 
   const onAnalyzeWithAI = async () => {
@@ -235,6 +232,13 @@ export function CameraScanV2() {
     setIsSyncing(false);
   }, [userId, isSyncing, refreshPending]);
 
+  const onDiscardPending = React.useCallback(async () => {
+    await plantJobService.clear();
+    await refreshPending();
+    setSyncMessage('Cola de pendientes vaciada.');
+    showToast({ type: 'info', title: 'Pendientes descartados' });
+  }, [refreshPending]);
+
   // ── States ───────────────────────────────────────────────────────────────
 
   if (isLoadingPermissions) {
@@ -306,6 +310,14 @@ export function CameraScanV2() {
               disabled={isSyncing}
               variant="secondary"
               fullWidth
+            />
+            <Button
+              label="Descartar pendientes"
+              onPress={onDiscardPending}
+              disabled={isSyncing}
+              variant="ghost"
+              fullWidth
+              leftSlot={<Feather name="trash-2" size={theme.layout.iconSm} color={theme.colors.textSecondary} />}
             />
           </Surface>
         )}

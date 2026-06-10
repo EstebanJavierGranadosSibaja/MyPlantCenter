@@ -12,7 +12,7 @@ import { normalizeDateInput } from 'src/features/plants/validators/date.validato
 import { EditPlantFormValues, EditPlantSchema } from 'src/features/plants/validators/plant.validators';
 import { useUserProfile } from 'src/features/profile/hooks/useUserProfile';
 import { useFormToast } from 'src/shared/components/feedback/FormToast/useFormToast';
-import { Button, DetailHeader, KeyboardScreen, Surface, Text, TextField, useUITheme } from 'src/ui';
+import { Button, DateField, DetailHeader, KeyboardScreen, Surface, Text, TextField, useUITheme } from 'src/ui';
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -243,17 +243,14 @@ export function EditPlantV2({ navigation, route }: Props) {
               returnKeyType="next"
             />
 
-            <TextField
+            <DateField
               control={control}
               name="acquiredAt"
               label="Fecha de adquisición"
               leftIcon="calendar"
               placeholder="DD/MM/AAAA"
-              hint="Formato: día/mes/año"
-              keyboardType="number-pad"
-              autoCorrect={false}
-              returnKeyType="done"
-              onSubmitEditing={onSave}
+              hint="Toca para elegir la fecha"
+              maximumDate={new Date()}
             />
 
           </Surface>

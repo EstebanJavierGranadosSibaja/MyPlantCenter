@@ -3,7 +3,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { RootStackParamList } from 'src/core/navigation/AppNavigator';
 import { normalizeDateInput } from 'src/features/plants/validators/date.validators';
 import { useUserProfile } from 'src/features/profile/hooks/useUserProfile';
@@ -12,7 +12,7 @@ import {
   EditProfileSchema,
 } from 'src/features/profile/validators/profile.validators';
 import { useFormToast } from 'src/shared/components/feedback/FormToast/useFormToast';
-import { Button, DetailHeader, KeyboardScreen, Surface, Text, TextField } from 'src/ui';
+import { Button, DateField, DetailHeader, KeyboardScreen, Surface, Text, TextField, useUITheme } from 'src/ui';
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -40,6 +40,7 @@ function toFormValues(profile: {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function EditProfileV2({ userId, onSaved }: Props) {
+  const theme = useUITheme();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { showToast } = useFormToast();
   const { profile, loading, updateProfile } = useUserProfile(userId);
@@ -78,7 +79,21 @@ export function EditProfileV2({ userId, onSaved }: Props) {
     () => showToast({ type: 'warning', title: 'Revisa los campos del formulario', subtitle: 'Hay datos inválidos o incompletos.' }),
   );
 
-  if (loading && !profile) return null;
+  // Mientras carga el perfil mostramos el chrome (header + spinner) en vez de
+  // null, para que NO aparezca un flash blanco al entrar a la pantalla.
+  if (loading && !profile) {
+    return (
+      <KeyboardScreen contentStyle={styles.content}>
+        <DetailHeader
+          title="Editar perfil"
+          onBack={() => navigation.canGoBack() && navigation.goBack()}
+        />
+        <View style={styles.loadingBox}>
+          <ActivityIndicator size="large" color={theme.colors.accent} />
+        </View>
+      </KeyboardScreen>
+    );
+  }
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
@@ -139,16 +154,14 @@ export function EditProfileV2({ userId, onSaved }: Props) {
           </Text>
           <Surface elevation="sm" radius="lg" border="subtle" style={styles.card}>
 
-            <TextField
+            <DateField
               control={control}
               name="birthday"
               label="Fecha de nacimiento"
               leftIcon="calendar"
               placeholder="DD/MM/AAAA"
-              hint="Formato: día/mes/año"
-              keyboardType="number-pad"
-              autoCorrect={false}
-              returnKeyType="next"
+              hint="Toca para elegir tu fecha"
+              maximumDate={new Date()}
             />
 
             <TextField
@@ -186,6 +199,12 @@ const styles = StyleSheet.create({
   content: {
     flexGrow: 1,
     paddingBottom: 32,
+  },
+  loadingBox: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 80,
   },
   body: {
     paddingHorizontal: 20,

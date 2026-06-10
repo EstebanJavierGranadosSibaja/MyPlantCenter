@@ -1,6 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import React from 'react';
 import {
   ActivityIndicator,
@@ -86,6 +86,7 @@ export function VacationModeScreen() {
 
   const [loading,        setLoading]        = React.useState(true);
   const [saving,         setSaving]          = React.useState(false);
+  const [plants,         setPlants]          = React.useState<Awaited<ReturnType<typeof plantService.getByUser>>>([]);
   const [risks,          setRisks]           = React.useState<PlantVacationRisk[]>([]);
   const [activeVacation, setActiveVacation]  = React.useState<VacationPlan | null>(null);
   const [departure,      setDeparture]       = React.useState<Date>(tomorrow);
@@ -97,30 +98,33 @@ export function VacationModeScreen() {
     if (!user?.id) return;
     setLoading(true);
     try {
-      const [plants, saved] = await Promise.all([
+      const [fetchedPlants, saved] = await Promise.all([
         plantService.getByUser(user.id),
         vacationService.load(),
       ]);
 
+      setPlants(fetchedPlants);
+
       if (saved?.isActive) {
         setActiveVacation(saved);
-        const dep = new Date(saved.departureDate);
-        const ret = new Date(saved.returnDate);
-        setDeparture(dep);
-        setReturnDate(ret);
-        setRisks(vacationService.assessRisks(plants, dep, ret));
-      } else {
-        setRisks(vacationService.assessRisks(plants, tomorrow, dayAfter));
+        setDeparture(new Date(saved.departureDate));
+        setReturnDate(new Date(saved.returnDate));
       }
     } catch {
-      showToast({ type: 'error', message: 'No se pudo cargar la información.' });
+      showToast({ type: 'error', title: 'No se pudo cargar la información.' });
     } finally {
       setLoading(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
-  React.useEffect(() => { load(); }, [load]);
+  // Refresca al enfocar la pantalla para reflejar plantas agregadas/regadas.
+  useFocusEffect(React.useCallback(() => { load(); }, [load]));
+
+  // Recalcula el riesgo EN VIVO cada vez que cambian las plantas o las fechas.
+  React.useEffect(() => {
+    setRisks(vacationService.assessRisks(plants, departure, returnDate));
+  }, [plants, departure, returnDate]);
 
   const applyDate = React.useCallback((field: DatePickerField, date: Date) => {
     if (field === 'departure') {
@@ -173,12 +177,12 @@ export function VacationModeScreen() {
         isActive:      true,
       };
       await vacationService.save(plan);
-      const plants = await plantService.getByUser(user.id);
-      setRisks(vacationService.assessRisks(plants, departure, returnDate));
+      const refreshedPlants = await plantService.getByUser(user.id);
+      setPlants(refreshedPlants); // el efecto recalcula el riesgo
       setActiveVacation(plan);
-      showToast({ type: 'success', message: 'Modo vacaciones activado' });
+      showToast({ type: 'success', title: 'Modo vacaciones activado' });
     } catch {
-      showToast({ type: 'error', message: 'No se pudo activar el modo vacaciones.' });
+      showToast({ type: 'error', title: 'No se pudo activar el modo vacaciones.' });
     } finally {
       setSaving(false);
     }
@@ -187,7 +191,7 @@ export function VacationModeScreen() {
   const handleDeactivate = async () => {
     await vacationService.clear();
     setActiveVacation(null);
-    showToast({ type: 'success', message: 'Modo vacaciones desactivado' });
+    showToast({ type: 'success', title: 'Modo vacaciones desactivado' });
     navigation.goBack();
   };
 
