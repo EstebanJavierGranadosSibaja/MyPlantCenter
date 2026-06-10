@@ -4,7 +4,7 @@ import React from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { useAuth } from 'src/core/contexts/AuthContext';
 import { EmptyState } from 'src/shared/components/feedback/EmptyState/EmptyState';
-import { Screen, ScreenHeader, Surface, Text, useUITheme } from 'src/ui';
+import { DetailHeader, Screen, Surface, Text, useUITheme } from 'src/ui';
 import { notificationService } from '../services/notification.service';
 import { AppNotification } from '../types/notification.types';
 
@@ -102,14 +102,7 @@ export function NotificationsScreen() {
       refreshing={refreshing}
       onRefresh={handleRefresh}
     >
-      <ScreenHeader
-        title="Notificaciones"
-        rightSlot={
-          <Pressable onPress={() => navigation.goBack()} hitSlop={8}>
-            <Feather name="x" size={theme.layout.iconMd} color={theme.colors.textSecondary} />
-          </Pressable>
-        }
-      />
+      <DetailHeader title="Notificaciones" />
 
       {loading ? (
         <Surface elevation="xs" radius="lg" border="subtle" style={styles.loadingCard}>

@@ -1,10 +1,9 @@
-import { Feather } from '@expo/vector-icons';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { RootStackParamList } from 'src/core/navigation/AppNavigator';
 import { normalizeDateInput } from 'src/features/plants/validators/date.validators';
 import { useUserProfile } from 'src/features/profile/hooks/useUserProfile';
@@ -13,7 +12,7 @@ import {
   EditProfileSchema,
 } from 'src/features/profile/validators/profile.validators';
 import { useFormToast } from 'src/shared/components/feedback/FormToast/useFormToast';
-import { Button, KeyboardScreen, Surface, Text, TextField, useUITheme } from 'src/ui';
+import { Button, DetailHeader, KeyboardScreen, Surface, Text, TextField } from 'src/ui';
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -41,7 +40,6 @@ function toFormValues(profile: {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function EditProfileV2({ userId, onSaved }: Props) {
-  const theme = useUITheme();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { showToast } = useFormToast();
   const { profile, loading, updateProfile } = useUserProfile(userId);
@@ -86,71 +84,87 @@ export function EditProfileV2({ userId, onSaved }: Props) {
   return (
     <KeyboardScreen contentStyle={styles.content}>
 
-      {/* Nav bar */}
-      <View style={styles.navBar}>
-        <Pressable onPress={() => navigation.canGoBack() && navigation.goBack()} hitSlop={8}>
-          <Feather name="arrow-left" size={theme.layout.iconMd} color={theme.colors.textPrimary} />
-        </Pressable>
-        <Text variant="h2">Editar perfil</Text>
-      </View>
+      <DetailHeader
+        title="Editar perfil"
+        onBack={() => navigation.canGoBack() && navigation.goBack()}
+      />
 
-      {/* Form card */}
-      <Surface elevation="sm" radius="lg" border="subtle" style={styles.card}>
+      <View style={styles.body}>
 
-        <TextField
-          control={control}
-          name="name"
-          label="Nombre *"
-          leftIcon="user"
-          placeholder="Nombre completo"
-          autoCapitalize="words"
-          autoCorrect={false}
-          returnKeyType="next"
-        />
+        {/* ── Identidad ──────────────────────────────────────────────────── */}
+        <View style={styles.section}>
+          <Text variant="overline" color="textTertiary" style={styles.sectionLabel}>
+            Identidad
+          </Text>
+          <Surface elevation="sm" radius="lg" border="subtle" style={styles.card}>
 
-        <TextField
-          control={control}
-          name="nickname"
-          label="Apodo *"
-          leftIcon="at-sign"
-          placeholder="@apodo"
-          autoCapitalize="none"
-          autoCorrect={false}
-          returnKeyType="next"
-        />
+            <TextField
+              control={control}
+              name="name"
+              label="Nombre *"
+              leftIcon="user"
+              placeholder="Nombre completo"
+              autoCapitalize="words"
+              autoCorrect={false}
+              returnKeyType="next"
+            />
 
-        <TextField
-          control={control}
-          name="description"
-          label="Descripción"
-          leftIcon="file-text"
-          placeholder="Una descripción breve..."
-          returnKeyType="next"
-        />
+            <TextField
+              control={control}
+              name="nickname"
+              label="Apodo *"
+              leftIcon="at-sign"
+              placeholder="@apodo"
+              autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="next"
+            />
 
-        <TextField
-          control={control}
-          name="birthday"
-          label="Fecha de nacimiento"
-          leftIcon="calendar"
-          placeholder="DD/MM/AAAA"
-          hint="Formato: día/mes/año"
-          keyboardType="number-pad"
-          autoCorrect={false}
-          returnKeyType="next"
-        />
+            <TextField
+              control={control}
+              name="description"
+              label="Descripción"
+              leftIcon="file-text"
+              placeholder="Una descripción breve..."
+              returnKeyType="next"
+            />
 
-        <TextField
-          control={control}
-          name="location"
-          label="Ubicación"
-          leftIcon="map-pin"
-          placeholder="Ciudad, País"
-          autoCapitalize="words"
-          autoCorrect={false}
-          returnKeyType="done"
-          onSubmitEditing={onSave}
-        />
+          </Surface>
+        </View>
+
+        {/* ── Detalles ───────────────────────────────────────────────────── */}
+        <View style={styles.section}>
+          <Text variant="overline" color="textTertiary" style={styles.sectionLabel}>
+            Detalles
+          </Text>
+          <Surface elevation="sm" radius="lg" border="subtle" style={styles.card}>
+
+            <TextField
+              control={control}
+              name="birthday"
+              label="Fecha de nacimiento"
+              leftIcon="calendar"
+              placeholder="DD/MM/AAAA"
+              hint="Formato: día/mes/año"
+              keyboardType="number-pad"
+              autoCorrect={false}
+              returnKeyType="next"
+            />
+
+            <TextField
+              control={control}
+              name="location"
+              label="Ubicación"
+              leftIcon="map-pin"
+              placeholder="Ciudad, País"
+              autoCapitalize="words"
+              autoCorrect={false}
+              returnKeyType="done"
+              onSubmitEditing={onSave}
+            />
+
+          </Surface>
+        </View>
 
         <Button
           label="Guardar cambios"
@@ -160,7 +174,7 @@ export function EditProfileV2({ userId, onSaved }: Props) {
           fullWidth
         />
 
-      </Surface>
+      </View>
 
     </KeyboardScreen>
   );
@@ -171,14 +185,18 @@ export function EditProfileV2({ userId, onSaved }: Props) {
 const styles = StyleSheet.create({
   content: {
     flexGrow: 1,
+    paddingBottom: 32,
+  },
+  body: {
     paddingHorizontal: 20,
-    paddingVertical: 24,
+    paddingTop: 8,
     gap: 20,
   },
-  navBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
+  section: {
+    gap: 8,
+  },
+  sectionLabel: {
+    marginLeft: 4,
   },
   card: {
     padding: 20,

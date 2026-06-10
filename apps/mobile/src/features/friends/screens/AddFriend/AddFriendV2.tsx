@@ -1,17 +1,14 @@
-import { Feather } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { StyleSheet, TextInput, View } from 'react-native';
 import { useAuth } from 'src/core/contexts/AuthContext';
 import { showToast } from 'src/shared/components/feedback/FormToast/FormToast';
 import { socialService } from 'src/features/friends/services/friends.service';
-import { Button, KeyboardScreen, Surface, Text, useUITheme } from 'src/ui';
+import { Button, DetailHeader, KeyboardScreen, Surface, Text, useUITheme } from 'src/ui';
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function AddFriendV2() {
   const theme = useUITheme();
-  const navigation = useNavigation();
   const { user } = useAuth();
 
   const [code, setCode] = useState('');
@@ -47,15 +44,10 @@ export function AddFriendV2() {
   return (
     <KeyboardScreen contentStyle={styles.content}>
 
-      {/* Nav bar */}
-      <View style={styles.navBar}>
-        <Pressable onPress={() => navigation.goBack()} hitSlop={8}>
-          <Feather name="arrow-left" size={theme.layout.iconMd} color={theme.colors.textPrimary} />
-        </Pressable>
-        <Text variant="h2">Agregar amigo</Text>
-      </View>
+      <DetailHeader title="Agregar amigo" />
 
-      {/* Form card */}
+      {/* Form card — vertically centered below the header */}
+      <View style={styles.body}>
       <Surface elevation="sm" radius="lg" border="subtle" style={styles.card}>
         <Text variant="title">Enviar solicitud</Text>
         <Text variant="bodyMd" color="textSecondary">
@@ -93,6 +85,7 @@ export function AddFriendV2() {
           fullWidth
         />
       </Surface>
+      </View>
 
     </KeyboardScreen>
   );
@@ -103,15 +96,13 @@ export function AddFriendV2() {
 const styles = StyleSheet.create({
   content: {
     flexGrow: 1,
+  },
+  body: {
+    flex: 1,
     justifyContent: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 40,
+    paddingBottom: 40,
     gap: 24,
-  },
-  navBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
   },
   card: {
     padding: 20,

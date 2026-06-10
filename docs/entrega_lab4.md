@@ -1,13 +1,110 @@
-# EIF209 – Actividad 4: Aplicación de Plantas 90%
+# EIF209 – Aplicación de Plantas: Chat en tiempo real y últimos avances
 
 ---
 
 **Universidad Nacional — Sede Regional Brunca**
 **Curso:** EIF209 Desarrollo y Diseño de Plataformas Móviles
-**Actividad:** Laboratorio 4 — Aplicación de plantas al 90%
+**Actividad:** Integración de chat en tiempo real sobre la app de plantas (continuación del Laboratorio 4 — app al 90 %)
 **Profesor:** Daniel Granados Murillo
 **Estudiante:** Esteban Javier Granados Sibaja
-**Fecha de entrega:** 27 de mayo de 2026
+**Fecha de entrega:** 9 de junio de 2026
+
+---
+
+## Última entrega: Integración de Chat en tiempo real
+
+Esta entrega incorpora a **MyPlantCenter** un **sistema de chat en tiempo real** como nueva sección de la aplicación, consumiendo un backend de chat independiente (FastAPI + WebSocket). Cumple el enunciado:
+
+> *Cada estudiante deberá agregar este chat a su aplicación de plantas en una nueva sección, en donde se vean las observaciones que se han hecho en el documento (chat grupal), además de la pantalla para los mensajes directos.*
+
+### Resumen de lo entregado
+
+- **Chat grupal** ("Observaciones del documento") — sala común en tiempo real.
+- **Mensajes directos (DM)** entre usuarios conectados.
+- **Indicadores de "escribiendo…"** (typing) en grupo y DM.
+- **Confirmaciones de lectura** (read receipts) y **mensajes con expiración** (TTL).
+- **Lista de usuarios en línea** con estado de conexión.
+- **Reconexión automática** del WebSocket y *keep-alive* (ping cada 25 s).
+- **Homogeneización de UI** (nuevo header centralizado reutilizable) y **corrección de bugs críticos** detectados durante la integración.
+
+### Arquitectura de la integración
+
+El chat usa un **backend propio e independiente** del backend de plantas, con su **propio sistema de autenticación** (JWT distinto al de Firebase):
+
+| Aspecto | Backend de plantas | Backend de chat |
+|---|---|---|
+| URL | `https://myplantcenter.onrender.com` | `https://chat-backend-4nzg.onrender.com` |
+| Autenticación | JWT de Firebase | JWT propio (`POST /api/chat/join` con `{nickname}`) |
+| Transporte | HTTP REST | HTTP REST + **WebSocket** (`wss://…/ws/{token}`) |
+
+Por eso el chat **no** reutiliza el `httpClient` existente (que inyecta tokens de Firebase): se creó un cliente `fetch` independiente y un servicio de WebSocket dedicado, con el token de chat mantenido en memoria.
+
+Estructura de la *feature* (espejo del patrón `features/`):
+
+```
+features/chat/
+├── config/chat.config.ts          — URLs (variables de entorno + fallback)
+├── types/chat.types.ts            — tipos y unión discriminada de eventos WS
+├── services/chatApi.service.ts    — cliente HTTP (join, historial, usuarios)
+├── services/chatSocket.service.ts — WebSocket (reconexión 4 s, ping 25 s)
+├── context/ChatProvider.tsx       — estado global + ciclo de vida del socket
+├── hooks/useChat.ts
+├── components/  MessageBubble · MessageInput · UserListItem
+└── screens/     DMListScreen (hub) · GroupChatScreen · DMThreadScreen
+```
+
+### Navegación y pantallas
+
+Se agregó una pestaña **"Chat"** que abre un **hub** (lista) con el tab bar visible:
+
+- Tarjeta destacada **"Chat grupal — Observaciones del documento"** en la parte superior.
+- Lista de **mensajes directos** debajo.
+
+Las conversaciones (grupal y DM) son **pantalla completa**: se oculta el tab bar flotante para que el campo de escritura no quede tapado, y usan el nuevo **header centrado con botón de regreso**. La cámara del tab bar se reubicó al **centro real** (índice 3 de 7) y se corrigió el truncado de las etiquetas.
+
+### Correcciones críticas durante la integración
+
+| Problema | Causa raíz | Solución |
+|---|---|---|
+| Los campos de texto "saltaban" en cascada (Android) | `returnKeyType="next"` activa `IME_ACTION_NEXT`; Android traversa el foco de forma nativa y el teclado Samsung lo dispara espuriamente | Mapear a `IME_ACTION_DONE` + `submitBehavior="submit"` y desactivar el autofill |
+| El teclado tapaba el input del chat | `edgeToEdgeEnabled` rompe el `adjustResize` clásico de Android | `KeyboardAvoidingView` con `behavior="padding"` |
+| Los mensajes directos se duplicaban al enviarse | El mensaje "optimista" (id temporal) no se reconciliaba con el eco del servidor (id real) | Reconciliar el placeholder con el eco en lugar de añadir un segundo mensaje |
+
+### Mejoras de UX y homogeneidad de diseño
+
+- **Nuevo componente reutilizable `DetailHeader`** (título centrado + botón de regreso) como **estándar de la app** para pantallas de detalle.
+- **Pantalla "Agregar planta" rediseñada:** header centralizado y formulario agrupado en secciones ("Información" y "Cuidado y detalles") en lugar de una sola tarjeta plana.
+
+### Archivos de la integración del chat
+
+**Nuevos:**
+
+| Archivo | Descripción |
+|---|---|
+| `features/chat/config/chat.config.ts` | URLs del backend de chat |
+| `features/chat/types/chat.types.ts` | Tipos + eventos de WebSocket |
+| `features/chat/services/chatApi.service.ts` | Cliente HTTP del chat |
+| `features/chat/services/chatSocket.service.ts` | WebSocket con reconexión |
+| `features/chat/context/ChatProvider.tsx` | Estado global del chat |
+| `features/chat/hooks/useChat.ts` | Hook de acceso al contexto |
+| `features/chat/components/MessageBubble.tsx` | Burbuja de mensaje |
+| `features/chat/components/MessageInput.tsx` | Campo de escritura |
+| `features/chat/components/UserListItem.tsx` | Ítem de usuario en lista |
+| `features/chat/screens/ChatNavigator.ts` | Tipos del stack de chat |
+| `features/chat/screens/GroupChat/GroupChatScreen.tsx` | Chat grupal |
+| `features/chat/screens/DirectMessages/DMListScreen.tsx` | Hub de chats |
+| `features/chat/screens/DirectMessages/DMThreadScreen.tsx` | Conversación directa |
+| `ui/primitives/DetailHeader/DetailHeader.tsx` | Header reutilizable centrado |
+
+**Modificados:**
+
+| Archivo | Cambio |
+|---|---|
+| `core/navigation/AppNavigator.tsx` | Pestaña "Chat", `ChatProvider`, ocultar tab bar en conversaciones, cámara centrada |
+| `core/navigation/AppTabBar.styles.ts` | Ajuste de etiquetas y espaciado del tab bar |
+| `ui/primitives/TextField/TextField.tsx` | Corrección del salto de foco (IME de Android) |
+| `features/auth/screens/Login/LoginV2.tsx` · `Register/RegisterV2.tsx` | Limpieza de *refs* de foco |
+| `features/plants/screens/AddPlant/AddPlantV2.tsx` | Rediseño con header centralizado y secciones |
 
 ---
 
@@ -29,10 +126,11 @@ La siguiente tabla resume el estado de cada módulo antes de esta entrega (punto
 | Perfil de Usuario | 90 % | 90 % | Casi completo |
 | **Notificaciones** | **0 %** | **90 %** | **Nuevo — implementado** |
 | **Modo Vacaciones** | **0 %** | **100 %** | **Nuevo — funcionalidad propia** |
+| **Chat (grupal + directos)** | **0 %** | **100 %** | **Nuevo — tiempo real (WebSocket), entrega actual** |
 | Sistema de Diseño + Navegación | 100 % | 100 % | Completo |
 
 **Promedio de completitud (antes):** ~80 %
-**Promedio de completitud (después):** ~92 %
+**Promedio de completitud (después):** ~93 % (incluye el chat en tiempo real de la entrega actual)
 
 ---
 
@@ -215,14 +313,37 @@ risk = daysOverdue > 3 ? 'high' :
 ## Parte 3: Entrega
 
 **Repositorio GitHub:** [https://github.com/EstebanJavierGranadosSibaja/MyPlantCenter](https://github.com/EstebanJavierGranadosSibaja/MyPlantCenter)
-
 **Branch de entrega:** `develop`
 
-**Render (API Backend):** [https://dashboard.render.com/web/srv-d898bcegvqtc73bo33jg](https://dashboard.render.com/web/srv-d898bcegvqtc73bo33jg)
+### Backends en línea (activos durante la revisión)
+
+| Servicio | URL pública | Estado |
+|---|---|---|
+| API de plantas (FastAPI) | `https://myplantcenter.onrender.com` | En línea |
+| Backend de chat (FastAPI + WebSocket) | `https://chat-backend-4nzg.onrender.com` | En línea |
+
+**Panel de Render (API de plantas):** [https://dashboard.render.com/web/srv-d898bcegvqtc73bo33jg](https://dashboard.render.com/web/srv-d898bcegvqtc73bo33jg)
+
+> Ambos backends están desplegados en **Render**. En el plan gratuito el servicio "duerme" tras un periodo de inactividad, por lo que **la primera petición puede tardar ~30–60 s** en responder mientras despierta. Conviene abrir ambas URLs unos minutos antes de la revisión para tenerlos "calientes".
+
+### Build de preview para Android
+
+**Enlace de instalación del APK (Expo / EAS):**
+[https://expo.dev/accounts/estebanjgs/projects/myplantcenter/builds/05a8d9a7-145a-44c6-ad89-b994699a1452](https://expo.dev/accounts/estebanjgs/projects/myplantcenter/builds/05a8d9a7-145a-44c6-ad89-b994699a1452)
+
+Abre ese enlace desde un dispositivo Android (o escanea el código QR de la página) para descargar e instalar la aplicación. El build se generó con:
+
+```
+cd apps/mobile
+eas build -p android --profile preview
+```
+
+- **Perfil:** `preview` (distribución interna, APK instalable directamente).
+- **Build ID:** `05a8d9a7-145a-44c6-ad89-b994699a1452`
 
 ---
 
-### Resumen de archivos nuevos en esta entrega
+### Resumen de archivos nuevos del Laboratorio 4 (Notificaciones + Modo Vacaciones)
 
 | Archivo | Tipo |
 |---------|------|

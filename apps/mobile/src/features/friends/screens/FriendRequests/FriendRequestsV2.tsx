@@ -1,19 +1,15 @@
-import { Feather } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
 import { useAuth } from 'src/core/contexts/AuthContext';
 import { showToast } from 'src/shared/components/feedback/FormToast/FormToast';
 import { socialService } from 'src/features/friends/services/friends.service';
 import { FriendRequest } from 'src/features/friends/types/friends.types';
 import { EmptyState } from 'src/shared/components/feedback/EmptyState/EmptyState';
-import { Button, Screen, Surface, Text, useUITheme } from 'src/ui';
+import { Button, DetailHeader, Screen, Surface, Text } from 'src/ui';
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function FriendRequestsV2() {
-  const theme = useUITheme();
-  const navigation = useNavigation();
   const { user } = useAuth();
 
   const [loading, setLoading]   = useState(true);
@@ -58,13 +54,7 @@ export function FriendRequestsV2() {
   return (
     <Screen edges={['top', 'left', 'right']}>
 
-      {/* Nav bar */}
-      <View style={[styles.navBar, { paddingHorizontal: 20 }]}>
-        <Pressable onPress={() => navigation.goBack()} hitSlop={8}>
-          <Feather name="arrow-left" size={theme.layout.iconMd} color={theme.colors.textPrimary} />
-        </Pressable>
-        <Text variant="h2">Solicitudes</Text>
-      </View>
+      <DetailHeader title="Solicitudes" />
 
       {/* List area */}
       <View style={styles.listArea}>
@@ -121,12 +111,6 @@ export function FriendRequestsV2() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  navBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingVertical: 16,
-  },
   listArea: {
     flex: 1,
   },

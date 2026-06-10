@@ -14,7 +14,7 @@ import {
 import { useAuth } from 'src/core/contexts/AuthContext';
 import { plantService } from 'src/features/plants/services/plant.service';
 import { showToast } from 'src/shared/components/feedback/FormToast/FormToast';
-import { Button, Screen, ScreenHeader, Surface, Text, useUITheme } from 'src/ui';
+import { Button, DetailHeader, Screen, Surface, Text, useUITheme } from 'src/ui';
 import { vacationService } from '../services/vacation.service';
 import { PlantRiskLevel, PlantVacationRisk, VacationPlan } from '../types/vacation.types';
 
@@ -202,14 +202,7 @@ export function VacationModeScreen() {
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <Screen edges={['top', 'left', 'right']} contentStyle={styles.root}>
-      <ScreenHeader
-        title="Modo Vacaciones"
-        rightSlot={
-          <Pressable onPress={() => navigation.goBack()} hitSlop={8}>
-            <Feather name="x" size={theme.layout.iconMd} color={theme.colors.textSecondary} />
-          </Pressable>
-        }
-      />
+      <DetailHeader title="Modo Vacaciones" />
 
       <ScrollView
         contentContainerStyle={styles.scroll}

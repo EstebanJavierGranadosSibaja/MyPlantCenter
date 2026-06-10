@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>entrega_lab4</title>
+  <style>
+
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+font-size: inherit;
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+.display.math{display: block; text-align: center; margin: 0.5rem auto;}
+</style>
+  <style type="text/css">@page { margin: 2cm; }
+body { font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif; max-width: 820px; margin: 0 auto; padding: 24px; color: #1a2b22; line-height: 1.55; }
+h1 { font-size: 1.7em; color: #1f5c3d; border-bottom: 3px solid #2e7d52; padding-bottom: .3em; }
+h2 { font-size: 1.3em; color: #1f5c3d; border-bottom: 1px solid #cde3d6; padding-bottom: .2em; margin-top: 1.6em; }
+h3 { font-size: 1.08em; color: #2e7d52; margin-top: 1.3em; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: .92em; }
+th, td { border: 1px solid #cdd8d2; padding: 7px 10px; text-align: left; vertical-align: top; }
+th { background: #eaf4ee; color: #1f5c3d; }
+tr:nth-child(even) td { background: #f6faf8; }
+code { background: #eef3f0; padding: 1px 5px; border-radius: 4px; font-size: .9em; }
+pre { background: #f4f7f5; border: 1px solid #dde7e1; border-radius: 6px; padding: 12px; overflow-x: auto; font-size: .85em; }
+pre code { background: none; padding: 0; }
+blockquote { border-left: 4px solid #2e7d52; margin: 1em 0; padding: .4em 1em; background: #f6faf8; color: #33493d; }
+hr { border: none; border-top: 1px solid #d6e2db; margin: 1.8em 0; }
+</style>
+</head>
+<body>
+<h1 id="eif209-aplicación-de-plantas-chat-en-tiempo-real-y-últimos-avances">EIF209
+– Aplicación de Plantas: Chat en tiempo real y últimos avances</h1>
+<hr />
+<p><strong>Universidad Nacional — Sede Regional Brunca</strong>
+<strong>Curso:</strong> EIF209 Desarrollo y Diseño de Plataformas
+Móviles <strong>Actividad:</strong> Integración de chat en tiempo real
+sobre la app de plantas (continuación del Laboratorio 4 — app al 90 %)
+<strong>Profesor:</strong> Daniel Granados Murillo
+<strong>Estudiante:</strong> Esteban Javier Granados Sibaja
+<strong>Fecha de entrega:</strong> 9 de junio de 2026</p>
+<hr />
+<h2 id="última-entrega-integración-de-chat-en-tiempo-real">Última
+entrega: Integración de Chat en tiempo real</h2>
+<p>Esta entrega incorpora a <strong>MyPlantCenter</strong> un
+<strong>sistema de chat en tiempo real</strong> como nueva sección de la
+aplicación, consumiendo un backend de chat independiente (FastAPI +
+WebSocket). Cumple el enunciado:</p>
+<blockquote>
+<p><em>Cada estudiante deberá agregar este chat a su aplicación de
+plantas en una nueva sección, en donde se vean las observaciones que se
+han hecho en el documento (chat grupal), además de la pantalla para los
+mensajes directos.</em></p>
+</blockquote>
+<h3 id="resumen-de-lo-entregado">Resumen de lo entregado</h3>
+<ul>
+<li><strong>Chat grupal</strong> (“Observaciones del documento”) — sala
+común en tiempo real.</li>
+<li><strong>Mensajes directos (DM)</strong> entre usuarios
+conectados.</li>
+<li><strong>Indicadores de “escribiendo…”</strong> (typing) en grupo y
+DM.</li>
+<li><strong>Confirmaciones de lectura</strong> (read receipts) y
+<strong>mensajes con expiración</strong> (TTL).</li>
+<li><strong>Lista de usuarios en línea</strong> con estado de
+conexión.</li>
+<li><strong>Reconexión automática</strong> del WebSocket y
+<em>keep-alive</em> (ping cada 25 s).</li>
+<li><strong>Homogeneización de UI</strong> (nuevo header centralizado
+reutilizable) y <strong>corrección de bugs críticos</strong> detectados
+durante la integración.</li>
+</ul>
+<h3 id="arquitectura-de-la-integración">Arquitectura de la
+integración</h3>
+<p>El chat usa un <strong>backend propio e independiente</strong> del
+backend de plantas, con su <strong>propio sistema de
+autenticación</strong> (JWT distinto al de Firebase):</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Aspecto</th>
+<th>Backend de plantas</th>
+<th>Backend de chat</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>URL</td>
+<td><code>https://myplantcenter.onrender.com</code></td>
+<td><code>https://chat-backend-4nzg.onrender.com</code></td>
+</tr>
+<tr>
+<td>Autenticación</td>
+<td>JWT de Firebase</td>
+<td>JWT propio (<code>POST /api/chat/join</code> con
+<code>{nickname}</code>)</td>
+</tr>
+<tr>
+<td>Transporte</td>
+<td>HTTP REST</td>
+<td>HTTP REST + <strong>WebSocket</strong>
+(<code>wss://…/ws/{token}</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>Por eso el chat <strong>no</strong> reutiliza el
+<code>httpClient</code> existente (que inyecta tokens de Firebase): se
+creó un cliente <code>fetch</code> independiente y un servicio de
+WebSocket dedicado, con el token de chat mantenido en memoria.</p>
+<p>Estructura de la <em>feature</em> (espejo del patrón
+<code>features/</code>):</p>
+<pre><code>features/chat/
+├── config/chat.config.ts          — URLs (variables de entorno + fallback)
+├── types/chat.types.ts            — tipos y unión discriminada de eventos WS
+├── services/chatApi.service.ts    — cliente HTTP (join, historial, usuarios)
+├── services/chatSocket.service.ts — WebSocket (reconexión 4 s, ping 25 s)
+├── context/ChatProvider.tsx       — estado global + ciclo de vida del socket
+├── hooks/useChat.ts
+├── components/  MessageBubble · MessageInput · UserListItem
+└── screens/     DMListScreen (hub) · GroupChatScreen · DMThreadScreen</code></pre>
+<h3 id="navegación-y-pantallas">Navegación y pantallas</h3>
+<p>Se agregó una pestaña <strong>“Chat”</strong> que abre un
+<strong>hub</strong> (lista) con el tab bar visible:</p>
+<ul>
+<li>Tarjeta destacada <strong>“Chat grupal — Observaciones del
+documento”</strong> en la parte superior.</li>
+<li>Lista de <strong>mensajes directos</strong> debajo.</li>
+</ul>
+<p>Las conversaciones (grupal y DM) son <strong>pantalla
+completa</strong>: se oculta el tab bar flotante para que el campo de
+escritura no quede tapado, y usan el nuevo <strong>header centrado con
+botón de regreso</strong>. La cámara del tab bar se reubicó al
+<strong>centro real</strong> (índice 3 de 7) y se corrigió el truncado
+de las etiquetas.</p>
+<h3 id="correcciones-críticas-durante-la-integración">Correcciones
+críticas durante la integración</h3>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Problema</th>
+<th>Causa raíz</th>
+<th>Solución</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Los campos de texto “saltaban” en cascada (Android)</td>
+<td><code>returnKeyType=&quot;next&quot;</code> activa
+<code>IME_ACTION_NEXT</code>; Android traversa el foco de forma nativa y
+el teclado Samsung lo dispara espuriamente</td>
+<td>Mapear a <code>IME_ACTION_DONE</code> +
+<code>submitBehavior=&quot;submit&quot;</code> y desactivar el autofill</td>
+</tr>
+<tr>
+<td>El teclado tapaba el input del chat</td>
+<td><code>edgeToEdgeEnabled</code> rompe el <code>adjustResize</code>
+clásico de Android</td>
+<td><code>KeyboardAvoidingView</code> con
+<code>behavior=&quot;padding&quot;</code></td>
+</tr>
+<tr>
+<td>Los mensajes directos se duplicaban al enviarse</td>
+<td>El mensaje “optimista” (id temporal) no se reconciliaba con el eco
+del servidor (id real)</td>
+<td>Reconciliar el placeholder con el eco en lugar de añadir un segundo
+mensaje</td>
+</tr>
+</tbody>
+</table>
+<h3 id="mejoras-de-ux-y-homogeneidad-de-diseño">Mejoras de UX y
+homogeneidad de diseño</h3>
+<ul>
+<li><strong>Nuevo componente reutilizable
+<code>DetailHeader</code></strong> (título centrado + botón de regreso)
+como <strong>estándar de la app</strong> para pantallas de detalle.</li>
+<li><strong>Pantalla “Agregar planta” rediseñada:</strong> header
+centralizado y formulario agrupado en secciones (“Información” y
+“Cuidado y detalles”) en lugar de una sola tarjeta plana.</li>
+</ul>
+<h3 id="archivos-de-la-integración-del-chat">Archivos de la integración
+del chat</h3>
+<p><strong>Nuevos:</strong></p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Archivo</th>
+<th>Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>features/chat/config/chat.config.ts</code></td>
+<td>URLs del backend de chat</td>
+</tr>
+<tr>
+<td><code>features/chat/types/chat.types.ts</code></td>
+<td>Tipos + eventos de WebSocket</td>
+</tr>
+<tr>
+<td><code>features/chat/services/chatApi.service.ts</code></td>
+<td>Cliente HTTP del chat</td>
+</tr>
+<tr>
+<td><code>features/chat/services/chatSocket.service.ts</code></td>
+<td>WebSocket con reconexión</td>
+</tr>
+<tr>
+<td><code>features/chat/context/ChatProvider.tsx</code></td>
+<td>Estado global del chat</td>
+</tr>
+<tr>
+<td><code>features/chat/hooks/useChat.ts</code></td>
+<td>Hook de acceso al contexto</td>
+</tr>
+<tr>
+<td><code>features/chat/components/MessageBubble.tsx</code></td>
+<td>Burbuja de mensaje</td>
+</tr>
+<tr>
+<td><code>features/chat/components/MessageInput.tsx</code></td>
+<td>Campo de escritura</td>
+</tr>
+<tr>
+<td><code>features/chat/components/UserListItem.tsx</code></td>
+<td>Ítem de usuario en lista</td>
+</tr>
+<tr>
+<td><code>features/chat/screens/ChatNavigator.ts</code></td>
+<td>Tipos del stack de chat</td>
+</tr>
+<tr>
+<td><code>features/chat/screens/GroupChat/GroupChatScreen.tsx</code></td>
+<td>Chat grupal</td>
+</tr>
+<tr>
+<td><code>features/chat/screens/DirectMessages/DMListScreen.tsx</code></td>
+<td>Hub de chats</td>
+</tr>
+<tr>
+<td><code>features/chat/screens/DirectMessages/DMThreadScreen.tsx</code></td>
+<td>Conversación directa</td>
+</tr>
+<tr>
+<td><code>ui/primitives/DetailHeader/DetailHeader.tsx</code></td>
+<td>Header reutilizable centrado</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Modificados:</strong></p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Archivo</th>
+<th>Cambio</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>core/navigation/AppNavigator.tsx</code></td>
+<td>Pestaña “Chat”, <code>ChatProvider</code>, ocultar tab bar en
+conversaciones, cámara centrada</td>
+</tr>
+<tr>
+<td><code>core/navigation/AppTabBar.styles.ts</code></td>
+<td>Ajuste de etiquetas y espaciado del tab bar</td>
+</tr>
+<tr>
+<td><code>ui/primitives/TextField/TextField.tsx</code></td>
+<td>Corrección del salto de foco (IME de Android)</td>
+</tr>
+<tr>
+<td><code>features/auth/screens/Login/LoginV2.tsx</code> ·
+<code>Register/RegisterV2.tsx</code></td>
+<td>Limpieza de <em>refs</em> de foco</td>
+</tr>
+<tr>
+<td><code>features/plants/screens/AddPlant/AddPlantV2.tsx</code></td>
+<td>Rediseño con header centralizado y secciones</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="parte-1-investigación-y-análisis">Parte 1: Investigación y
+Análisis</h2>
+<h3 id="identificación-de-módulos-faltantes">1.1 Identificación de
+módulos faltantes</h3>
+<p>La siguiente tabla resume el estado de cada módulo antes de esta
+entrega (punto de partida) y después de implementar los cambios del Lab
+4:</p>
+<table>
+<colgroup>
+<col style="width: 22%" />
+<col style="width: 25%" />
+<col style="width: 30%" />
+<col style="width: 22%" />
+</colgroup>
+<thead>
+<tr>
+<th>Módulo</th>
+<th>% Antes</th>
+<th>% Después</th>
+<th>Estado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Autenticación</td>
+<td>100 %</td>
+<td>100 %</td>
+<td>Completo</td>
+</tr>
+<tr>
+<td>Dashboard</td>
+<td>95 %</td>
+<td>100 %</td>
+<td>Completo</td>
+</tr>
+<tr>
+<td>Gestión de Plantas</td>
+<td>95 %</td>
+<td>95 %</td>
+<td>Casi completo</td>
+</tr>
+<tr>
+<td>Escáner IA con Cámara</td>
+<td>85 %</td>
+<td>90 %</td>
+<td>Casi completo</td>
+</tr>
+<tr>
+<td>Calendario de Riego</td>
+<td>90 %</td>
+<td>90 %</td>
+<td>Casi completo</td>
+</tr>
+<tr>
+<td>Sistema de Amigos</td>
+<td>80 %</td>
+<td>80 %</td>
+<td>En progreso</td>
+</tr>
+<tr>
+<td>Explorar</td>
+<td>75 %</td>
+<td>80 %</td>
+<td>En progreso</td>
+</tr>
+<tr>
+<td>Perfil de Usuario</td>
+<td>90 %</td>
+<td>90 %</td>
+<td>Casi completo</td>
+</tr>
+<tr>
+<td><strong>Notificaciones</strong></td>
+<td><strong>0 %</strong></td>
+<td><strong>90 %</strong></td>
+<td><strong>Nuevo — implementado</strong></td>
+</tr>
+<tr>
+<td><strong>Modo Vacaciones</strong></td>
+<td><strong>0 %</strong></td>
+<td><strong>100 %</strong></td>
+<td><strong>Nuevo — funcionalidad propia</strong></td>
+</tr>
+<tr>
+<td><strong>Chat (grupal + directos)</strong></td>
+<td><strong>0 %</strong></td>
+<td><strong>100 %</strong></td>
+<td><strong>Nuevo — tiempo real (WebSocket), entrega
+actual</strong></td>
+</tr>
+<tr>
+<td>Sistema de Diseño + Navegación</td>
+<td>100 %</td>
+<td>100 %</td>
+<td>Completo</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Promedio de completitud (antes):</strong> ~80 %
+<strong>Promedio de completitud (después):</strong> ~93 % (incluye el
+chat en tiempo real de la entrega actual)</p>
+<hr />
+<h4 id="módulo-faltante-1-centro-de-notificaciones">Módulo faltante 1:
+Centro de Notificaciones</h4>
+<p><strong>Problema identificado:</strong> El backend ya tenía un
+endpoint funcional (<code>GET /api/users/{userId}/notifications</code>)
+con su modelo Pydantic (<code>NotificationModel</code>) y su servicio
+(<code>notification_service.py</code>), pero la aplicación móvil no
+tenía ninguna pantalla ni interfaz para consultar o visualizar
+notificaciones. El usuario no tenía forma de ver alertas de solicitudes
+de amistad, recordatorios de riego, o logros desbloqueados.</p>
+<p><strong>Impacto:</strong> - Sin acceso a notificaciones, el sistema
+de amigos pierde utilidad: el usuario no sabe cuándo alguien le envió
+una solicitud sin navegar manualmente a “Amigos”. - Las notificaciones
+de riego (futuras) requieren una pantalla receptora. - La UI estaba
+incompleta respecto al modelo de datos ya definido.</p>
+<p><strong>Solución implementada:</strong> Se creó el módulo completo de
+notificaciones en
+<code>apps/mobile/src/features/notifications/</code>:</p>
+<pre><code>features/notifications/
+├── types/notification.types.ts       — Interfaz AppNotification (TypeScript)
+├── services/notification.service.ts  — getByUser() contra el API
+└── screens/NotificationsScreen.tsx   — Pantalla completa con lista de notificaciones</code></pre>
+<p>La pantalla incluye: - Lista de notificaciones con ícono contextual
+por tipo (solicitud de amistad, riego, logro, detección de planta) -
+Indicador visual de notificaciones no leídas (punto de color) - Contador
+de “sin leer” en un banner superior - Pull-to-refresh para actualizar -
+Estado vacío con instrucciones - Acceso desde el ícono de campana (🔔)
+en el header del Dashboard, con badge numérico</p>
+<hr />
+<h4 id="módulo-faltante-2-acceso-a-notificaciones-desde-el-dashboard">Módulo
+faltante 2: Acceso a notificaciones desde el Dashboard</h4>
+<p><strong>Problema identificado:</strong> No había ningún punto de
+entrada visible a las notificaciones. El header del Dashboard no tenía
+acciones y el usuario debía navegar manualmente.</p>
+<p><strong>Solución implementada:</strong> Se agregó un botón de campana
+(<code>bell</code>) en el <code>rightSlot</code> del
+<code>ScreenHeader</code> del Dashboard, con un badge numérico rojo que
+muestra las notificaciones sin leer. Este badge desaparece cuando todas
+están leídas.</p>
+<hr />
+<h3 id="funcionalidad-propia-modo-vacaciones">1.2 Funcionalidad propia:
+Modo Vacaciones</h3>
+<h4 id="cuál-es-la-funcionalidad">¿Cuál es la funcionalidad?</h4>
+<p><strong>“Modo Vacaciones”</strong> es una funcionalidad exclusiva de
+MyPlantCenter que ayuda al usuario a planificar el cuidado de sus
+plantas cuando va a estar fuera de casa por varios días.</p>
+<p>El usuario selecciona su <strong>fecha de salida</strong> y su
+<strong>fecha de regreso</strong>. El sistema analiza automáticamente
+cada planta en su colección y determina:</p>
+<ol type="1">
+<li><p><strong>Nivel de riesgo</strong> de cada planta durante la
+ausencia:</p>
+<ul>
+<li>🔴 <strong>Alto riesgo:</strong> La planta necesitará agua más de
+una vez durante el viaje y quedará varios días sin ser regada.</li>
+<li>🟡 <strong>Riesgo medio:</strong> La planta necesitará agua justo
+durante el período de ausencia.</li>
+<li>🟢 <strong>Sin riesgo:</strong> La planta no necesita riego durante
+las vacaciones.</li>
+</ul></li>
+<li><p><strong>Acción recomendada</strong> para cada planta (ej: “Riega
+antes de salir — quedará sin agua varios días”).</p></li>
+<li><p>Una <strong>lista de consejos prácticos</strong> (agrupar
+plantas, usar platillos con agua, pedir ayuda a alguien).</p></li>
+<li><p>Opción de <strong>activar el modo vacaciones</strong>, que
+persiste en el dispositivo (AsyncStorage) y muestra un <strong>banner
+activo</strong> en el Dashboard mientras las vacaciones están
+vigentes.</p></li>
+</ol>
+<h4 id="qué-valor-aporta-al-usuario-final">¿Qué valor aporta al usuario
+final?</h4>
+<p>La mayoría de las personas que tienen plantas en casa se enfrentan al
+mismo problema cada vez que salen de viaje: ¿cuáles plantas necesitan
+agua antes de irse? ¿Cuáles pueden esperar? Esta incertidumbre causa que
+las personas olviden regar algunas plantas críticas o rieguen en exceso
+otras.</p>
+<p>MyPlantCenter ya registra la <strong>frecuencia de riego</strong> y
+la <strong>última vez que se regó</strong> cada planta. El Modo
+Vacaciones aprovecha exactamente esos datos para hacer un cálculo
+inteligente:</p>
+<blockquote>
+<p>“Tu <strong>Pothos</strong> debe regarse cada 5 días y lleva 3 días
+sin agua. Si sales por 7 días, le faltarán 5 días de riego →
+<strong>alto riesgo</strong>.”</p>
+</blockquote>
+<p><strong>Diferenciadores clave respecto a otras apps de
+plantas:</strong> 1. <strong>Contextual y personalizado:</strong> No es
+un recordatorio genérico — el cálculo es específico a los datos reales
+de cada planta del usuario. 2. <strong>Accionable:</strong> El resultado
+no es solo información, es una lista de acciones concretas a tomar antes
+de salir. 3. <strong>Persistente:</strong> El modo queda activo en el
+dispositivo y el Dashboard muestra un indicador visible mientras el
+usuario está de viaje. 4. <strong>Sin backend adicional:</strong> La
+funcionalidad es completamente local/calculada en el cliente, usando
+datos ya existentes. Esto la hace rápida, privada y funciona
+offline.</p>
+<h4 id="arquitectura-de-la-funcionalidad">Arquitectura de la
+funcionalidad</h4>
+<pre><code>[DashboardV2]
+    ↓ navega a
+[VacationModeScreen]
+    ↓ carga plantas desde
+[plant.service.ts]  →  GET /api/users/{userId}/plants
+    ↓ persiste plan en
+[vacation.service.ts]  →  AsyncStorage (&#39;vacation_plan_v1&#39;)
+    ↓ calcula riesgos con
+[vacationService.assessRisks()]
+    ↓ muestra resultado en
+[VacationModeScreen → RiskRow components]
+    ↓ cuando activo, muestra banner en
+[DashboardV2]</code></pre>
+<p><strong>Fórmula de cálculo de riesgo:</strong></p>
+<pre><code>dueDate = lastWatered + wateringFrequencyDays
+daysUntilDue = dueDate - today
+vacationDays = returnDate - departureDate
+willNeedWatering = daysUntilDue &lt;= vacationDays
+daysOverdue = vacationDays - daysUntilDue
+
+risk = daysOverdue &gt; 3 ? &#39;high&#39; :
+       daysOverdue &gt; 0 ? &#39;medium&#39; : &#39;low&#39;</code></pre>
+<hr />
+<h3 id="evaluación-de-completitud">1.3 Evaluación de completitud</h3>
+<p><strong>Estado al momento de la entrega (27/05/2026):</strong></p>
+<table>
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 50%" />
+<col style="width: 35%" />
+</colgroup>
+<thead>
+<tr>
+<th>Área</th>
+<th>Completitud estimada</th>
+<th>Justificación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Flujos funcionales core</td>
+<td>95 %</td>
+<td>Autenticación, plantas, cámara, riego, amigos, explorar — todos
+operativos</td>
+</tr>
+<tr>
+<td>UI / Diseño</td>
+<td>98 %</td>
+<td>Sistema de diseño completo, dark mode, navegación fluida</td>
+</tr>
+<tr>
+<td>Notificaciones</td>
+<td>90 %</td>
+<td>Pantalla implementada; push notifications (FCM) pendiente</td>
+</tr>
+<tr>
+<td>Funcionalidad propia</td>
+<td>100 %</td>
+<td>Modo Vacaciones completamente funcional</td>
+</tr>
+<tr>
+<td><strong>Total estimado</strong></td>
+<td><strong>~92 %</strong></td>
+<td>Por encima del umbral de 90 % solicitado</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Funcionalidades pendientes para el 100 %:</strong> - Push
+notifications (FCM / Expo Notifications) para notificaciones en tiempo
+real - Subida de avatar a Firebase Storage (actualmente solo local) -
+Scroll infinito en la pantalla de Explorar - Búsqueda fuzzy por nombre
+de usuario en amigos</p>
+<hr />
+<h2 id="parte-2-desarrollo">Parte 2: Desarrollo</h2>
+<h3 id="módulos-implementados-en-esta-entrega">2.1 Módulos implementados
+en esta entrega</h3>
+<h4 id="centro-de-notificaciones">Centro de Notificaciones</h4>
+<p><strong>Archivos nuevos:</strong></p>
+<table>
+<colgroup>
+<col style="width: 40%" />
+<col style="width: 59%" />
+</colgroup>
+<thead>
+<tr>
+<th>Archivo</th>
+<th>Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>features/notifications/types/notification.types.ts</code></td>
+<td>Interfaz <code>AppNotification</code> mapeada al
+<code>NotificationModel</code> del backend</td>
+</tr>
+<tr>
+<td><code>features/notifications/services/notification.service.ts</code></td>
+<td><code>getByUser(userId)</code> — consulta
+<code>GET /api/users/{userId}/notifications</code></td>
+</tr>
+<tr>
+<td><code>features/notifications/screens/NotificationsScreen.tsx</code></td>
+<td>Pantalla completa de notificaciones con lista, badges e íconos
+contextuales</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Archivos modificados:</strong></p>
+<table>
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr>
+<th>Archivo</th>
+<th>Cambio</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>core/navigation/AppNavigator.tsx</code></td>
+<td>Se añadió <code>Notifications: undefined</code> al
+<code>RootStackParamList</code> y se registró la pantalla en el
+stack</td>
+</tr>
+<tr>
+<td><code>features/dashboard/screens/Dashboard/DashboardV2.tsx</code></td>
+<td>Se añadió campana con badge en el header; carga del conteo de
+notificaciones sin leer en <code>fetchData()</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Decisiones técnicas:</strong> - Se normalizó la respuesta del
+endpoint con un guard de tipo en el servicio: el backend puede devolver
+el array directamente o envuelto en un
+<code>ApiResponse&lt;T&gt;</code>, por lo que el servicio maneja ambos
+casos sin romper. - Los íconos de notificación se mapean por
+<code>type</code> (string) con un diccionario de fallback a
+<code>&#39;bell&#39;</code>, lo que hace la pantalla resiliente ante tipos de
+notificación futuros. - El badge del Dashboard solo se muestra cuando
+<code>unreadCount &gt; 0</code> para no añadir ruido visual
+innecesario.</p>
+<h4 id="modo-vacaciones-funcionalidad-propia">Modo Vacaciones
+(funcionalidad propia)</h4>
+<p><strong>Archivos nuevos:</strong></p>
+<table>
+<colgroup>
+<col style="width: 40%" />
+<col style="width: 59%" />
+</colgroup>
+<thead>
+<tr>
+<th>Archivo</th>
+<th>Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>features/vacation/types/vacation.types.ts</code></td>
+<td>Interfaces <code>PlantVacationRisk</code>,
+<code>VacationPlan</code>, <code>PlantRiskLevel</code></td>
+</tr>
+<tr>
+<td><code>features/vacation/services/vacation.service.ts</code></td>
+<td>Persistencia en AsyncStorage + algoritmo
+<code>assessRisks()</code></td>
+</tr>
+<tr>
+<td><code>features/vacation/screens/VacationModeScreen.tsx</code></td>
+<td>Pantalla completa: selector de fechas, evaluación de riesgos,
+consejos</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Archivos modificados:</strong></p>
+<table>
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr>
+<th>Archivo</th>
+<th>Cambio</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>core/navigation/AppNavigator.tsx</code></td>
+<td>Se añadió <code>VacationMode: undefined</code> al stack y se
+registró la pantalla</td>
+</tr>
+<tr>
+<td><code>features/dashboard/screens/Dashboard/DashboardV2.tsx</code></td>
+<td>Se añadió card “Modo Vacaciones” con estado activo/inactivo y botón
+de navegación</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Decisiones técnicas:</strong> -
+<code>vacationService.assessRisks()</code> es una función pura (sin
+efectos secundarios): recibe el array de plantas y las fechas, devuelve
+los riesgos ordenados. Esto facilita pruebas unitarias futuras. - La
+persistencia usa <code>AsyncStorage</code> con la clave
+<code>&#39;vacation_plan_v1&#39;</code> (versionada) para facilitar migraciones
+del esquema sin romper datos existentes. - El selector de fechas usa
+<code>@react-native-community/datetimepicker</code> (ya instalado en el
+proyecto para <code>EditPlantV2</code>), por lo que no se añadió ninguna
+dependencia nueva. - La pantalla mantiene el estado de activación
+sincronizado con el Dashboard a través de <code>useFocusEffect</code>,
+que recarga el estado al volver de la pantalla de vacaciones.</p>
+<hr />
+<h2 id="parte-3-entrega">Parte 3: Entrega</h2>
+<p><strong>Repositorio GitHub:</strong> <a href="https://github.com/EstebanJavierGranadosSibaja/MyPlantCenter">https://github.com/EstebanJavierGranadosSibaja/MyPlantCenter</a>
+<strong>Branch de entrega:</strong> <code>develop</code></p>
+<h3 id="backends-en-línea-activos-durante-la-revisión">Backends en línea
+(activos durante la revisión)</h3>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Servicio</th>
+<th>URL pública</th>
+<th>Estado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>API de plantas (FastAPI)</td>
+<td><code>https://myplantcenter.onrender.com</code></td>
+<td>En línea</td>
+</tr>
+<tr>
+<td>Backend de chat (FastAPI + WebSocket)</td>
+<td><code>https://chat-backend-4nzg.onrender.com</code></td>
+<td>En línea</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Panel de Render (API de plantas):</strong> <a href="https://dashboard.render.com/web/srv-d898bcegvqtc73bo33jg">https://dashboard.render.com/web/srv-d898bcegvqtc73bo33jg</a></p>
+<blockquote>
+<p>Ambos backends están desplegados en <strong>Render</strong>. En el
+plan gratuito el servicio “duerme” tras un periodo de inactividad, por
+lo que <strong>la primera petición puede tardar ~30–60 s</strong> en
+responder mientras despierta. Conviene abrir ambas URLs unos minutos
+antes de la revisión para tenerlos “calientes”.</p>
+</blockquote>
+<h3 id="build-de-preview-para-android">Build de preview para
+Android</h3>
+<p><strong>Enlace de instalación del APK (Expo / EAS):</strong> <a href="https://expo.dev/accounts/estebanjgs/projects/myplantcenter/builds/05a8d9a7-145a-44c6-ad89-b994699a1452">https://expo.dev/accounts/estebanjgs/projects/myplantcenter/builds/05a8d9a7-145a-44c6-ad89-b994699a1452</a></p>
+<p>Abre ese enlace desde un dispositivo Android (o escanea el código QR
+de la página) para descargar e instalar la aplicación. El build se
+generó con:</p>
+<pre><code>cd apps/mobile
+eas build -p android --profile preview</code></pre>
+<ul>
+<li><strong>Perfil:</strong> <code>preview</code> (distribución interna,
+APK instalable directamente).</li>
+<li><strong>Build ID:</strong>
+<code>05a8d9a7-145a-44c6-ad89-b994699a1452</code></li>
+</ul>
+<hr />
+<h3 id="resumen-de-archivos-nuevos-del-laboratorio-4-notificaciones-modo-vacaciones">Resumen
+de archivos nuevos del Laboratorio 4 (Notificaciones + Modo
+Vacaciones)</h3>
+<table>
+<colgroup>
+<col style="width: 60%" />
+<col style="width: 40%" />
+</colgroup>
+<thead>
+<tr>
+<th>Archivo</th>
+<th>Tipo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>apps/mobile/src/features/notifications/types/notification.types.ts</code></td>
+<td>Nuevo</td>
+</tr>
+<tr>
+<td><code>apps/mobile/src/features/notifications/services/notification.service.ts</code></td>
+<td>Nuevo</td>
+</tr>
+<tr>
+<td><code>apps/mobile/src/features/notifications/screens/NotificationsScreen.tsx</code></td>
+<td>Nuevo</td>
+</tr>
+<tr>
+<td><code>apps/mobile/src/features/vacation/types/vacation.types.ts</code></td>
+<td>Nuevo</td>
+</tr>
+<tr>
+<td><code>apps/mobile/src/features/vacation/services/vacation.service.ts</code></td>
+<td>Nuevo</td>
+</tr>
+<tr>
+<td><code>apps/mobile/src/features/vacation/screens/VacationModeScreen.tsx</code></td>
+<td>Nuevo</td>
+</tr>
+<tr>
+<td><code>apps/mobile/src/core/navigation/AppNavigator.tsx</code></td>
+<td>Modificado</td>
+</tr>
+<tr>
+<td><code>apps/mobile/src/features/dashboard/screens/Dashboard/DashboardV2.tsx</code></td>
+<td>Modificado</td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>

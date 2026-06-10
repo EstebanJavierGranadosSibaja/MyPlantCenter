@@ -1,4 +1,3 @@
-import { Feather } from '@expo/vector-icons';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -13,7 +12,7 @@ import { normalizeDateInput } from 'src/features/plants/validators/date.validato
 import { EditPlantFormValues, EditPlantSchema } from 'src/features/plants/validators/plant.validators';
 import { useUserProfile } from 'src/features/profile/hooks/useUserProfile';
 import { useFormToast } from 'src/shared/components/feedback/FormToast/useFormToast';
-import { Button, KeyboardScreen, Surface, Text, TextField, useUITheme } from 'src/ui';
+import { Button, DetailHeader, KeyboardScreen, Surface, Text, TextField, useUITheme } from 'src/ui';
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -54,7 +53,6 @@ function CategoryChip({
 
 export function EditPlantV2({ navigation, route }: Props) {
   const { plantId } = route.params;
-  const theme = useUITheme();
   const { showToast } = useFormToast();
   const { user } = useAuth();
   const { profile } = useUserProfile(user?.id ?? '');
@@ -130,18 +128,17 @@ export function EditPlantV2({ navigation, route }: Props) {
   if (loading) {
     return (
       <KeyboardScreen contentStyle={styles.content}>
-        <View style={styles.navBar}>
-          <Skeleton width={24} height={24} radius={6} />
-          <Skeleton width="45%" height={22} />
+        <DetailHeader title="Editar planta" onBack={() => navigation.goBack()} />
+        <View style={styles.body}>
+          <Surface elevation="sm" radius="lg" border="subtle" style={styles.card}>
+            {[0, 1, 2, 3, 4, 5].map(i => (
+              <View key={i} style={styles.skeletonField}>
+                <Skeleton width="35%" height={12} />
+                <Skeleton width="100%" height={44} radius={10} />
+              </View>
+            ))}
+          </Surface>
         </View>
-        <Surface elevation="sm" radius="lg" border="subtle" style={styles.card}>
-          {[0, 1, 2, 3, 4, 5].map(i => (
-            <View key={i} style={styles.skeletonField}>
-              <Skeleton width="35%" height={12} />
-              <Skeleton width="100%" height={44} radius={10} />
-            </View>
-          ))}
-        </Surface>
       </KeyboardScreen>
     );
   }
@@ -150,104 +147,117 @@ export function EditPlantV2({ navigation, route }: Props) {
   return (
     <KeyboardScreen contentStyle={styles.content}>
 
-      {/* Nav bar */}
-      <View style={styles.navBar}>
-        <Pressable onPress={() => navigation.goBack()} hitSlop={8}>
-          <Feather name="arrow-left" size={theme.layout.iconMd} color={theme.colors.textPrimary} />
-        </Pressable>
-        <Text variant="h2">Editar planta</Text>
-      </View>
+      <DetailHeader title="Editar planta" onBack={() => navigation.goBack()} />
 
-      {/* Form card */}
-      <Surface elevation="sm" radius="lg" border="subtle" style={styles.card}>
+      <View style={styles.body}>
 
-        <TextField
-          control={control}
-          name="name"
-          label="Nombre *"
-          leftIcon="feather"
-          placeholder="Nombre de la planta"
-          autoCapitalize="words"
-          autoCorrect={false}
-          returnKeyType="next"
-        />
+        {/* ── Información ─────────────────────────────────────────────────── */}
+        <View style={styles.section}>
+          <Text variant="overline" color="textTertiary" style={styles.sectionLabel}>
+            Información
+          </Text>
+          <Surface elevation="sm" radius="lg" border="subtle" style={styles.card}>
 
-        <TextField
-          control={control}
-          name="species"
-          label="Especie"
-          leftIcon="search"
-          placeholder="Ej: Monstera deliciosa"
-          autoCapitalize="words"
-          autoCorrect={false}
-          returnKeyType="next"
-        />
+            <TextField
+              control={control}
+              name="name"
+              label="Nombre *"
+              leftIcon="feather"
+              placeholder="Nombre de la planta"
+              autoCapitalize="words"
+              autoCorrect={false}
+              returnKeyType="next"
+            />
 
-        {/* Category picker */}
-        <Controller
-          control={control}
-          name="categoryId"
-          render={({ field, fieldState }) => (
-            <View style={styles.categoryBlock}>
-              <Text variant="label" color="textSecondary">Categoría *</Text>
+            <TextField
+              control={control}
+              name="species"
+              label="Especie"
+              leftIcon="search"
+              placeholder="Ej: Monstera deliciosa"
+              autoCapitalize="words"
+              autoCorrect={false}
+              returnKeyType="next"
+            />
 
-              {categories.length === 0 ? (
-                <Text variant="bodyMd" color="textTertiary">No hay categorías disponibles.</Text>
-              ) : (
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.chipsRow}
-                >
-                  {categories.map(cat => (
-                    <CategoryChip
-                      key={cat.id}
-                      label={cat.name}
-                      active={field.value === cat.id}
-                      onPress={() => field.onChange(cat.id)}
-                    />
-                  ))}
-                </ScrollView>
+            {/* Category picker */}
+            <Controller
+              control={control}
+              name="categoryId"
+              render={({ field, fieldState }) => (
+                <View style={styles.categoryBlock}>
+                  <Text variant="label" color="textSecondary">Categoría *</Text>
+
+                  {categories.length === 0 ? (
+                    <Text variant="bodyMd" color="textTertiary">No hay categorías disponibles.</Text>
+                  ) : (
+                    <ScrollView
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                      contentContainerStyle={styles.chipsRow}
+                    >
+                      {categories.map(cat => (
+                        <CategoryChip
+                          key={cat.id}
+                          label={cat.name}
+                          active={field.value === cat.id}
+                          onPress={() => field.onChange(cat.id)}
+                        />
+                      ))}
+                    </ScrollView>
+                  )}
+
+                  {fieldState.error && (
+                    <Text variant="caption" color="error">{fieldState.error.message}</Text>
+                  )}
+                </View>
               )}
+            />
 
-              {fieldState.error && (
-                <Text variant="caption" color="error">{fieldState.error.message}</Text>
-              )}
-            </View>
-          )}
-        />
+          </Surface>
+        </View>
 
-        <TextField
-          control={control}
-          name="wateringFrequencyDays"
-          label="Frecuencia de riego (días) *"
-          leftIcon="droplet"
-          placeholder="Ej: 3"
-          keyboardType="numeric"
-          returnKeyType="next"
-        />
+        {/* ── Cuidado y detalles ─────────────────────────────────────────── */}
+        <View style={styles.section}>
+          <Text variant="overline" color="textTertiary" style={styles.sectionLabel}>
+            Cuidado y detalles
+          </Text>
+          <Surface elevation="sm" radius="lg" border="subtle" style={styles.card}>
 
-        <TextField
-          control={control}
-          name="notes"
-          label="Notas"
-          leftIcon="file-text"
-          placeholder="Notas de cuidado..."
-          returnKeyType="next"
-        />
+            <TextField
+              control={control}
+              name="wateringFrequencyDays"
+              label="Frecuencia de riego (días) *"
+              leftIcon="droplet"
+              placeholder="Ej: 3"
+              keyboardType="numeric"
+              returnKeyType="next"
+            />
 
-        <TextField
-          control={control}
-          name="acquiredAt"
-          label="Fecha de adquisición"
-          leftIcon="calendar"
-          placeholder="DD/MM/AAAA"
-          hint="Formato: día/mes/año"
-          keyboardType="number-pad"
-          autoCorrect={false}
-          returnKeyType="done"
-          onSubmitEditing={onSave}
-        />
+            <TextField
+              control={control}
+              name="notes"
+              label="Notas"
+              leftIcon="file-text"
+              placeholder="Notas de cuidado..."
+              returnKeyType="next"
+            />
+
+            <TextField
+              control={control}
+              name="acquiredAt"
+              label="Fecha de adquisición"
+              leftIcon="calendar"
+              placeholder="DD/MM/AAAA"
+              hint="Formato: día/mes/año"
+              keyboardType="number-pad"
+              autoCorrect={false}
+              returnKeyType="done"
+              onSubmitEditing={onSave}
+            />
+
+          </Surface>
+        </View>
 
         <Button
           label="Guardar cambios"
@@ -257,7 +267,7 @@ export function EditPlantV2({ navigation, route }: Props) {
           fullWidth
         />
 
-      </Surface>
+      </View>
 
     </KeyboardScreen>
   );
@@ -266,23 +276,27 @@ export function EditPlantV2({ navigation, route }: Props) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  skeletonField: {
-    gap: 6,
-  },
   content: {
     flexGrow: 1,
+    paddingBottom: 32,
+  },
+  body: {
     paddingHorizontal: 20,
-    paddingVertical: 24,
+    paddingTop: 8,
     gap: 20,
   },
-  navBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
+  section: {
+    gap: 8,
+  },
+  sectionLabel: {
+    marginLeft: 4,
   },
   card: {
     padding: 20,
     gap: 16,
+  },
+  skeletonField: {
+    gap: 6,
   },
   categoryBlock: {
     gap: 8,
