@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import {
   FlatList,
   KeyboardAvoidingView,
@@ -10,7 +10,6 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useAuth } from 'src/core/contexts/AuthContext';
 import { Text } from 'src/ui';
 import { useUITheme } from 'src/ui/theme/UIThemeContext';
 import { MessageBubble } from '../../components/MessageBubble';
@@ -23,7 +22,6 @@ type Nav = NativeStackNavigationProp<ChatStackParamList>;
 
 export function GroupChatScreen() {
   const theme = useUITheme();
-  const { user } = useAuth();
   const navigation = useNavigation<Nav>();
   const insets = useSafeAreaInsets();
   const {
@@ -39,7 +37,6 @@ export function GroupChatScreen() {
   } = useChat();
 
   const listRef = useRef<FlatList<ChatMessage>>(null);
-  const [showScrollBtn, setShowScrollBtn] = useState(false);
 
   useEffect(() => {
     if (groupMessages.length > 0) {
