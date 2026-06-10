@@ -124,13 +124,24 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
           break;
 
         case 'dm': {
-          const otherId =
-            ev.message.sender_id === chatUserIdRef.current
-              ? ev.message.recipient_id!
-              : ev.message.sender_id;
+          const isMine = ev.message.sender_id === chatUserIdRef.current;
+          const otherId = isMine ? ev.message.recipient_id! : ev.message.sender_id;
           setDirectMessages(prev => {
             const thread = prev[otherId] ?? [];
+            // Already have the real (server) message → ignore the echo.
             if (thread.some(m => m.id === ev.message.id)) return prev;
+            // My own message: reconcile the optimistic placeholder (temp "opt_"
+            // id) with this server echo instead of appending a duplicate.
+            if (isMine) {
+              const optIdx = thread.findIndex(
+                m => m.id.startsWith('opt_') && m.content === ev.message.content,
+              );
+              if (optIdx !== -1) {
+                const next = [...thread];
+                next[optIdx] = ev.message;
+                return { ...prev, [otherId]: next };
+              }
+            }
             return { ...prev, [otherId]: [...thread, ev.message] };
           });
           break;

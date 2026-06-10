@@ -5,7 +5,6 @@ import React, { useCallback, useEffect, useRef } from 'react';
 import {
   FlatList,
   KeyboardAvoidingView,
-  Platform,
   StyleSheet,
   View,
 } from 'react-native';
@@ -82,8 +81,8 @@ export function GroupChatScreen() {
   return (
     <KeyboardAvoidingView
       style={[styles.root, { backgroundColor: theme.colors.bg }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      behavior="padding"
+      keyboardVerticalOffset={0}
     >
       {/* Header */}
       <View

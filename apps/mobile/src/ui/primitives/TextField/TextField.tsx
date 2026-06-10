@@ -204,27 +204,24 @@ export function TextField<T extends FieldValues>({
     onChange(text);
   }, [onChange]);
 
-  // ── Submit behavior — NO programmatic focus advance ───────────────────────
+  // ── Submit behavior — never emit IME_ACTION_NEXT ──────────────────────────
   //
-  // The previous implementation auto-advanced focus to the next field on
-  // IME "Next". On some Android keyboards the IME fires ACTION_NEXT spuriously
-  // the instant a field gains focus — and since a spurious action is
-  // indistinguishable from a real "Next" at the JS layer, that auto-advance
-  // cascaded focus through every field on a single tap, making forms unusable.
+  // Root cause of the focus-jumping bug: returnKeyType="next" sets Android's
+  // IME_ACTION_NEXT. When that action fires, ANDROID ITSELF natively traverses
+  // focus to the next focusable field (focusSearch) — no JS involved. Some
+  // keyboards (Samsung/others) fire ACTION_NEXT spuriously the instant a field
+  // gains focus, so focus cascades through every field in a loop. This is why
+  // it reproduces on a real device but NEVER in the browser (the web has no IME
+  // editor actions) and why it survived removing every JS .focus() call.
   //
-  // Fix: there is no longer ANY code that moves focus between fields. Each
-  // field is independently focusable; the user taps the next one (the norm in
-  // modern forms with autofill). The cascade is now structurally impossible.
-  //
-  // submitBehavior:
-  //   • "submit"        → non-terminal fields ("next"): keep focus + keyboard
-  //                       open, do nothing on Next. No onSubmitEditing passed,
-  //                       so the keypress is an inert no-op.
-  //   • default (blur)  → terminal field ("done"/"go"/"send"): blur + run the
-  //                       caller's onSubmitEditing (e.g. submit the form).
-
-  const submitBehavior =
-    returnKeyType === 'next' ? ('submit' as const) : undefined;
+  // Fix: map "next" to a plain return key (no ACTION_NEXT), so Android has no
+  // action to traverse on. submitBehavior="submit" keeps focus + keyboard open
+  // so the return key is an inert no-op. The user taps the next field (the norm
+  // in modern forms). Terminal fields ("done"/"go"/"send") keep their action
+  // and run the caller's onSubmitEditing (e.g. submit the form).
+  const isNext = returnKeyType === 'next';
+  const nativeReturnKeyType = isNext ? 'default' : returnKeyType;
+  const submitBehavior = isNext ? ('submit' as const) : undefined;
 
   // ── Trailing element ───────────────────────────────────────────────────────
 
@@ -286,7 +283,7 @@ export function TextField<T extends FieldValues>({
           editable={editable}
           secureTextEntry={isPassword && !showPassword}
           placeholderTextColor={s.placeholderColor}
-          returnKeyType={returnKeyType}
+          returnKeyType={nativeReturnKeyType}
           submitBehavior={submitBehavior}
           onSubmitEditing={onSubmitEditing}
           style={[s.input, inputStyle]}
