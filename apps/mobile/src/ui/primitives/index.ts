@@ -15,3 +15,6 @@ export type { TextFieldProps } from './TextField/TextField';
 
 export { ScreenHeader } from './ScreenHeader/ScreenHeader';
 export type { ScreenHeaderProps } from './ScreenHeader/ScreenHeader';
+
+export { DetailHeader } from './DetailHeader/DetailHeader';
+export type { DetailHeaderProps } from './DetailHeader/DetailHeader';
