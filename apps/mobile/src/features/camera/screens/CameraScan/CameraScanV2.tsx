@@ -291,6 +291,9 @@ export function CameraScanV2() {
             <Feather name="arrow-left" size={theme.layout.iconMd} color={theme.colors.textPrimary} />
           </Pressable>
           <Text variant="h2">Vista previa</Text>
+          <Pressable onPress={() => navigation.navigate('ScanHistory')} hitSlop={8} style={styles.navBarRight}>
+            <Feather name="layers" size={theme.layout.iconMd} color={theme.colors.textPrimary} />
+          </Pressable>
         </View>
 
         {/* Photo */}
@@ -419,10 +422,15 @@ export function CameraScanV2() {
           </Pressable>
         </View>
 
-        {/* Gallery */}
-        <Pressable onPress={onPickFromGallery} style={styles.overlayTextButton}>
-          <Text variant="label" style={styles.overlayTextLabel}>Abrir galería</Text>
-        </Pressable>
+        {/* Gallery + history */}
+        <View style={styles.overlayLinksRow}>
+          <Pressable onPress={onPickFromGallery} style={styles.overlayTextButton}>
+            <Text variant="label" style={styles.overlayTextLabel}>Abrir galería</Text>
+          </Pressable>
+          <Pressable onPress={() => navigation.navigate('ScanHistory')} style={styles.overlayTextButton}>
+            <Text variant="label" style={styles.overlayTextLabel}>Mis análisis</Text>
+          </Pressable>
+        </View>
 
         {/* Pending sync */}
         {pendingCount > 0 && (
@@ -458,6 +466,15 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingHorizontal: 20,
     paddingVertical: 16,
+  },
+  navBarRight: {
+    marginLeft: 'auto',
+  },
+  overlayLinksRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 24,
   },
   permissionCenter: {
     flex: 1,
