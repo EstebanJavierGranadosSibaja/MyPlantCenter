@@ -1,5 +1,5 @@
 import { Feather } from '@expo/vector-icons';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   Control,
   FieldPath,
@@ -42,9 +42,6 @@ export interface TextFieldProps<T extends FieldValues>
   isPassword?: boolean;
   leftIcon?:   React.ComponentProps<typeof Feather>['name'];
   rightSlot?:  React.ReactNode;
-
-  // Focus chain — ref to the next field's TextInput
-  nextRef?: React.RefObject<TextInput | null>;
 
   // Forwarded ref to this field's TextInput
   inputRef?: React.Ref<TextInput>;
@@ -161,7 +158,6 @@ export function TextField<T extends FieldValues>({
   isPassword  = false,
   leftIcon,
   rightSlot,
-  nextRef,
   inputRef,
   containerStyle,
   inputStyle,
@@ -181,15 +177,6 @@ export function TextField<T extends FieldValues>({
   // Password visibility
   const [showPassword, setShowPassword] = useState(false);
 
-  // Timestamp of last focus — used by the spurious-IME guard below.
-  const focusedAtRef = useRef(0);
-
-  // Whether the user (or autofill) changed the value since the last focus.
-  // A spurious IME action fires before any real interaction — this flag
-  // distinguishes "keyboard mounted and fired ACTION_NEXT immediately" from
-  // "user intentionally pressed Next after typing or reviewing the field".
-  const hasInteractedRef = useRef(false);
-
   // React Hook Form
   const {
     field:      { value, onChange, onBlur: rhfOnBlur },
@@ -206,8 +193,6 @@ export function TextField<T extends FieldValues>({
   // ── Focus management ───────────────────────────────────────────────────────
 
   const handleFocus = useCallback(() => {
-    focusedAtRef.current = Date.now();
-    hasInteractedRef.current = false;
     setIsFocused(true);
   }, []);
 
@@ -217,51 +202,30 @@ export function TextField<T extends FieldValues>({
   }, [rhfOnBlur]);
 
   const handleChange = useCallback((text: string) => {
-    hasInteractedRef.current = true;
     onChange(text);
   }, [onChange]);
 
-  // ── blurOnSubmit — auto-false when returnKeyType="next" ───────────────────
+  // ── Submit behavior — NO programmatic focus advance ───────────────────────
   //
-  // With blurOnSubmit=true (default), Android blurs the field BEFORE
-  // onSubmitEditing fires in JS. This lets Android's focus system compete
-  // with programmatic ref.focus() — causing the focus-jumping bug.
+  // The previous implementation auto-advanced focus to the next field on
+  // IME "Next". On some Android keyboards the IME fires ACTION_NEXT spuriously
+  // the instant a field gains focus — and since a spurious action is
+  // indistinguishable from a real "Next" at the JS layer, that auto-advance
+  // cascaded focus through every field on a single tap, making forms unusable.
   //
-  // With blurOnSubmit=false + direct nextRef.focus() below, the sequence is:
-  //   1. User presses NEXT
-  //   2. onSubmitEditing fires in JS (field is still focused)
-  //   3. nextRef.focus() fires — focus moves to next field atomically
-  //   4. Current field blurs as a consequence (triggered by next gaining focus)
-  // No race condition possible.
+  // Fix: there is no longer ANY code that moves focus between fields. Each
+  // field is independently focusable; the user taps the next one (the norm in
+  // modern forms with autofill). The cascade is now structurally impossible.
+  //
+  // submitBehavior:
+  //   • "submit"        → non-terminal fields ("next"): keep focus + keyboard
+  //                       open, do nothing on Next. No onSubmitEditing passed,
+  //                       so the keypress is an inert no-op.
+  //   • default (blur)  → terminal field ("done"/"go"/"send"): blur + run the
+  //                       caller's onSubmitEditing (e.g. submit the form).
 
-  const effectiveBlurOnSubmit =
-    returnKeyType === 'next' ? false : undefined;
-
-  // ── onSubmitEditing — spurious IME guard + focus chain ────────────────────
-  //
-  // Guard: some non-Samsung IMEs fire IME_ACTION_NEXT spuriously within
-  // milliseconds of focus even with blurOnSubmit=false. Block callbacks
-  // arriving within 100ms of focus as a secondary defense.
-  //
-  // Focus chain: if nextRef is provided and returnKeyType="next", move focus
-  // directly without setTimeout. This is safe because blurOnSubmit=false
-  // guarantees the current field is still mounted and focused at this point.
-
-  const handleSubmitEditing = useCallback<
-    NonNullable<TextInputProps['onSubmitEditing']>
-  >((e) => {
-    // Two-layer guard against spurious IME_ACTION_NEXT:
-    // 1. Time: some IMEs fire within ms of focus — block anything under 300ms.
-    // 2. Interaction: if the user (or autofill) never changed the value in this
-    //    focus session, the action is almost certainly spurious — block it.
-    if (Date.now() - focusedAtRef.current < 300) return;
-    if (!hasInteractedRef.current) return;
-    if (returnKeyType === 'next' && nextRef?.current) {
-      nextRef.current.focus();
-      return;
-    }
-    onSubmitEditing?.(e);
-  }, [returnKeyType, nextRef, onSubmitEditing]);
+  const submitBehavior =
+    returnKeyType === 'next' ? ('submit' as const) : undefined;
 
   // ── Trailing element ───────────────────────────────────────────────────────
 
@@ -324,8 +288,8 @@ export function TextField<T extends FieldValues>({
           secureTextEntry={isPassword && !showPassword}
           placeholderTextColor={s.placeholderColor}
           returnKeyType={returnKeyType}
-          blurOnSubmit={effectiveBlurOnSubmit}
-          onSubmitEditing={handleSubmitEditing}
+          submitBehavior={submitBehavior}
+          onSubmitEditing={onSubmitEditing}
           style={[s.input, inputStyle]}
           // Android: prevent included font padding from misaligning text
           textAlignVertical="center"

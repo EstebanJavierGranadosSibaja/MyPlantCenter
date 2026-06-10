@@ -1,8 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import React, { useRef } from 'react';
+import React from 'react';
 import { useForm } from 'react-hook-form';
-import { Image, StyleSheet, TextInput, View } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
 import { useAuth } from 'src/core/contexts/AuthContext';
 import { AuthStackParamList } from 'src/core/navigation/AppNavigator';
 import { LoginFormValues, LoginSchema } from 'src/features/auth/validators/auth.validators';
@@ -26,8 +26,6 @@ export function LoginV2({ navigation }: Props) {
   });
 
   // ── Form ──────────────────────────────────────────────────────────────────
-  const passwordRef = useRef<TextInput>(null);
-
   const { control, handleSubmit, formState: { isSubmitting } } = useForm<LoginFormValues>({
     resolver: zodResolver(LoginSchema),
     defaultValues: { email: '', password: '' },
@@ -81,13 +79,11 @@ export function LoginV2({ navigation }: Props) {
           autoComplete="email"
           textContentType="emailAddress"
           returnKeyType="next"
-          nextRef={passwordRef}
         />
 
         <TextField
           control={control}
           name="password"
-          inputRef={passwordRef}
           label="Contraseña"
           leftIcon="lock"
           isPassword

@@ -1,8 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import React, { useRef } from 'react';
+import React from 'react';
 import { useForm } from 'react-hook-form';
-import { Image, StyleSheet, TextInput, View } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
 import { useAuth } from 'src/core/contexts/AuthContext';
 import { AuthStackParamList } from 'src/core/navigation/AppNavigator';
 import { RegisterFormValues, RegisterSchema } from 'src/features/auth/validators/auth.validators';
@@ -28,11 +28,6 @@ export function RegisterV2({ navigation }: Props) {
   });
 
   // ── Form ──────────────────────────────────────────────────────────────────
-  const nicknameRef       = useRef<TextInput>(null);
-  const emailRef          = useRef<TextInput>(null);
-  const passwordRef       = useRef<TextInput>(null);
-  const confirmPasswordRef = useRef<TextInput>(null);
-
   const { control, getValues, handleSubmit, formState: { isSubmitting } } =
     useForm<RegisterFormValues>({
       resolver: zodResolver(RegisterSchema),
@@ -117,25 +112,21 @@ export function RegisterV2({ navigation }: Props) {
           autoCorrect={false}
           textContentType="name"
           returnKeyType="next"
-          nextRef={nicknameRef}
         />
 
         <TextField
           control={control}
           name="nickname"
-          inputRef={nicknameRef}
           label="@apodo"
           leftIcon="at-sign"
           autoCapitalize="none"
           autoCorrect={false}
           returnKeyType="next"
-          nextRef={emailRef}
         />
 
         <TextField
           control={control}
           name="email"
-          inputRef={emailRef}
           label="Correo"
           leftIcon="mail"
           keyboardType="email-address"
@@ -144,13 +135,11 @@ export function RegisterV2({ navigation }: Props) {
           autoComplete="email"
           textContentType="emailAddress"
           returnKeyType="next"
-          nextRef={passwordRef}
         />
 
         <TextField
           control={control}
           name="password"
-          inputRef={passwordRef}
           label="Contraseña"
           leftIcon="lock"
           isPassword
@@ -158,13 +147,11 @@ export function RegisterV2({ navigation }: Props) {
           autoComplete="password"
           textContentType="newPassword"
           returnKeyType="next"
-          nextRef={confirmPasswordRef}
         />
 
         <TextField
           control={control}
           name="confirmPassword"
-          inputRef={confirmPasswordRef}
           label="Confirmar contraseña"
           leftIcon="lock"
           isPassword
