@@ -414,44 +414,37 @@ def _extract_text_from_openai(payload: dict) -> str:
     return ""
 
 
-def _call_openai_compatible_sync(image_base64: str, image_mime_type: str) -> tuple[dict, str]:
-    """Vision chat-completions call against any OpenAI-compatible provider
-    (OpenRouter, HuggingFace router, Groq, ...). Returns (detection, model)."""
-    api_key = os.getenv("AI_API_KEY")
-    base_url = os.getenv("AI_BASE_URL", _DEFAULT_AI_BASE_URL).rstrip("/")
-    model = os.getenv("AI_MODEL", _DEFAULT_VISION_MODEL)
+def _ai_models() -> list[str]:
+    """Lista de modelos a intentar, en orden. AI_MODEL puede ser un solo
+    modelo o varios separados por comas (fallback automatico)."""
+    raw = os.getenv("AI_MODEL", _DEFAULT_VISION_MODEL)
+    models = [m.strip() for m in raw.split(",") if m.strip()]
+    return models or [_DEFAULT_VISION_MODEL]
 
-    if not api_key:
-        error_response(
-            503,
-            "No se configuro AI_API_KEY en el backend. Agrega la API key de tu "
-            "proveedor (OpenRouter / HuggingFace) para usar la deteccion IA.",
-        )
 
-    endpoint = f"{base_url}/chat/completions"
-    data_uri = f"data:{image_mime_type};base64,{image_base64}"
-
+def _request_openai_model(
+    endpoint: str,
+    headers: dict,
+    prompt: str,
+    data_uri: str,
+    model: str,
+) -> dict:
+    """Un intento contra UN modelo. Devuelve la deteccion parseada o lanza
+    una excepcion (HTTP, conexion, JSON invalido o sin texto) para que el
+    llamador pueda probar el siguiente modelo."""
     payload = {
         "model": model,
         "messages": [
             {
                 "role": "user",
                 "content": [
-                    {"type": "text", "text": _build_prompt()},
+                    {"type": "text", "text": prompt},
                     {"type": "image_url", "image_url": {"url": data_uri}},
                 ],
             }
         ],
         "temperature": 0.2,
         "max_tokens": 700,
-    }
-
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {api_key}",
-        # Recommended by OpenRouter; harmless for other providers.
-        "HTTP-Referer": "https://myplantcenter.onrender.com",
-        "X-Title": "MyPlantCenter",
     }
 
     req = request.Request(
@@ -466,21 +459,71 @@ def _call_openai_compatible_sync(image_base64: str, image_mime_type: str) -> tup
             raw = response.read().decode("utf-8")
     except error.HTTPError as exc:
         detail = exc.read().decode("utf-8", errors="ignore")
-        error_response(502, f"El proveedor IA respondio con error: {detail or exc.reason}")
+        raise RuntimeError(f"HTTP {exc.code}: {detail or exc.reason}")
     except error.URLError as exc:
         reason = str(exc.reason) if exc.reason else "sin detalle"
-        error_response(503, f"No se pudo conectar con el proveedor IA: {reason}")
+        raise RuntimeError(f"conexion: {reason}")
 
     try:
         parsed = json.loads(raw)
     except json.JSONDecodeError:
-        error_response(502, "El proveedor IA devolvio una respuesta no valida.")
+        raise RuntimeError("respuesta no es JSON valido")
 
     text = _extract_text_from_openai(parsed)
     if not text:
-        error_response(502, "No se recibio texto util desde el proveedor IA.")
+        raise RuntimeError("respuesta sin texto util")
 
-    return _parse_ai_payload(text), model
+    # _parse_ai_payload puede lanzar HTTPException si el JSON del modelo es
+    # invalido; se propaga y el llamador prueba el siguiente modelo.
+    return _parse_ai_payload(text)
+
+
+def _call_openai_compatible_sync(image_base64: str, image_mime_type: str) -> tuple[dict, str]:
+    """Vision chat-completions call against any OpenAI-compatible provider
+    (OpenRouter, HuggingFace router, Groq, ...). Prueba los modelos de AI_MODEL
+    en orden hasta que uno responda. Returns (detection, model)."""
+    api_key = os.getenv("AI_API_KEY")
+    base_url = os.getenv("AI_BASE_URL", _DEFAULT_AI_BASE_URL).rstrip("/")
+    models = _ai_models()
+
+    if not api_key:
+        error_response(
+            503,
+            "No se configuro AI_API_KEY en el backend. Agrega la API key de tu "
+            "proveedor (OpenRouter / HuggingFace) para usar la deteccion IA.",
+        )
+
+    endpoint = f"{base_url}/chat/completions"
+    data_uri = f"data:{image_mime_type};base64,{image_base64}"
+    prompt = _build_prompt()
+
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {api_key}",
+        # Recommended by OpenRouter; harmless for other providers.
+        "HTTP-Referer": "https://myplantcenter.onrender.com",
+        "X-Title": "MyPlantCenter",
+    }
+
+    last_error: Exception | None = None
+    for model in models:
+        try:
+            detection = _request_openai_model(endpoint, headers, prompt, data_uri, model)
+            logger.info("[PlantDetection] modelo OK: %s", model)
+            return detection, model
+        except Exception as exc:  # noqa: BLE001 — probamos el siguiente modelo
+            last_error = exc
+            logger.warning(
+                "[PlantDetection] modelo fallo (%s): %s — probando siguiente",
+                model, exc,
+            )
+            continue
+
+    # Ningun modelo respondio: lo reporta el llamador (cae a fallback).
+    error_response(
+        502,
+        f"Todos los modelos IA fallaron ({', '.join(models)}). Ultimo error: {last_error}",
+    )
 
 
 def _persist_detection_sync(
