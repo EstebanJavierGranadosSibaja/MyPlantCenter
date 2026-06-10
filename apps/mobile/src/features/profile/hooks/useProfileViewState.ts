@@ -1,8 +1,8 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { useUserProfile } from 'src/features/profile/hooks/useUserProfile';
 import { ProfileTab } from 'src/features/profile/screens/ProfileView/profile/ProfileTabs/ProfileTabs';
 
-// Hook 
+// Hook
 export function useProfileViewState(userId: string, isOwner: boolean) {
 
     const {
@@ -13,37 +13,15 @@ export function useProfileViewState(userId: string, isOwner: boolean) {
         fetchProfile,
         updatePrivacy,
         updateNotifications,
-    } = useUserProfile(userId);
+    } = useUserProfile(userId, isOwner);
 
     // UI state
     const [activeTab, setActiveTab] = useState<ProfileTab>('perfil');
-    const [editMode, setEditMode] = useState(false);
 
-    // Handlers
-    const handleEdit = useCallback(() => {
-        setActiveTab('perfil');
-        setEditMode(true);
-    }, []);
-
-    const handleProfileUpdated = useCallback(async () => {
-        await fetchProfile();
-        setEditMode(false);
-    }, [fetchProfile]);
-
-    const handleCancelEdit = useCallback(() => {
-        setEditMode(false);
-    }, []);
-
-    // Hero props, pre-empaquetados para ProfileHero
+    // Hero props, pre-empaquetados para ProfileHero. La edición ahora es una
+    // pantalla aparte (ruta EditProfile), no un modo embebido.
     const heroProps = profile
-        ? {
-            profile,
-            editMode: editMode && isOwner,
-            saving,
-            onEdit: handleEdit,
-            onSave: handleCancelEdit,
-            isOwner,
-        }
+        ? { profile, isOwner }
         : null;
 
     return {
@@ -55,12 +33,8 @@ export function useProfileViewState(userId: string, isOwner: boolean) {
         // estado UI
         activeTab,
         setActiveTab,
-        editMode,
-        // handlers
-        handleEdit,
-        handleProfileUpdated,
-        handleCancelEdit,
         // servicios
+        fetchProfile,
         updatePrivacy,
         updateNotifications,
         // pre-empaquetados

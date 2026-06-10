@@ -3,109 +3,51 @@ import { UITheme } from 'src/ui';
 import { useUITheme } from 'src/ui';
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Cabecera de perfil estilo Instagram: avatar + stats en una sola fila,
+// identidad compacta, barra de XP fina y acciones. Sin banner pesado.
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const IS_COMPACT = SCREEN_WIDTH < 390;
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const createProfileHeroStyles = (theme: UITheme) => ({
 
-  // ── Root ───────────────────────────────────────────────────────────────────
-
   root: {
     width: SCREEN_WIDTH,
     backgroundColor: theme.colors.bg,
+    paddingHorizontal: theme.layout.screenPaddingH,
+    paddingTop: theme.spacing.md,
   },
 
-  heroTopSection: {
-    position: 'relative' as const,
-    marginBottom: theme.spacing.sm,
+  // ── Fila superior: avatar + estadísticas ─────────────────────────────────
+
+  topRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
   },
 
-  // ── Hero background ────────────────────────────────────────────────────────
-
-  heroBackground: {
-    width: SCREEN_WIDTH,
-    height: SCREEN_WIDTH * 0.42,
-    overflow: 'hidden' as const,
-    position: 'relative' as const,
-    backgroundColor: theme.colors.accentSoft,
-  },
-
-  heroBase: {
-    position: 'absolute' as const,
-    top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: theme.colors.accentSoft,
-  },
-
-  heroHighlightPrimary: {
-    position: 'absolute' as const,
-    width: SCREEN_WIDTH * 0.88,
-    height: SCREEN_WIDTH * 0.88,
-    borderRadius: theme.radius.full,
-    top: -SCREEN_WIDTH * 0.56,
-    right: -SCREEN_WIDTH * 0.12,
-  },
-
-  heroHighlightSecondary: {
-    position: 'absolute' as const,
-    width: SCREEN_WIDTH * 0.72,
-    height: SCREEN_WIDTH * 0.72,
-    borderRadius: theme.radius.full,
-    top: -SCREEN_WIDTH * 0.34,
-    left: -SCREEN_WIDTH * 0.18,
-  },
-
-  heroBottomLayer: {
-    position: 'absolute' as const,
-    left: 0,
-    right: 0,
-    bottom: -theme.spacing.md,
-    height: SCREEN_WIDTH * 0.20,
-    borderTopLeftRadius: theme.radius['2xl'] + theme.radius.md,
-    borderTopRightRadius: theme.radius['2xl'] + theme.radius.md,
-    borderTopWidth: 0.5,
-    borderTopColor: theme.colors.borderSubtle,
-  },
-
-  // ── Avatar ─────────────────────────────────────────────────────────────────
-
-  avatarWrapper: {
-    position: 'absolute' as const,
-    bottom: -(theme.layout.avatarLg * 0.4),
-    left: theme.layout.screenPaddingH,
-    zIndex: 10,
+  avatarCol: {
+    alignItems: 'center' as const,
+    marginRight: theme.spacing.lg,
   },
 
   avatarRing: {
-    padding: 6,
+    padding: 3,
     borderRadius: theme.radius.full,
-  },
-
-  avatarRingActive: {
-    borderWidth: 3,
+    borderWidth: 2,
     borderColor: theme.colors.accent,
     backgroundColor: theme.colors.surfaceElevated,
   },
 
   levelPill: {
-    position: 'absolute' as const,
-    bottom: -theme.spacing.md,
-    alignSelf: 'center' as const,
-    left: 0,
-    right: 0,
-    alignItems: 'center' as const,
-  },
-
-  levelPillInner: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    gap: 6,
+    gap: 4,
     backgroundColor: theme.colors.accent,
     borderRadius: theme.radius.full,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: 5,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: 2,
+    marginTop: -theme.spacing.sm,
     borderWidth: 2,
     borderColor: theme.colors.bg,
   },
@@ -115,61 +57,80 @@ export const createProfileHeroStyles = (theme: UITheme) => ({
     color: theme.colors.textOnAccent,
   },
 
-  // ── Summary shell (identity + XP + bio card) ───────────────────────────────
-
-  summaryShell: {
-    marginHorizontal: theme.layout.screenPaddingH,
-    backgroundColor: theme.mode === 'light' ? theme.colors.surface : theme.colors.surfaceElevated,
-    borderRadius: theme.radius.lg,
-    borderWidth: 1,
-    borderColor: theme.colors.borderDefault,
-    paddingHorizontal: theme.spacing.xl,
-    paddingBottom: theme.spacing.xl,
-    ...theme.shadows.sm,
+  statsRow: {
+    flex: 1,
+    flexDirection: 'row' as const,
+    justifyContent: 'space-around' as const,
+    alignItems: 'center' as const,
   },
 
-  // ── Identity ───────────────────────────────────────────────────────────────
+  statItem: {
+    alignItems: 'center' as const,
+    gap: 2,
+  },
 
-  identitySection: {
-    paddingTop: theme.layout.avatarLg * 0.42 + (IS_COMPACT ? theme.spacing.md : theme.spacing.xl),
-    gap: IS_COMPACT ? theme.spacing.sm : theme.spacing.md,
+  statValue: {
+    ...theme.text.h3,
+    color: theme.colors.textPrimary,
+  },
+
+  statLabel: {
+    ...theme.text.caption,
+    color: theme.colors.textTertiary,
+  },
+
+  // ── Identidad ─────────────────────────────────────────────────────────────
+
+  identityBlock: {
+    marginTop: theme.spacing.md,
+  },
+
+  nameRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: theme.spacing.sm,
+    flexWrap: 'wrap' as const,
   },
 
   displayName: {
-    ...(IS_COMPACT ? theme.text.h2 : theme.text.h1),
+    ...theme.text.h3,
     color: theme.colors.textPrimary,
+  },
+
+  levelChip: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 4,
+    backgroundColor: theme.colors.accentSoft,
+    borderWidth: 1,
+    borderColor: theme.colors.accentMuted,
+    borderRadius: theme.radius.full,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: 2,
+  },
+
+  levelChipText: {
+    ...theme.text.label,
+    color: theme.colors.accentForeground,
   },
 
   nickname: {
     ...theme.text.bodyMd,
     color: theme.colors.textTertiary,
+    marginTop: 1,
   },
 
-  levelTitle: {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    gap: 6,
-    marginTop: IS_COMPACT ? 4 : 6,
-    alignSelf: 'flex-start' as const,
-    backgroundColor: theme.colors.accentSoft,
-    borderWidth: 1,
-    borderColor: theme.colors.accentMuted,
-    borderRadius: theme.radius.full,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: 6,
+  bioText: {
+    ...theme.text.bodyMd,
+    color: theme.colors.textSecondary,
+    marginTop: theme.spacing.xs,
   },
 
-  levelTitleText: {
-    ...theme.text.label,
-    color: theme.colors.accentForeground,
-    letterSpacing: 0.5,
-  },
-
-  // ── XP bar ─────────────────────────────────────────────────────────────────
+  // ── Barra de XP ─────────────────────────────────────────────────────────────
 
   xpSection: {
-    marginTop: IS_COMPACT ? theme.spacing.md : theme.spacing.xl,
-    gap: theme.spacing.sm,
+    marginTop: theme.spacing.md,
+    gap: theme.spacing.xs,
   },
 
   xpRow: {
@@ -188,69 +149,12 @@ export const createProfileHeroStyles = (theme: UITheme) => ({
     color: theme.colors.accentForeground,
   },
 
-  // ── Bio ────────────────────────────────────────────────────────────────────
-
-  bioSection: {
-    marginTop: IS_COMPACT ? theme.spacing.md : theme.spacing.xl,
-  },
-
-  bioText: {
-    ...(IS_COMPACT ? theme.text.bodyMd : theme.text.body),
-    color: theme.colors.textSecondary,
-  },
-
-  bioInput: {
-    ...theme.text.body,
-    color: theme.colors.textPrimary,
-    backgroundColor: theme.colors.bgSubtle,
-    borderWidth: 1.5,
-    borderColor: theme.colors.borderDefault,
-    borderRadius: theme.radius.md,
-    paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing.xl,
-    textAlignVertical: 'top' as const,
-    minHeight: theme.layout.avatarMd,
-  },
-
-  // ── Stats row ──────────────────────────────────────────────────────────────
-
-  statsSection: {
-    flexDirection: 'row' as const,
-    paddingHorizontal: theme.layout.screenPaddingH,
-    marginTop: IS_COMPACT ? theme.spacing.xl : theme.spacing['2xl'],
-    gap: theme.spacing.md,
-  },
-
-  statItem: {
-    flex: 1,
-    alignItems: 'center' as const,
-    paddingVertical: theme.spacing.xl,
-    backgroundColor: theme.mode === 'light' ? theme.colors.surface : theme.colors.surfaceElevated,
-    borderRadius: theme.radius.lg,
-    borderWidth: 1,
-    borderColor: theme.colors.borderDefault,
-    ...theme.shadows.sm,
-    gap: 6,
-  },
-
-  statValue: {
-    ...theme.text.numeric,
-    color: theme.colors.textPrimary,
-  },
-
-  statLabel: {
-    ...theme.text.overline,
-    color: theme.colors.textTertiary,
-  },
-
-  // ── Action buttons ─────────────────────────────────────────────────────────
+  // ── Acciones ─────────────────────────────────────────────────────────────
 
   actionsSection: {
-    paddingHorizontal: theme.layout.screenPaddingH,
-    marginTop: theme.spacing.xl,
-    marginBottom: theme.spacing.xl,
     flexDirection: 'row' as const,
-    gap: theme.spacing.md,
+    gap: theme.spacing.sm,
+    marginTop: theme.spacing.lg,
   },
 
   actionButtonPrimary: {
@@ -261,10 +165,9 @@ export const createProfileHeroStyles = (theme: UITheme) => ({
     gap: theme.spacing.sm,
     backgroundColor: theme.colors.accent,
     borderRadius: theme.radius.md,
-    paddingVertical: theme.spacing.base,
+    paddingVertical: 11,
     borderWidth: 1,
     borderColor: theme.colors.accent,
-    ...theme.shadows.sm,
   },
 
   actionButtonPrimaryPressed: {
@@ -280,10 +183,9 @@ export const createProfileHeroStyles = (theme: UITheme) => ({
     gap: theme.spacing.sm,
     backgroundColor: theme.colors.surface,
     borderRadius: theme.radius.md,
-    paddingVertical: theme.spacing.base,
+    paddingVertical: 11,
     borderWidth: 1,
     borderColor: theme.colors.borderDefault,
-    ...theme.shadows.sm,
   },
 
   actionButtonSecondaryPressed: {
@@ -291,21 +193,21 @@ export const createProfileHeroStyles = (theme: UITheme) => ({
   },
 
   actionButtonTextPrimary: {
-    ...theme.text.button,
+    ...theme.text.label,
     color: theme.colors.textOnAccent,
   },
 
   actionButtonTextSecondary: {
-    ...theme.text.button,
+    ...theme.text.label,
     color: theme.colors.textPrimary,
   },
 
-  // ── Divider ────────────────────────────────────────────────────────────────
+  // ── Divisor ─────────────────────────────────────────────────────────────────
 
   divider: {
     height: 1,
     backgroundColor: theme.colors.divider,
-    marginTop: theme.spacing.xl,
+    marginTop: theme.spacing.lg,
   },
 
 });

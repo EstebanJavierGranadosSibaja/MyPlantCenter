@@ -1,6 +1,9 @@
 import { Feather } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React from 'react';
-import { ActivityIndicator, Image, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { RootStackParamList } from 'src/core/navigation/AppNavigator';
 import { exploreService } from 'src/features/explore/services/explore.service';
 import { RecentActivity, TrendingPlant } from 'src/features/explore/types/explore.types';
 import { EmptyState } from 'src/shared/components/feedback/EmptyState/EmptyState';
@@ -47,12 +50,26 @@ const ACTION_CONFIG: Record<RecentActivity['actionType'], {
 
 export function ExplorarV2() {
   const theme = useUITheme();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const [query,          setQuery]          = React.useState('');
   const [loading,        setLoading]        = React.useState(true);
+  const [refreshing,     setRefreshing]     = React.useState(false);
   const [error,          setError]          = React.useState<string | null>(null);
   const [trending,       setTrending]       = React.useState<TrendingPlant[]>([]);
   const [activity,       setActivity]       = React.useState<RecentActivity[]>([]);
+
+  // Tap en una planta en tendencia → ir a "Nueva planta" con datos prellenados.
+  const handleAddTrending = React.useCallback((plant: TrendingPlant) => {
+    navigation.navigate('AddPlant', {
+      prefill: { name: plant.name, species: plant.scientificName },
+    });
+  }, [navigation]);
+
+  // Tap en actividad → visitar el perfil del miembro de la comunidad.
+  const handleVisitUser = React.useCallback((userId: string) => {
+    navigation.navigate('UserProfile', { userId });
+  }, [navigation]);
 
   const actionConfig = React.useMemo(() => ({
     ...ACTION_CONFIG,
@@ -77,6 +94,20 @@ export function ExplorarV2() {
 
   React.useEffect(() => { loadData(); }, [loadData]);
 
+  const handleRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    try {
+      const data = await exploreService.getExploreData();
+      setTrending(data.trendingPlants);
+      setActivity(data.recentActivity);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo cargar explorar.');
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
+
   const normalized = query.trim().toLowerCase();
   const hasQuery   = normalized.length > 0;
 
@@ -99,7 +130,13 @@ export function ExplorarV2() {
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <Screen scroll edges={['top', 'left', 'right']} contentStyle={styles.content}>
+    <Screen
+      scroll
+      edges={['top', 'left', 'right']}
+      contentStyle={styles.content}
+      refreshing={refreshing}
+      onRefresh={handleRefresh}
+    >
 
       <ScreenHeader title="Explorar" />
 
@@ -136,23 +173,34 @@ export function ExplorarV2() {
               contentContainerStyle={styles.trendingRow}
             >
               {filteredTrending.map(plant => (
-                <Surface key={plant.id} elevation="xs" radius="lg" border="subtle" style={styles.trendingCard}>
-                  <View style={[styles.trendingImageWrap, { backgroundColor: theme.colors.bgSubtle }]}>
-                    {plant.imageUrl ? (
-                      <Image source={{ uri: plant.imageUrl }} style={styles.trendingImage} resizeMode="cover" />
-                    ) : (
-                      <Feather name="feather" size={28} color={theme.colors.accent} />
-                    )}
-                  </View>
+                <Pressable
+                  key={plant.id}
+                  onPress={() => handleAddTrending(plant)}
+                  style={({ pressed }) => pressed && styles.pressed}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Agregar ${plant.name} a mis plantas`}
+                >
+                  <Surface elevation="xs" radius="lg" border="subtle" style={styles.trendingCard}>
+                    <View style={[styles.trendingImageWrap, { backgroundColor: theme.colors.bgSubtle }]}>
+                      {plant.imageUrl ? (
+                        <Image source={{ uri: plant.imageUrl }} style={styles.trendingImage} resizeMode="cover" />
+                      ) : (
+                        <Feather name="feather" size={28} color={theme.colors.accent} />
+                      )}
+                      <View style={[styles.addOverlay, { backgroundColor: theme.colors.accent }]}>
+                        <Feather name="plus" size={theme.layout.iconSm} color={theme.colors.textOnAccent} />
+                      </View>
+                    </View>
 
-                  <Text variant="label" numberOfLines={1}>{plant.name}</Text>
-                  <Text variant="caption" color="textTertiary" numberOfLines={1}>{plant.scientificName}</Text>
+                    <Text variant="label" numberOfLines={1}>{plant.name}</Text>
+                    <Text variant="caption" color="textTertiary" numberOfLines={1}>{plant.scientificName}</Text>
 
-                  <View style={styles.trendingFooter}>
-                    <Badge label={`${plant.detectionCount} det.`} iconName="trending-up" size="sm" />
-                    <Text variant="caption" color="textTertiary">{formatRelativeTime(plant.lastDetected)}</Text>
-                  </View>
-                </Surface>
+                    <View style={styles.trendingFooter}>
+                      <Badge label={`${plant.detectionCount} det.`} iconName="trending-up" size="sm" />
+                      <Text variant="caption" color="textTertiary">{formatRelativeTime(plant.lastDetected)}</Text>
+                    </View>
+                  </Surface>
+                </Pressable>
               ))}
             </ScrollView>
           )}
@@ -172,25 +220,36 @@ export function ExplorarV2() {
                 const confidence = formatConfidence(item.confidence);
 
                 return (
-                  <Surface key={item.id} elevation="xs" radius="lg" border="subtle" style={styles.activityCard}>
-                    <View style={styles.activityHeader}>
-                      <View style={[styles.avatarBadge, { backgroundColor: theme.colors.bgSubtle }]}>
-                        <Feather name="user" size={theme.layout.iconSm} color={theme.colors.textSecondary} />
+                  <Pressable
+                    key={item.id}
+                    onPress={() => handleVisitUser(item.userId)}
+                    style={({ pressed }) => pressed && styles.pressed}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Ver el perfil de ${item.userNickname}`}
+                  >
+                    <Surface elevation="xs" radius="lg" border="subtle" style={styles.activityCard}>
+                      <View style={styles.activityHeader}>
+                        <View style={[styles.avatarBadge, { backgroundColor: theme.colors.bgSubtle }]}>
+                          <Feather name="user" size={theme.layout.iconSm} color={theme.colors.textSecondary} />
+                        </View>
+                        <View style={styles.activityInfo}>
+                          <Text variant="label" numberOfLines={1}>@{item.userNickname}</Text>
+                          <Text variant="caption" color="textTertiary" numberOfLines={1}>{item.plantName}</Text>
+                        </View>
+                        <Feather name="chevron-right" size={theme.layout.iconSm} color={theme.colors.textTertiary} />
                       </View>
-                      <View style={styles.activityInfo}>
-                        <Text variant="label" numberOfLines={1}>@{item.userNickname}</Text>
-                        <Text variant="caption" color="textTertiary" numberOfLines={1}>{item.plantName}</Text>
-                      </View>
-                      <Text variant="caption" color="textTertiary">{formatRelativeTime(item.timestamp)}</Text>
-                    </View>
 
-                    <View style={styles.activityFooter}>
-                      <Badge label={action.label} iconName={action.icon} color={action.color} size="sm" />
-                      {confidence && (
-                        <Text variant="caption" color="textTertiary">Confianza {confidence}</Text>
-                      )}
-                    </View>
-                  </Surface>
+                      <View style={styles.activityFooter}>
+                        <Badge label={action.label} iconName={action.icon} color={action.color} size="sm" />
+                        {confidence && (
+                          <Text variant="caption" color="textTertiary">Confianza {confidence}</Text>
+                        )}
+                        <Text variant="caption" color="textTertiary" style={styles.activityTime}>
+                          {formatRelativeTime(item.timestamp)}
+                        </Text>
+                      </View>
+                    </Surface>
+                  </Pressable>
                 );
               })}
             </View>
@@ -230,6 +289,9 @@ const styles = StyleSheet.create({
     padding: 12,
     gap: 6,
   },
+  pressed: {
+    opacity: 0.7,
+  },
   trendingImageWrap: {
     width: '100%',
     height: 100,
@@ -238,6 +300,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     overflow: 'hidden',
     marginBottom: 4,
+  },
+  addOverlay: {
+    position: 'absolute',
+    bottom: 6,
+    right: 6,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   trendingImage: {
     width: '100%',
@@ -279,5 +351,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+  },
+  activityTime: {
+    marginLeft: 'auto',
   },
 });

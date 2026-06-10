@@ -17,6 +17,12 @@ _DEFAULT_MODEL = "gemini-2.0-flash"
 _DEFAULT_CONFIDENCE = 0.35
 _MAX_IMAGE_BYTES = 8 * 1024 * 1024
 
+# OpenAI-compatible provider (works with OpenRouter / HuggingFace router / Groq /
+# Together / etc. — they all speak the same chat-completions + vision format).
+# Configure via env: AI_PROVIDER, AI_BASE_URL, AI_API_KEY, AI_MODEL.
+_DEFAULT_AI_BASE_URL = "https://openrouter.ai/api/v1"
+_DEFAULT_VISION_MODEL = "meta-llama/llama-3.2-11b-vision-instruct:free"
+
 logger = logging.getLogger("myplantcenter.api.plant_detection")
 
 
@@ -385,6 +391,98 @@ def _call_gemini_sync(image_base64: str, image_mime_type: str) -> tuple[dict, st
     return _parse_ai_payload(text), model_version
 
 
+def _extract_text_from_openai(payload: dict) -> str:
+    choices = payload.get("choices") or []
+
+    for choice in choices:
+        if not isinstance(choice, dict):
+            continue
+
+        message = choice.get("message") or {}
+        content = message.get("content")
+
+        if isinstance(content, str) and content.strip():
+            return content.strip()
+
+        # Some providers return content as a list of parts.
+        if isinstance(content, list):
+            texts = [part.get("text", "") for part in content if isinstance(part, dict)]
+            joined = "\n".join(t for t in texts if t).strip()
+            if joined:
+                return joined
+
+    return ""
+
+
+def _call_openai_compatible_sync(image_base64: str, image_mime_type: str) -> tuple[dict, str]:
+    """Vision chat-completions call against any OpenAI-compatible provider
+    (OpenRouter, HuggingFace router, Groq, ...). Returns (detection, model)."""
+    api_key = os.getenv("AI_API_KEY")
+    base_url = os.getenv("AI_BASE_URL", _DEFAULT_AI_BASE_URL).rstrip("/")
+    model = os.getenv("AI_MODEL", _DEFAULT_VISION_MODEL)
+
+    if not api_key:
+        error_response(
+            503,
+            "No se configuro AI_API_KEY en el backend. Agrega la API key de tu "
+            "proveedor (OpenRouter / HuggingFace) para usar la deteccion IA.",
+        )
+
+    endpoint = f"{base_url}/chat/completions"
+    data_uri = f"data:{image_mime_type};base64,{image_base64}"
+
+    payload = {
+        "model": model,
+        "messages": [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": _build_prompt()},
+                    {"type": "image_url", "image_url": {"url": data_uri}},
+                ],
+            }
+        ],
+        "temperature": 0.2,
+        "max_tokens": 700,
+    }
+
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {api_key}",
+        # Recommended by OpenRouter; harmless for other providers.
+        "HTTP-Referer": "https://myplantcenter.onrender.com",
+        "X-Title": "MyPlantCenter",
+    }
+
+    req = request.Request(
+        endpoint,
+        data=json.dumps(payload).encode("utf-8"),
+        headers=headers,
+        method="POST",
+    )
+
+    try:
+        with request.urlopen(req, timeout=60) as response:
+            raw = response.read().decode("utf-8")
+    except error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="ignore")
+        error_response(502, f"El proveedor IA respondio con error: {detail or exc.reason}")
+    except error.URLError as exc:
+        reason = str(exc.reason) if exc.reason else "sin detalle"
+        error_response(503, f"No se pudo conectar con el proveedor IA: {reason}")
+
+    try:
+        parsed = json.loads(raw)
+    except json.JSONDecodeError:
+        error_response(502, "El proveedor IA devolvio una respuesta no valida.")
+
+    text = _extract_text_from_openai(parsed)
+    if not text:
+        error_response(502, "No se recibio texto util desde el proveedor IA.")
+
+    return _parse_ai_payload(text), model
+
+
 def _persist_detection_sync(
     user_id: str,
     payload: dict,
@@ -427,14 +525,25 @@ async def analyze_plant_image(user_id: str, payload: dict) -> dict:
         image_mime_type=payload.get("imageMimeType"),
     )
 
+    # Provider selection: "gemini" uses Google's native API; anything else
+    # (default) uses the OpenAI-compatible client (OpenRouter / HuggingFace / …).
+    provider = os.getenv("AI_PROVIDER", "openai").strip().lower()
+
     try:
-        detection, model_version = await run_in_threadpool(
-            _call_gemini_sync,
-            image_base64,
-            image_mime_type,
-        )
+        if provider == "gemini":
+            detection, model_version = await run_in_threadpool(
+                _call_gemini_sync,
+                image_base64,
+                image_mime_type,
+            )
+        else:
+            detection, model_version = await run_in_threadpool(
+                _call_openai_compatible_sync,
+                image_base64,
+                image_mime_type,
+            )
     except Exception as e:
-        logger.error("[PlantDetection] Gemini call failed: %s", e)
+        logger.error("[PlantDetection] AI call failed (provider=%s): %s", provider, e)
         detection, model_version = _get_fallback_detection(), "fallback"
 
     image_hash = hashlib.sha256(image_bytes).hexdigest()

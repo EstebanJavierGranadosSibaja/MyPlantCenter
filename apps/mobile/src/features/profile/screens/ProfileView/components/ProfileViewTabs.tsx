@@ -41,9 +41,6 @@ export const ProfileViewTabs: React.FC<ProfileViewTabsProps> = ({
                 active={state.activeTab}
                 onChange={tab => {
                     if (availableTabs.some(t => t.key === tab)) {
-                        if (state.editMode && tab !== 'perfil') {
-                            state.handleCancelEdit();
-                        }
                         state.setActiveTab(tab);
                     }
                 }}
@@ -51,11 +48,7 @@ export const ProfileViewTabs: React.FC<ProfileViewTabsProps> = ({
             />
 
             {state.activeTab === 'perfil' && (
-                <TabPerfil
-                    profile={profile}
-                    editMode={state.editMode && isOwner}
-                    onProfileSaved={state.handleProfileUpdated}
-                />
+                <TabPerfil profile={profile} />
             )}
 
             {state.activeTab === 'categorias' && (

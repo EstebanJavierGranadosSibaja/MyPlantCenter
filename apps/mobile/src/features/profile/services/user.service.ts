@@ -84,7 +84,10 @@ async function getLevelConfig(level: number): Promise<RawLevelConfig | null> {
 
 export const userService = {
 
-  async getProfile(userId: string): Promise<ApiResponse<UserProfile>> {
+  async getProfile(
+    userId: string,
+    options?: { includeAchievements?: boolean },
+  ): Promise<ApiResponse<UserProfile>> {
     const profileResponse = await httpClient.get<ApiResponse<RawUserProfileResponse>>(`/api/users/${userId}/profile`);
 
     if (!profileResponse.data.success) {
@@ -94,16 +97,20 @@ export const userService = {
     const levelConfig = await getLevelConfig(profileResponse.data.data.user.level);
     const mappedProfile = mapUserFromApi(profileResponse.data.data, levelConfig);
 
-    const [achievementsResponse, templatesResponse] = await Promise.all([
-      httpClient.get<ApiResponse<RawAchievement[]>>(`/api/users/${userId}/achievements`),
-      httpClient.get<ApiResponse<RawAchievementTemplate[]>>('/api/achievement-templates'),
-    ]);
+    // El endpoint de logros es solo del dueño (403 para terceros). Solo lo
+    // pedimos cuando es el perfil propio para evitar ruido de errores.
+    if (options?.includeAchievements !== false) {
+      const [achievementsResponse, templatesResponse] = await Promise.all([
+        httpClient.get<ApiResponse<RawAchievement[]>>(`/api/users/${userId}/achievements`),
+        httpClient.get<ApiResponse<RawAchievementTemplate[]>>('/api/achievement-templates'),
+      ]);
 
-    if (achievementsResponse.data.success && templatesResponse.data.success) {
-      mappedProfile.achievements = mergeAchievements(
-        achievementsResponse.data.data,
-        templatesResponse.data.data,
-      );
+      if (achievementsResponse.data.success && templatesResponse.data.success) {
+        mappedProfile.achievements = mergeAchievements(
+          achievementsResponse.data.data,
+          templatesResponse.data.data,
+        );
+      }
     }
 
     return {

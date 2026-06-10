@@ -97,9 +97,13 @@ def _create_care_history_sync(user_id: str, payload: dict) -> dict:
 
     @firestore.transactional
     def _write(txn: firestore.Transaction) -> dict:
+        # Firestore exige que TODAS las lecturas ocurran ANTES de cualquier
+        # escritura dentro de una transaccion. Leemos planta, (idempotencia) y
+        # usuario primero; luego escribimos.
+        #
         # Python 3.14 + google-cloud-firestore >= 2.19: txn.get(doc_ref)
-        # now returns a generator even for a single DocumentReference.
-        # Use next() to extract the snapshot.
+        # devuelve un generador incluso para una sola DocumentReference.
+        # Usamos next() para extraer el snapshot.
         plant_snapshot = next(txn.get(plant_ref))
         if not plant_snapshot.exists:
             error_response(404, "No se encontro la planta indicada.")
@@ -108,13 +112,20 @@ def _create_care_history_sync(user_id: str, payload: dict) -> dict:
         if plant_data.get("userId") != user_id:
             error_response(403, "La planta no pertenece al usuario.")
 
+        existing_history: dict | None = None
         if history_ref is not None:
             history_snapshot = next(txn.get(history_ref))
             if history_snapshot.exists:
-                existing = history_snapshot.to_dict() or {}
-                existing.setdefault("id", history_ref.id)
-                return existing
+                existing_history = history_snapshot.to_dict() or {}
+                existing_history.setdefault("id", history_ref.id)
 
+        user_snapshot = next(txn.get(user_ref))
+
+        # Idempotencia: si ya existe el registro, devolvemos sin escribir.
+        if existing_history is not None:
+            return existing_history
+
+        # ── A partir de aqui solo escrituras ──────────────────────────────────
         resolved_history_ref = history_ref or db.collection("careHistory").document()
 
         history_payload = {
@@ -136,7 +147,6 @@ def _create_care_history_sync(user_id: str, payload: dict) -> dict:
         if care_type == "watering":
             txn.update(plant_ref, {"lastWatered": completed_at, "updatedAt": now})
 
-        user_snapshot = next(txn.get(user_ref))
         if user_snapshot.exists:
             user_payload = user_snapshot.to_dict() or {}
             updates = _build_user_stat_updates(user_payload, completed_at, care_type)

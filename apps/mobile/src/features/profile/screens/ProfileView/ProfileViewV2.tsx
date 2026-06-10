@@ -1,4 +1,5 @@
-import React from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import React, { useCallback } from 'react';
 import { useProfileViewState } from 'src/features/profile/hooks/useProfileViewState';
 import { Screen } from 'src/ui';
 import { ProfileHero } from './profile/ProfileHero/ProfileHero';
@@ -20,7 +21,15 @@ export interface ProfileViewProps {
 export function ProfileViewV2({ userId, isOwner }: ProfileViewProps) {
   const state = useProfileViewState(userId, isOwner);
 
-  if (state.loading) {
+  // Refresca al volver de la pantalla "Editar perfil" para reflejar cambios.
+  const { fetchProfile } = state;
+  useFocusEffect(
+    useCallback(() => {
+      fetchProfile();
+    }, [fetchProfile]),
+  );
+
+  if (state.loading && !state.profile) {
     return <ProfileViewStates.Loading isOwner={isOwner} />;
   }
 

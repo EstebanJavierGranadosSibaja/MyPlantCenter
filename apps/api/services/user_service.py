@@ -59,7 +59,7 @@ async def _build_profile_categories(user_id: str, plants: list[dict[str, Any]]) 
                 raise
             base_category = {
                 "id": category_id,
-                "name": "Sin categoria",
+                "name": "Sin categoría",
                 "iconKey": "plant",
                 "iconSet": "feather",
                 "iconEmoji": None,

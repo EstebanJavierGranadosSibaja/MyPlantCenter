@@ -1,6 +1,6 @@
 import React from 'react';
 import { UserProfile } from 'src/features/profile/types/user.types';
-import { DetailHeader } from 'src/ui';
+import { DetailHeader, ScreenHeader } from 'src/ui';
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -10,18 +10,16 @@ interface ProfileViewHeaderProps {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Uses the app-wide DetailHeader (centered title + back). The owner profile is
-// a tab root, so it hides the back button; a visitor's profile is a pushed
-// screen and keeps it.
+// Owner profile is a TAB ROOT → left-aligned title (ScreenHeader), consistent
+// with the other tabs (Inicio, Plantas, Amigos, Explorar).
+//
+// A visitor's profile is a PUSHED screen → centered title + back (DetailHeader).
+// It uses the generic "Perfil" instead of the person's name, because the hero
+// right below already shows the name — repeating it in the header looked wrong.
 
-export const ProfileViewHeader: React.FC<ProfileViewHeaderProps> = ({
-  isOwner,
-  profile,
-}) => {
-  return (
-    <DetailHeader
-      title={isOwner ? 'Mi Perfil' : profile.name}
-      hideBack={isOwner}
-    />
-  );
+export const ProfileViewHeader: React.FC<ProfileViewHeaderProps> = ({ isOwner }) => {
+  if (isOwner) {
+    return <ScreenHeader title="Mi Perfil" />;
+  }
+  return <DetailHeader title="Perfil" />;
 };

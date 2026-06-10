@@ -16,7 +16,7 @@ interface UseUserProfileState {
 }
 
 // Hook
-export function useUserProfile(userId: string) {
+export function useUserProfile(userId: string, isOwner: boolean = true) {
 
   const [state, setState] = useState<UseUserProfileState>({
     profile: null,
@@ -52,7 +52,7 @@ export function useUserProfile(userId: string) {
 
     setLoading(true);
     try {
-      const res = await userService.getProfile(userId);
+      const res = await userService.getProfile(userId, { includeAchievements: isOwner });
       if (res.success) setProfile(res.data);
       else setError(res.error ?? 'Error al cargar el perfil.');
     } catch {
@@ -60,7 +60,7 @@ export function useUserProfile(userId: string) {
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  }, [userId, isOwner]);
 
   const updateProfile = useCallback(async (dto: EditProfileDTO) => {
     setSaving(true);
