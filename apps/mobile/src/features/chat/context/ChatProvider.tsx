@@ -8,9 +8,23 @@ import React, {
   useState,
 } from 'react';
 import { useAuth } from 'src/core/contexts/AuthContext';
+import { showToast } from 'src/shared/components/feedback/FormToast/FormToast';
 import { chatApiService } from '../services/chatApi.service';
 import { ChatSocketService } from '../services/chatSocket.service';
 import { ChatMessage, ChatUser } from '../types/chat.types';
+import {
+  ChatKeyPair,
+  decryptDM,
+  decryptGroup,
+  encryptDM,
+  encryptGroup,
+  generateKeyPair,
+} from '../utils/crypto';
+import { loadKeyPair, saveKeyPair } from '../utils/keyStorage';
+
+// Límite de tamaño del campo content en el servidor (vale para el ciphertext).
+const MAX_CONTENT_LEN = 1000;
+const UNDECRYPTABLE = '[mensaje cifrado — no se pudo descifrar]';
 
 export interface TypingEntry {
   userId: string;
@@ -55,6 +69,33 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const tokenRef = useRef<string>('');
   // Ref keeps chatUser.id accessible inside WS event closure without stale capture
   const chatUserIdRef = useRef<string | null>(null);
+
+  // ── Material de cifrado (refs para evitar closures obsoletas en el WS) ──────
+  const myKeyPairRef = useRef<ChatKeyPair | null>(null);
+  const userPublicKeysRef = useRef<Record<string, string>>({});
+  const groupKeyRef = useRef<string | null>(null);
+
+  // Descifra un DM entrante. Si el remitente no tiene llave pública registrada,
+  // asumimos texto plano (cliente sin cifrado) y devolvemos el contenido tal cual.
+  const decryptIncomingDM = useCallback((msg: ChatMessage): string => {
+    const senderKey = userPublicKeysRef.current[msg.sender_id];
+    const mySecret = myKeyPairRef.current?.secretKey;
+    if (senderKey && mySecret) {
+      const dec = decryptDM(msg.content, senderKey, mySecret);
+      return dec !== null ? dec : UNDECRYPTABLE;
+    }
+    return msg.content;
+  }, []);
+
+  // Descifra un mensaje grupal. Sin clave de grupo → texto plano.
+  const decryptIncomingGroup = useCallback((msg: ChatMessage): string => {
+    const key = groupKeyRef.current;
+    if (key) {
+      const dec = decryptGroup(msg.content, key);
+      return dec !== null ? dec : UNDECRYPTABLE;
+    }
+    return msg.content;
+  }, []);
 
   // Always join fresh — join is idempotent (same nickname = same user, new valid token).
   // Avoids stale-token reconnect loops since JWT_EXP_SECONDS=3000 (50 min).
@@ -104,45 +145,52 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       if (!mounted) return;
 
       switch (ev.type) {
-        case 'users_list':
+        case 'users_list': {
+          // Indexamos las llaves públicas para cifrar DMs a cada usuario.
+          const keys = { ...userPublicKeysRef.current };
+          ev.users.forEach(u => { if (u.public_key) keys[u.id] = u.public_key; });
+          userPublicKeysRef.current = keys;
           setOnlineUsers(ev.users);
           break;
+        }
 
         case 'group_history':
-          setGroupMessages(ev.messages);
+          // El group_key llega DESPUÉS; guardamos crudo y desciframos cuando
+          // llegue la clave (o se queda en texto plano si no hay clave).
+          setGroupMessages(ev.messages.map(m => ({ ...m, content: decryptIncomingGroup(m) })));
           break;
 
         case 'group_key':
-          // empty key = plain text (our deployed instance). Nothing to do.
+          // Cadena vacía = texto plano (instancia desplegada). Con clave,
+          // desciframos el historial ya recibido.
+          groupKeyRef.current = ev.key || null;
+          if (ev.key) {
+            setGroupMessages(prev => prev.map(m => ({ ...m, content: decryptIncomingGroup(m) })));
+          }
           break;
 
-        case 'group_message':
+        case 'group_message': {
+          const decoded = { ...ev.message, content: decryptIncomingGroup(ev.message) };
           setGroupMessages(prev => {
             if (prev.some(m => m.id === ev.message.id)) return prev;
-            return [...prev, ev.message];
+            return [...prev, decoded];
           });
           break;
+        }
 
         case 'dm': {
           const isMine = ev.message.sender_id === chatUserIdRef.current;
-          const otherId = isMine ? ev.message.recipient_id! : ev.message.sender_id;
+          // El emisor NO puede descifrar su propio DM (nacl.box solo lo permite
+          // al destinatario). Mantenemos la inserción optimista en texto plano
+          // e ignoramos el eco del servidor.
+          if (isMine) break;
+
+          const otherId = ev.message.sender_id;
+          const decoded = { ...ev.message, content: decryptIncomingDM(ev.message) };
           setDirectMessages(prev => {
             const thread = prev[otherId] ?? [];
-            // Already have the real (server) message → ignore the echo.
             if (thread.some(m => m.id === ev.message.id)) return prev;
-            // My own message: reconcile the optimistic placeholder (temp "opt_"
-            // id) with this server echo instead of appending a duplicate.
-            if (isMine) {
-              const optIdx = thread.findIndex(
-                m => m.id.startsWith('opt_') && m.content === ev.message.content,
-              );
-              if (optIdx !== -1) {
-                const next = [...thread];
-                next[optIdx] = ev.message;
-                return { ...prev, [otherId]: next };
-              }
-            }
-            return { ...prev, [otherId]: [...thread, ev.message] };
+            return { ...prev, [otherId]: [...thread, decoded] };
           });
           break;
         }
@@ -159,6 +207,12 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
           break;
 
         case 'user_joined':
+          if (ev.user.public_key) {
+            userPublicKeysRef.current = {
+              ...userPublicKeysRef.current,
+              [ev.user.id]: ev.user.public_key,
+            };
+          }
           setOnlineUsers(prev => {
             if (prev.some(u => u.id === ev.user.id)) return prev;
             return [...prev, ev.user];
@@ -206,6 +260,22 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       try {
         const token = await _doJoin(user.nickname);
         tokenRef.current = token;
+
+        // Llaves E2E: cargar o generar, guardar en almacenamiento cifrado y
+        // registrar la pública en el servidor ANTES de conectar el WS (para que
+        // otros usuarios puedan cifrarnos DMs desde el primer momento).
+        let kp = await loadKeyPair();
+        if (!kp) {
+          kp = generateKeyPair();
+          await saveKeyPair(kp);
+        }
+        myKeyPairRef.current = kp;
+        try {
+          await chatApiService.registerPublicKey(token, kp.publicKey);
+        } catch (keyErr) {
+          console.log('[Chat] No se pudo registrar la llave pública:', (keyErr as Error).message);
+        }
+
         socket.connect(token);
       } catch (e) {
         if (mounted) setJoinError((e as Error).message);
@@ -224,12 +294,33 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   }, [isAuthenticated, user?.nickname]);
 
   const sendGroupMessage = useCallback((content: string, ttl?: number) => {
-    socketRef.current?.sendGroupMessage(content, ttl);
+    const key = groupKeyRef.current;
+    const payload = key ? encryptGroup(content, key) : content;
+    if (payload.length > MAX_CONTENT_LEN) {
+      showToast({ type: 'warning', title: 'Mensaje demasiado largo', subtitle: 'Acórtalo e intenta de nuevo.' });
+      return;
+    }
+    socketRef.current?.sendGroupMessage(payload, ttl);
   }, []);
 
   const sendDM = useCallback((toId: string, content: string, ttl?: number) => {
     if (!chatUser) return;
-    // Optimistic insert
+
+    // Ciframos si el destinatario tiene llave pública; si no la tiene (cliente
+    // sin cifrado), enviamos texto plano para mantener compatibilidad.
+    const recipientKey = userPublicKeysRef.current[toId];
+    const mySecret = myKeyPairRef.current?.secretKey;
+    const payload = (recipientKey && mySecret)
+      ? encryptDM(content, recipientKey, mySecret)
+      : content;
+
+    if (payload.length > MAX_CONTENT_LEN) {
+      showToast({ type: 'warning', title: 'Mensaje demasiado largo', subtitle: 'Acórtalo e intenta de nuevo.' });
+      return;
+    }
+
+    // Inserción optimista en TEXTO PLANO: no podemos descifrar nuestro propio
+    // DM, así que mostramos el original localmente e ignoramos el eco.
     const optimistic: ChatMessage = {
       id: `opt_${Date.now()}`,
       sender_id: chatUser.id,
@@ -247,7 +338,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       ...prev,
       [toId]: [...(prev[toId] ?? []), optimistic],
     }));
-    socketRef.current?.sendDM(toId, content, ttl);
+    socketRef.current?.sendDM(toId, payload, ttl);
   }, [chatUser]);
 
   const sendTypingGroup = useCallback(() => {

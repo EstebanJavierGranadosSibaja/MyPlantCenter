@@ -40,6 +40,14 @@ export const chatApiService = {
     });
   },
 
+  async registerPublicKey(token: string, publicKey: string): Promise<void> {
+    await request('/api/chat/users/me/public-key', {
+      method: 'PUT',
+      headers: authHeaders(token),
+      body: JSON.stringify({ public_key: publicKey }),
+    });
+  },
+
   async getOnlineUsers(token: string): Promise<ChatUser[]> {
     return request<ChatUser[]>('/api/chat/users', {
       headers: authHeaders(token),
