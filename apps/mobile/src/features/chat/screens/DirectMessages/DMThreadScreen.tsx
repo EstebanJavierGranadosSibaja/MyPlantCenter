@@ -158,6 +158,7 @@ export function DMThreadScreen() {
         onStopTyping={sendStopTyping}
         disabled={!connected}
         placeholder={connected ? `Mensaje a ${nickname}…` : 'Conectando…'}
+        bottomInset={insets.bottom}
       />
     </KeyboardAvoidingView>
   );

@@ -2,7 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useMemo } from 'react';
-import { FlatList, StyleSheet, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from 'src/ui';
 import { useUITheme } from 'src/ui/theme/UIThemeContext';
@@ -31,7 +31,6 @@ export function DMListScreen() {
       const u = onlineUsers.find(u => u.id === id);
       if (u) all.push(u);
     }
-    // Add online users not already in the list
     for (const u of onlineUsers) {
       if (u.id !== chatUser?.id && !withHistorySet.has(u.id)) {
         all.push(u);
@@ -48,7 +47,7 @@ export function DMListScreen() {
 
   return (
     <View style={[styles.root, { backgroundColor: theme.colors.bg }]}>
-      {/* Header */}
+      {/* Header — this is the Chat tab landing, so no back button */}
       <View
         style={[
           styles.header,
@@ -59,27 +58,25 @@ export function DMListScreen() {
           },
         ]}
       >
-        <Feather
-          name="arrow-left"
-          size={22}
-          color={theme.colors.textPrimary}
-          onPress={() => navigation.goBack()}
-        />
-        <View>
-          <Text variant="title">Mensajes directos</Text>
-          <View style={styles.statusRow}>
-            <View
-              style={[
-                styles.statusDot,
-                { backgroundColor: connected ? theme.colors.accent : theme.colors.borderDefault },
-              ]}
-            />
-            <Text variant="caption" color="textSecondary">
-              {connected ? `${onlineUsers.length} en línea` : 'Reconectando…'}
-            </Text>
+        <View style={styles.headerLeft}>
+          <View style={[styles.headerIcon, { backgroundColor: theme.colors.accentSoft }]}>
+            <Feather name="message-circle" size={18} color={theme.colors.accentForeground} />
+          </View>
+          <View>
+            <Text variant="title">Chats</Text>
+            <View style={styles.statusRow}>
+              <View
+                style={[
+                  styles.statusDot,
+                  { backgroundColor: connected ? theme.colors.accent : theme.colors.borderDefault },
+                ]}
+              />
+              <Text variant="caption" color="textSecondary">
+                {connected ? `${onlineUsers.length} en línea` : 'Reconectando…'}
+              </Text>
+            </View>
           </View>
         </View>
-        <View style={{ width: 22 }} />
       </View>
 
       <FlatList
@@ -87,6 +84,37 @@ export function DMListScreen() {
         keyExtractor={item => item.id}
         contentContainerStyle={styles.listContent}
         ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+        ListHeaderComponent={
+          <View style={styles.listHeader}>
+            {/* Group chat — the document observations live here */}
+            <Pressable
+              onPress={() => navigation.navigate('GroupChat')}
+              style={({ pressed }) => [
+                styles.groupCard,
+                {
+                  backgroundColor: theme.colors.surfaceElevated,
+                  borderColor: theme.colors.borderSubtle,
+                  opacity: pressed ? 0.85 : 1,
+                },
+              ]}
+            >
+              <View style={[styles.groupAvatar, { backgroundColor: theme.colors.accent }]}>
+                <Feather name="users" size={22} color="#fff" />
+              </View>
+              <View style={styles.groupInfo}>
+                <Text variant="bodyMd" style={styles.groupTitle}>Chat grupal</Text>
+                <Text variant="caption" color="textSecondary">
+                  Observaciones del documento
+                </Text>
+              </View>
+              <Feather name="chevron-right" size={20} color={theme.colors.textSecondary} />
+            </Pressable>
+
+            <Text variant="overline" color="textTertiary" style={styles.sectionLabel}>
+              Mensajes directos
+            </Text>
+          </View>
+        }
         ListEmptyComponent={
           <View style={styles.empty}>
             <Feather name="users" size={40} color={theme.colors.borderDefault} />
@@ -122,6 +150,18 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     borderBottomWidth: 1,
   },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  headerIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   statusRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -133,14 +173,46 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   listContent: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    // Clears the floating tab bar (height 64 + bottom offset + safe area)
+    paddingBottom: 120,
     flexGrow: 1,
+  },
+  listHeader: {
+    marginBottom: 8,
+  },
+  groupCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+  },
+  groupAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  groupInfo: {
+    flex: 1,
+    gap: 2,
+  },
+  groupTitle: {
+    fontWeight: '700',
+  },
+  sectionLabel: {
+    marginTop: 16,
+    marginLeft: 4,
   },
   empty: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 16,
-    paddingTop: 80,
+    paddingTop: 60,
   },
 });

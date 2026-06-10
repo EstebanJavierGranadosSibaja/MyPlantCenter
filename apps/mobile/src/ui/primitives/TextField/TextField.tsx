@@ -7,7 +7,6 @@ import {
   useController,
 } from 'react-hook-form';
 import {
-  Platform,
   StyleProp,
   StyleSheet,
   Text,
@@ -293,10 +292,19 @@ export function TextField<T extends FieldValues>({
           style={[s.input, inputStyle]}
           // Android: prevent included font padding from misaligning text
           textAlignVertical="center"
-          // Android: let the system handle autofill; focus chain is controlled
-          // by blurOnSubmit=false + direct focus, not by Samsung's autofill chain
-          importantForAutofill={Platform.OS === 'android' ? 'yes' : undefined}
           {...rest}
+          // ── Autofill DISABLED — root cause of the focus-jumping bug ──────────
+          // There is NO .focus() call anywhere in the app, yet focus still
+          // cascaded between fields. The mover was Android's Autofill framework:
+          // with importantForAutofill="yes" + autofill hints on every field, the
+          // service traversed/auto-filled fields on focus, moving focus natively
+          // in a loop — infinite on plain-text fields, a single jump on password
+          // fields (those gate on credential selection). Opting every field out
+          // stops the native traversal. These come AFTER {...rest} so they
+          // override any autoComplete/textContentType a screen passes.
+          autoComplete="off"
+          textContentType="none"
+          importantForAutofill="no"
         />
 
         {trailingElement}

@@ -41,7 +41,8 @@ export const createTabBarOptions = (theme: AppTheme, bottomInset: number) => ({
   },
 
   tabBarItemStyle: {
-    marginHorizontal: theme.spacing['5xs'],
+    // No horizontal margin — with 7 tabs every px counts so labels don't truncate.
+    marginHorizontal: 0,
     marginVertical: 0,
     borderRadius: theme.radius.lg,
   },
@@ -56,13 +57,14 @@ export const createTabBarOptions = (theme: AppTheme, bottomInset: number) => ({
 
   tabBarLabelStyle: {
     fontFamily: theme.typography.family.bodySemiBold,
-    fontSize: theme.typography.size.xs,
+    // 11px (below the xs token of 13) so 7 labels fit without truncation.
+    fontSize: 11,
     marginTop: theme.spacing['5xs'],
     marginBottom: 0,
   },
 
   tabIconContainer: {
-    paddingHorizontal: theme.spacing.xs,
+    paddingHorizontal: theme.spacing['3xs'],
     paddingVertical: theme.spacing['5xs'],
     borderRadius: theme.radius.full,
     alignItems: 'center' as const,

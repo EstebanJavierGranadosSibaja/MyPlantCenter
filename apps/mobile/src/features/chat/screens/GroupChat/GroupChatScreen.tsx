@@ -96,7 +96,13 @@ export function GroupChatScreen() {
           },
         ]}
       >
-        <View style={styles.headerLeft}>
+        <Feather
+          name="arrow-left"
+          size={22}
+          color={theme.colors.textPrimary}
+          onPress={() => navigation.goBack()}
+        />
+        <View style={styles.headerCenter}>
           <View style={[styles.headerIcon, { backgroundColor: theme.colors.accentSoft }]}>
             <Feather name="message-circle" size={18} color={theme.colors.accentForeground} />
           </View>
@@ -115,12 +121,7 @@ export function GroupChatScreen() {
             </View>
           </View>
         </View>
-        <Feather
-          name="users"
-          size={20}
-          color={theme.colors.textSecondary}
-          onPress={() => navigation.navigate('DMList')}
-        />
+        <View style={{ width: 22 }} />
       </View>
 
       {/* Messages */}
@@ -161,6 +162,7 @@ export function GroupChatScreen() {
         onStopTyping={sendStopTyping}
         disabled={!connected}
         placeholder={connected ? 'Escribe un mensaje…' : 'Conectando…'}
+        bottomInset={insets.bottom}
       />
     </KeyboardAvoidingView>
   );
@@ -178,10 +180,11 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     borderBottomWidth: 1,
   },
-  headerLeft: {
+  headerCenter: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+    flex: 1,
   },
   headerIcon: {
     width: 36,

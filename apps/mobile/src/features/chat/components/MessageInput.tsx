@@ -14,6 +14,8 @@ interface Props {
   onStopTyping?: () => void;
   placeholder?: string;
   disabled?: boolean;
+  /** Extra bottom padding (e.g. safe-area inset) when no tab bar sits below. */
+  bottomInset?: number;
 }
 
 export function MessageInput({
@@ -22,6 +24,7 @@ export function MessageInput({
   onStopTyping,
   placeholder = 'Escribe un mensaje…',
   disabled = false,
+  bottomInset = 0,
 }: Props) {
   const theme = useUITheme();
   const [text, setText] = useState('');
@@ -55,6 +58,7 @@ export function MessageInput({
         {
           backgroundColor: theme.colors.surfaceElevated,
           borderTopColor: theme.colors.borderSubtle,
+          paddingBottom: 10 + bottomInset,
         },
       ]}
     >

@@ -1,6 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { NavigationContainer } from '@react-navigation/native';
+import { getFocusedRouteNameFromRoute, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator, NativeStackScreenProps } from '@react-navigation/native-stack';
 import { BlurView } from 'expo-blur';
 import * as Haptics from 'expo-haptics';
@@ -127,8 +127,8 @@ function FriendsNavigator() {
 function ChatNavigator() {
   return (
     <ChatStack.Navigator screenOptions={{ headerShown: false }}>
-      <ChatStack.Screen name="GroupChat" component={GroupChatScreen} />
       <ChatStack.Screen name="DMList" component={DMListScreen} />
+      <ChatStack.Screen name="GroupChat" component={GroupChatScreen} />
       <ChatStack.Screen name="DMThread" component={DMThreadScreen} />
     </ChatStack.Navigator>
   );
@@ -207,6 +207,14 @@ tabBarIcon: createTabIcon('feather'),
 }}
 />
 <Tab.Screen
+name="Amigos"
+component={FriendsNavigator}
+options={{
+tabBarLabel: 'Amigos',
+tabBarIcon: createTabIcon('users'),
+}}
+/>
+<Tab.Screen
 name="CameraAction"
 component={CameraActionPlaceholder}
 options={{
@@ -222,19 +230,20 @@ navigation.getParent()?.navigate('CameraScan' as never);
 })}
 />
 <Tab.Screen
-name="Amigos"
-component={FriendsNavigator}
-options={{
-tabBarLabel: 'Amigos',
-tabBarIcon: createTabIcon('users'),
-}}
-/>
-<Tab.Screen
 name="Chat"
 component={ChatNavigator}
-options={{
+options={({ route }) => {
+// Hide the floating tab bar on full-screen conversation screens so the
+// message input isn't covered by it. The hub (DMList) keeps the bar.
+const focused = getFocusedRouteNameFromRoute(route) ?? 'DMList';
+const hideBar = focused === 'GroupChat' || focused === 'DMThread';
+return {
 tabBarLabel: 'Chat',
 tabBarIcon: createTabIcon('message-circle'),
+tabBarStyle: hideBar
+? { display: 'none' as const }
+: tabBarOptions.tabBarStyle,
+};
 }}
 />
 <Tab.Screen
