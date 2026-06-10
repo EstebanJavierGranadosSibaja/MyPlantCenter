@@ -48,6 +48,14 @@ const ACTION_CONFIG: Record<RecentActivity['actionType'], {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
+const CARE_TIPS: { icon: React.ComponentProps<typeof Feather>['name']; title: string; text: string }[] = [
+  { icon: 'droplet', title: 'No riegues de más', text: 'La mayoría de plantas mueren por exceso de agua, no por falta. Mete el dedo 2-3 cm: si está seco, riega; si no, espera.' },
+  { icon: 'sun', title: 'Luz indirecta ≠ sol directo', text: 'El sol directo del mediodía quema las hojas de muchas plantas de interior. Busca luz brillante pero filtrada.' },
+  { icon: 'alert-triangle', title: 'Revisa el envés de las hojas', text: 'Manchas pegajosas, puntos o telarañas finas son señales tempranas de plaga. Detectarlas a tiempo lo es todo.' },
+  { icon: 'layers', title: 'Drenaje primero', text: 'Si el agua tarda en salir, la maceta no drena bien y las raíces se pudren. Añade perlita o piedra al fondo.' },
+  { icon: 'thermometer', title: 'Menos agua en invierno', text: 'En invierno casi todas crecen poco y necesitan menos riego. Evita fertilizar hasta la primavera.' },
+];
+
 export function ExplorarV2() {
   const theme = useUITheme();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -257,6 +265,27 @@ export function ExplorarV2() {
         </>
       )}
 
+      {/* ── Consejos de cuidado (siempre útiles) ───────────────────────── */}
+      {!loading && !error && !hasQuery && (
+        <View style={styles.tipsSection}>
+          <View style={styles.sectionHeader}>
+            <Text variant="title">Consejos de cuidado</Text>
+            <Text variant="caption" color="textTertiary">Para mantenerlas sanas</Text>
+          </View>
+          {CARE_TIPS.map(tip => (
+            <Surface key={tip.title} elevation="xs" radius="lg" border="subtle" style={styles.tipCard}>
+              <View style={[styles.tipIcon, { backgroundColor: theme.colors.accentSoft }]}>
+                <Feather name={tip.icon} size={theme.layout.iconMd} color={theme.colors.accent} />
+              </View>
+              <View style={styles.tipBody}>
+                <Text variant="label">{tip.title}</Text>
+                <Text variant="caption" color="textSecondary">{tip.text}</Text>
+              </View>
+            </Surface>
+          ))}
+        </View>
+      )}
+
     </Screen>
   );
 }
@@ -354,5 +383,26 @@ const styles = StyleSheet.create({
   },
   activityTime: {
     marginLeft: 'auto',
+  },
+  tipsSection: {
+    gap: 8,
+  },
+  tipCard: {
+    flexDirection: 'row',
+    padding: 14,
+    gap: 12,
+    alignItems: 'flex-start',
+  },
+  tipIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  tipBody: {
+    flex: 1,
+    gap: 2,
   },
 });

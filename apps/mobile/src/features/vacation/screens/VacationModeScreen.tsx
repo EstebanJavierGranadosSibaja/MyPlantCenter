@@ -12,6 +12,7 @@ import {
   View,
 } from 'react-native';
 import { useAuth } from 'src/core/contexts/AuthContext';
+import { careHistoryService } from 'src/features/care/services/careHistory.service';
 import { plantService } from 'src/features/plants/services/plant.service';
 import { showToast } from 'src/shared/components/feedback/FormToast/FormToast';
 import { Button, DetailHeader, Screen, Surface, Text, useUITheme } from 'src/ui';
@@ -43,11 +44,20 @@ const formatISO = (d: Date): string => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-function RiskRow({ item }: { item: PlantVacationRisk }) {
+function RiskRow({
+  item,
+  onWater,
+  busy,
+}: {
+  item: PlantVacationRisk;
+  onWater: () => void;
+  busy: boolean;
+}) {
   const theme  = useUITheme();
   const config = RISK_CONFIG[item.riskLevel];
   const color  = theme.colors[config.colorKey];
   const bg     = theme.colors[config.bgKey];
+  const showWater = item.riskLevel !== 'low';
 
   return (
     <Surface elevation="xs" radius="lg" border="subtle" style={styles.riskRow}>
@@ -59,9 +69,21 @@ function RiskRow({ item }: { item: PlantVacationRisk }) {
         <Text variant="caption" color="textTertiary" numberOfLines={2}>
           {item.recommendedAction}
         </Text>
-        <Text variant="caption" style={{ color }}>
-          {config.label}
-        </Text>
+        <View style={styles.riskFooter}>
+          <Text variant="caption" style={{ color }}>
+            {config.label}
+          </Text>
+          {showWater && (
+            <Button
+              label={busy ? '…' : 'Marcar regada'}
+              onPress={onWater}
+              loading={busy}
+              disabled={busy}
+              variant="secondary"
+              size="sm"
+            />
+          )}
+        </View>
       </View>
     </Surface>
   );
@@ -93,6 +115,7 @@ export function VacationModeScreen() {
   const [returnDate,     setReturnDate]       = React.useState<Date>(dayAfter);
   const [pickerField,    setPickerField]      = React.useState<DatePickerField | null>(null);
   const [showPicker,     setShowPicker]       = React.useState(false);
+  const [wateringId,     setWateringId]       = React.useState<string | null>(null);
 
   const load = React.useCallback(async () => {
     if (!user?.id) return;
@@ -185,6 +208,21 @@ export function VacationModeScreen() {
       showToast({ type: 'error', title: 'No se pudo activar el modo vacaciones.' });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleWaterPlant = async (plantId: string, plantName: string) => {
+    if (!user?.id || wateringId) return;
+    setWateringId(plantId);
+    try {
+      await careHistoryService.logWatering(user.id, plantId);
+      const refreshed = await plantService.getByUser(user.id);
+      setPlants(refreshed); // el efecto recalcula el riesgo en vivo
+      showToast({ type: 'success', title: `${plantName} regada`, subtitle: 'Riesgo actualizado.' });
+    } catch {
+      showToast({ type: 'error', title: 'No se pudo registrar el riego' });
+    } finally {
+      setWateringId(null);
     }
   };
 
@@ -311,7 +349,14 @@ export function VacationModeScreen() {
             <Text variant="bodyMd" color="textTertiary">No tienes plantas registradas aún.</Text>
           ) : (
             <View style={styles.riskList}>
-              {risks.map(r => <RiskRow key={r.plantId} item={r} />)}
+              {risks.map(r => (
+                <RiskRow
+                  key={r.plantId}
+                  item={r}
+                  busy={wateringId === r.plantId}
+                  onWater={() => handleWaterPlant(r.plantId, r.plantName)}
+                />
+              ))}
             </View>
           )}
         </Surface>
@@ -429,6 +474,13 @@ const styles = StyleSheet.create({
   riskBody: {
     flex: 1,
     gap: 3,
+  },
+  riskFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+    marginTop: 2,
   },
   tipRow: {
     flexDirection: 'row',

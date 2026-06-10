@@ -107,6 +107,29 @@ export function WateringCalendarV2() {
     }
   };
 
+  const handleWaterAllOverdue = async () => {
+    if (!user?.id || pendingPlantId) return;
+    const overdue = priorityTasks.filter(t => t.status === 'overdue');
+    if (overdue.length === 0) return;
+
+    setPending('__all__');
+    const completedAt = new Date().toISOString();
+    let done = 0;
+    for (const task of overdue) {
+      try {
+        await careHistoryService.logWatering(user.id, task.plantId, completedAt, `${task.plantId}:${completedAt}`);
+        done += 1;
+      } catch { /* seguimos con las demás */ }
+    }
+    showToast(
+      done > 0
+        ? { type: 'success', title: `${done} planta${done === 1 ? '' : 's'} regada${done === 1 ? '' : 's'}`, subtitle: 'Riego registrado para las atrasadas.' }
+        : { type: 'error', title: 'No se pudo registrar el riego', subtitle: 'Revisa tu conexión.', autoDismiss: false },
+    );
+    await loadData();
+    setPending(null);
+  };
+
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <Screen scroll edges={['top', 'left', 'right']} contentStyle={styles.content}>
@@ -166,6 +189,17 @@ export function WateringCalendarV2() {
               <Text variant="label" color="textSecondary">Racha de cuidado</Text>
               <Text variant="title" color="accentForeground">{streak} días</Text>
             </View>
+
+            {summary.overdue > 0 && (
+              <Button
+                label={pendingPlantId === '__all__' ? 'Registrando…' : `Regar todas las atrasadas (${summary.overdue})`}
+                onPress={handleWaterAllOverdue}
+                loading={pendingPlantId === '__all__'}
+                disabled={pendingPlantId !== null}
+                leftSlot={<Feather name="droplet" size={theme.layout.iconSm} color={theme.colors.textOnAccent} />}
+                fullWidth
+              />
+            )}
           </Surface>
 
           {/* ── Priority list ──────────────────────────────────────────── */}
@@ -193,16 +227,14 @@ export function WateringCalendarV2() {
                       color={statusColor(task.status)}
                       size="sm"
                     />
-                    {(task.status === 'overdue' || task.status === 'due') && (
-                      <Button
-                        label={pendingPlantId === task.plantId ? 'Guardando...' : 'Marcar'}
-                        onPress={() => handleComplete(task)}
-                        loading={pendingPlantId === task.plantId}
-                        disabled={pendingPlantId !== null}
-                        variant="secondary"
-                        size="sm"
-                      />
-                    )}
+                    <Button
+                      label={pendingPlantId === task.plantId ? 'Guardando...' : 'Marcar'}
+                      onPress={() => handleComplete(task)}
+                      loading={pendingPlantId === task.plantId}
+                      disabled={pendingPlantId !== null}
+                      variant="secondary"
+                      size="sm"
+                    />
                   </View>
                 </View>
               ))
