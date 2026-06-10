@@ -102,7 +102,11 @@ export function NotificationsScreen() {
       refreshing={refreshing}
       onRefresh={handleRefresh}
     >
-      <DetailHeader title="Notificaciones" />
+      {/* Negative margin cancels the content's horizontal padding so the
+          header spans full width while its inner padding aligns with the list. */}
+      <View style={styles.headerWrap}>
+        <DetailHeader title="Notificaciones" />
+      </View>
 
       {loading ? (
         <Surface elevation="xs" radius="lg" border="subtle" style={styles.loadingCard}>
@@ -151,6 +155,9 @@ const styles = StyleSheet.create({
     paddingTop: 4,
     paddingBottom: 120,
     gap: 12,
+  },
+  headerWrap: {
+    marginHorizontal: -20,
   },
   loadingCard: {
     padding: 32,

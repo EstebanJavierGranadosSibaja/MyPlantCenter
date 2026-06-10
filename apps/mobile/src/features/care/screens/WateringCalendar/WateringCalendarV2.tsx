@@ -22,7 +22,7 @@ import { Plant } from 'src/features/plants/types/plant.types';
 import { EmptyState } from 'src/shared/components/feedback/EmptyState/EmptyState';
 import { showToast } from 'src/shared/components/feedback/FormToast/FormToast';
 import { Badge } from 'src/shared/components/ui/Badge/Badge';
-import { Button, Screen, Surface, Text, useUITheme } from 'src/ui';
+import { Button, DetailHeader, Screen, Surface, Text, useUITheme } from 'src/ui';
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -111,12 +111,10 @@ export function WateringCalendarV2() {
   return (
     <Screen scroll edges={['top', 'left', 'right']} contentStyle={styles.content}>
 
-      {/* Nav bar */}
-      <View style={styles.navBar}>
-        <Pressable onPress={() => navigation.goBack()} hitSlop={8}>
-          <Feather name="arrow-left" size={theme.layout.iconMd} color={theme.colors.textPrimary} />
-        </Pressable>
-        <Text variant="h2">Calendario de riego</Text>
+      {/* Negative margin cancels the content's horizontal padding so the
+          header spans full width while its inner padding aligns with the cards. */}
+      <View style={styles.headerWrap}>
+        <DetailHeader title="Calendario de riego" />
       </View>
 
       {loading ? (
@@ -260,10 +258,8 @@ const styles = StyleSheet.create({
     paddingBottom: 120,
     gap: 12,
   },
-  navBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
+  headerWrap: {
+    marginHorizontal: -20,
     marginBottom: 4,
   },
   card: {
